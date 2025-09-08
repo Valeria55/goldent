@@ -1,0 +1,5 @@
+[22-Nov-2021 12:20:50 America/Asuncion] PHP Notice:  Undefined index: codigo in /home/u832567584/domains/trinitytech.com.py/public_html/anelkm6/controller/venta_tmp.controller.php on line 102
+[22-Nov-2021 12:21:02 America/Asuncion] PHP Notice:  Undefined variable: cuotas in /home/u832567584/domains/trinitytech.com.py/public_html/anelkm6/controller/venta.controller.php on line 339
+[22-Nov-2021 12:21:02 America/Asuncion] PHP Notice:  Undefined index: entrega in /home/u832567584/domains/trinitytech.com.py/public_html/anelkm6/controller/venta.controller.php on line 345
+[22-Nov-2021 12:21:02 America/Asuncion] PHP Notice:  session_start(): A session had already been started - ignoring in /home/u832567584/domains/trinitytech.com.py/public_html/anelkm6/model/ingreso.php on line 404
+[22-Nov-2021 12:21:56 America/Asuncion] PHP Notice:  Undefined index: codigo in /home/u832567584/domains/trinitytech.com.py/public_html/anelkm6/controller/venta_tmp.controller.php on line 102
