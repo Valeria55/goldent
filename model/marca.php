@@ -34,9 +34,38 @@ class marca
 			die($e->getMessage());
 		}
 	}
-
-
 	
+    public function Ultimo()
+	{
+		try
+		{
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT MAX(id) AS id FROM marcas ");
+			$stm->execute();
+
+			return $stm->fetch(PDO::FETCH_OBJ);
+		}
+		catch(Exception $e)
+		{
+			die($e->getMessage());
+		}
+	}
+
+	public function ObtenerMarca($marca)
+	{
+		try 
+		{
+			$stm = $this->pdo->prepare("SELECT * FROM marcas WHERE marca = ? LIMIT 1");
+			          
+
+			$stm->execute(array($marca));
+			return $stm->fetch(PDO::FETCH_OBJ);
+		} catch (Exception $e) 
+		{
+			die($e->getMessage());
+		}
+	}
 
 	public function Obtener($id)
 	{

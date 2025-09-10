@@ -7,11 +7,14 @@
 				    
 
 
-				   <div class="form-group col-md-12">
-						<label>Concepto</label>
-						<input type="text" name="comprobante" value="" class="form-control" placeholder="Ingrese su concepto" required>
-					</div>
-				    <input type="hidden" name="contado" value="Efectivo">
+				    <div class="form-group">
+						<label>En forma de</label>
+						<select name="contado" id="contado" class="form-control"> 
+							<option value="Efectivo">Efectivo</option>
+							<option value="Credito">Crédito</option>
+						</select>
+				    </div>
+				    
 				    
 				    <input type="hidden" name="id_venta" value="<?php echo $id_venta ?>">
 				    <input type="hidden" name="subtotal" value="<?php echo $subtotal ?>">
@@ -19,7 +22,7 @@
 				    <input type="hidden" name="descuentoval" id="descuentoval" value="0">
 				    <input type="hidden" name="ivaval" id="ivaval" value="0">
 				    <input type="hidden" name="id_vendedor" value="12">
-				   	<center><input type="submit" class="btn btn-primary" value="Finalizar devolución"></center>
+				    <input type="submit" class="btn btn-primary" value="Finalizar devolución">
 				</form>
 
             </div>

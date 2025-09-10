@@ -1,8 +1,7 @@
-<h1 class="page-header">Lista de ajustes &nbsp; </h1>
+<h1 class="page-header">Lista de ajustes &nbsp; <a href="?c=devolucion_tmp" class="btn btn-primary"> Nuevo ajuste </a></h1>
 <!--<a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
 <a class="btn btn-primary" href="#mesModal" class="btn btn-primary" data-toggle="modal" data-target="#mesModal">Informe Mensual</a>
--->
-<a href="?c=devolucion_tmp" class="btn btn-primary  pull-right"> Nuevo ajuste </a>
+<a class="btn btn-primary pull-right" href="?c=devolucion_tmp" class="btn btn-success">Nueva devolución</a>-->
 <br><br><br>
 <table class="table table-striped table-bordered display responsive nowrap datatable" width="100%">
 
@@ -11,8 +10,7 @@
             <th>ID</th>
             <th>Usuario</th>
             <th>Total</th>
-            <th>Fecha</th>
-            <th>Motivo</th>
+            <th>Fecha y Hora</th>
             <?php if (!isset($_GET['id_venta'])): ?>        
             <th></th>
             <?php endif ?>
@@ -27,9 +25,8 @@
         <tr class="click" <?php if($r->anulado){echo "style='color:gray'";} ?>>
             <td><?php echo $r->id_venta; ?></td>
             <td><?php echo $r->vendedor; ?></td>
-            <td><?php echo number_format($r->subtotal,2,".",","); ?></td>
+            <td><?php echo number_format($r->total,0,".",","); ?></td>
             <td><?php echo date("d/m/Y H:i", strtotime($r->fecha_venta)); ?></td>
-            <td><?php echo $r->comprobante; ?></td>
             <?php if (!isset($_GET['id_venta'])): ?>
             <td>
                 <a href="#detallesModal" class="btn btn-success" data-toggle="modal" data-target="#devolucionModal" data-id="<?php echo $r->id_venta;?>">Ver</a>

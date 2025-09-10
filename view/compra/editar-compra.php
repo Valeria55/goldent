@@ -11,7 +11,7 @@
             <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
                     title="-- Seleccione el producto --" autofocus>
                 <?php foreach($this->producto->Listar() as $producto): ?> 
-                <option data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo  $producto->codigo.' '.$producto->producto.' ( '.$producto->stock.' )'; ?> </option>
+                <option data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' ( '.$producto->stock.' )'; ?> </option>
                 <?php endforeach; ?>
         </select>
         </div>
@@ -46,7 +46,7 @@
             <th>Precio de venta</th>
             <th>Precio por Unidad</th>
             <th>Cantidad</th>
-            <th>Total (GS)</th>
+            <th>Total (Gs.)</th>
             <th></th>
         </tr>
     </thead>
@@ -55,8 +55,7 @@
      $subtotal=0;
      foreach($this->model->Listar($id_compra) as $r): 
         $totalItem = $r->precio_compra*$r->cantidad;
-        $subtotal += ($totalItem);
-        $cant +=$r->cantidad;?>
+        $subtotal += ($totalItem);?>
         <tr>
             
             <td><?php echo $r->producto; ?></td>
@@ -76,26 +75,23 @@
             <td></td>
             <td></td>
             <td></td>
-            <td>Cantidad: <div id="total" style="font-size: 30px"><?php echo number_format($cant,0,",",".") ?></div></td>
-            <td>Total GS: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
+            <td></td>
+            <td>Total Gs: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
             <td></td>
         </tr>
     </tbody>
 </table> 
-<!--<?php //if($subtotal>0 && false){ ?>-->
-<!--<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="compra">Finalizar (F4)</a></div>-->
-<!--<?php// } ?>-->
+<?php if($subtotal>0 && false){ ?>
+<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="compra">Finalizar (F4)</a></div>
+<?php } ?>
 </div> 
 </div>
 </div>
 
-<?php //include("view/compra/finalizar-modal.php"); ?>
+<?php include("view/compra/finalizar-modal.php"); ?>
 <?php include("view/crud-modal.php"); ?>
 
 <script type="text/javascript">
-    $(document).ready(function () {
-        $('.selectpicker').selectpicker();
-    });
 
 
     $('#producto').on('change',function(){

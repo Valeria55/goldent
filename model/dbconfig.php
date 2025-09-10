@@ -1,9 +1,9 @@
 <?php
 
 	$DB_HOST = 'localhost';
-	$DB_USER = 'u832567584_golden';
-	$DB_PASS = 'x=3Tm2&p';
-	$DB_NAME = 'u832567584_golden';
+	$DB_USER = 'u832567584_tienda';
+	$DB_PASS = 'Trinity..2021';
+	$DB_NAME = 'u832567584_tienda';
 
 
 	$con = mysqli_connect($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);

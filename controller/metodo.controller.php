@@ -25,12 +25,7 @@ class metodoController{
 
     public function Movimientos(){
         require_once 'view/header.php';
-        if($_REQUEST['metodo']!='Efectivo'){
-            require_once 'view/metodo/movimientos.php';
-        }else{
-             require_once 'view/metodo/movimiento_efectivo.php';
-        }
-       
+        require_once 'view/metodo/movimientos.php';
         require_once 'view/footer.php';
     }
 
@@ -39,9 +34,7 @@ class metodoController{
         require_once 'view/metodo/metodo.php';
     }
 
-    public function informeMetodo(){
-        require_once 'view/informes/metodo_pago.php';
-    }
+
     
     public function Crud(){
         $metodo = new metodo();
@@ -72,9 +65,6 @@ class metodoController{
 
         $metodo->id = $_REQUEST['id'];
         $metodo->metodo = $_REQUEST['metodo'];
-        $metodo->saldo_inicial = $_REQUEST['saldo_inicial'];
-        $metodo->porcentaje = $_REQUEST['porcentaje'];
-        $metodo->fecha_inicio = $_REQUEST['fecha_inicio'];
 
         
         $metodo->id > 0 

@@ -70,23 +70,24 @@ class categoria
 			die($e->getMessage());
 		}
 	}
-
 	public function Ultimo()
 	{
 		try 
 		{
-		    $result = array();
 			$stm = $this->pdo
-			          ->prepare("SELECT MAX(id) AS id FROM categorias ");
+			          ->prepare("SELECT MAX(id) FROM categorias ");
 			          
 
-			$stm->execute();
+			$stm->execute(array());
 			return $stm->fetch(PDO::FETCH_OBJ);
 		} catch (Exception $e) 
 		{
 			die($e->getMessage());
 		}
 	}
+
+
+	
 
 	public function Obtener($id)
 	{

@@ -64,6 +64,9 @@
                 <option value="0">Sin Filtrar</option>
                 <option value="1">Productos sin cargar</option>
                 <option value="2">Productos cargados</option>
+                <option value="3">Productos sobrantes</option>
+                <option value="4">Productos faltantes</option>
+                <option value="5">Productos con stock correcto</option>
             </select>
         </div>
     </div>
@@ -77,13 +80,15 @@
         <tr style="background-color: #000; color:#fff">
             <th id="header_id">Id</th>
             <th>Código</th>
-            <th>Marca</th>
+            <th>Categ.</th>
             <th>Producto</th>
             <th>P. Costo</th>
             <th>P. Venta</th>
-            <th>Stock Actual</th>
+            <th>Stock al Iniciar</th>
+            <th>Stock al Cargar</th>
             <th>Stock Real</th>
-            <th id="header_fecha_carga">Fecha Carga</th>
+            <th id="header_fecha_carga" width="30px">Fecha Carga</th>
+            <th>Sobrante</th>
             <th>Faltante</th>
             <th>Monto Faltante</th>
         </tr>
@@ -98,9 +103,11 @@
             <th>Producto</th>
             <th>P. Costo</th>
             <th>P. Venta</th>
-            <th>Stock Actual</th>
+            <th>Stock al Iniciar</th>
+            <th>Stock al Cargar</th>
             <th>Stock Real</th>
             <th>Fecha Carga</th>
+            <th>Sobrante</th>
             <th>Faltante</th>
             <th>Monto Faltante</th>
         </tr>
@@ -126,14 +133,11 @@
 
     function cargarTabla(filtro) {
         let url = "?c=inventario&a=ListarSS&id_c=<?php echo $id_c; ?>&q=" + filtro;
-        // let url = "?c=paquete&a=ListarRecibirSS&q=" + filtro;
         let ordenar = 0; // id
-
-
 
         console.log(filtro);
         switch (parseInt(filtro)) {
-            case 1:
+            case 1: // productos sin cargar
                 setTimeout(() => { 
                     // esta fue la unica manera que encontre de que el ordenamiento sea dinamico
                     // Datatables no permite cambiar facilmente el ordenamiento solo a traves del Json
@@ -142,7 +146,21 @@
                 }, 100);
                 ordenar = '0'; // id
                 break;
-            case 2:
+            case 2: // productos cargados
+                setTimeout(() => {
+                    $("#header_fecha_carga").trigger('click');
+                    $("#header_fecha_carga").trigger('click');
+                }, 100);
+                ordenar = '8'; // fecha
+                break;
+            case 3: // productos sobrantes
+                setTimeout(() => {
+                    $("#header_fecha_carga").trigger('click');
+                    $("#header_fecha_carga").trigger('click');
+                }, 100);
+                ordenar = '8'; // fecha
+                break;
+            case 4: // productos faltantes
                 setTimeout(() => {
                     $("#header_fecha_carga").trigger('click');
                     $("#header_fecha_carga").trigger('click');
@@ -150,7 +168,15 @@
                 ordenar = '8'; // fecha
                 break;
 
-            default:
+            case 5: // productos con stock correcto
+                setTimeout(() => {
+                    $("#header_fecha_carga").trigger('click');
+                    $("#header_fecha_carga").trigger('click');
+                }, 100);
+                ordenar = '8'; // fecha
+                break;
+
+            default: // cualquier otra opcion, o sin filtrar
                 setTimeout(() => {
                     $("#header_id").trigger('click');
                     $("#header_id").trigger('click');
@@ -158,7 +184,7 @@
                 ordenar = '0'; // id
                 break;
         }
-        console.log('ordenar ' + ordenar);
+        // console.log('ordenar ' + ordenar);
         tabla =
             $("#tabla-cierre-inventario").DataTable({
                 "destroy": true,
@@ -346,20 +372,20 @@
                 // })
                 try {
                     var resp = JSON.parse(respuesta);
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-right',
-                        iconColor: 'white',
-
-                        customClass: 'swal-wide',
-                        showConfirmButton: false,
-                        timer: 6000,
-                        timerProgressBar: true
-                    })
+                   
                     Toast.fire({
                         icon: 'success',
+                        iconColor: '#30a702',
+
                         title: `El stock del producto ${resp.producto} fue guardado`
                     })
+                    // Toast.fire({
+                    //                     icon: 'error',
+                    //                     title: `El presupuesto ${resp.id} fue cancelado`,
+                    //                     // iconColor: '#30a702',
+                    //                     iconColor: '#c12e2a ',
+
+                    //                 });
                     /*
                     Swal.fire({
                         // position: 'top-end',
@@ -372,6 +398,7 @@
                     */
 
                 } catch (e) {
+                    // console.log(e);
                     Swal.fire({
                         icon: 'error',
                         title: 'Ocurrió un error',

@@ -10,15 +10,16 @@ require_once 'model/acreedor.php';
 require_once 'model/egreso.php';
 require_once 'model/cierre.php';
 require_once 'model/caja.php';
-require_once 'model/sucursal.php';
 require_once 'model/cliente.php';
 require_once 'model/pago_tmp.php';
 require_once 'model/gift_card.php';
 require_once 'model/metodo.php';
 require_once 'model/presupuesto.php';
 require_once 'model/devolucion_ventas.php';
-require_once 'model/devolucion.php';
+require_once 'model/devolucion_compras.php';
 require_once 'model/inventario.php';
+require_once 'model/devolucion.php';
+require_once 'model/transferencia_producto.php';
 
 
 class ventaController
@@ -35,14 +36,17 @@ class ventaController
     private $acreedor;
     private $egreso;
     private $cierre;
-    private $caja;    
-    private $sucursal;
+    private $caja;
     private $cliente;
     private $pago_tmp;
     private $gift_card;
     private $metodo;
     private $presupuesto;
     private $devolucion_ventas;
+    private $devolucion_compras;
+    private $inventario;
+    private $devolucion;
+    private $transferencia_producto;
 
     public function __CONSTRUCT()
     {
@@ -58,15 +62,16 @@ class ventaController
         $this->egreso = new egreso();
         $this->cierre = new cierre();
         $this->caja = new caja();
-        $this->sucursal = new sucursal();
         $this->cliente = new cliente();
         $this->pago_tmp = new pago_tmp();
         $this->gift_card = new gift_card();
         $this->metodo = new metodo();
         $this->presupuesto = new presupuesto();
         $this->devolucion_ventas = new devolucion_ventas();
-        $this->devolucion = new devolucion();
+        $this->devolucion_compras = new devolucion_compras();
         $this->inventario = new inventario();
+        $this->devolucion = new devolucion();
+        $this->transferencia_producto = new transferencia_producto();
     }
 
     public function Index()
@@ -149,11 +154,30 @@ class ventaController
         require_once 'view/footer.php';
     }
 
+    //LISTADO DE VENTAS AL CONTADO, A APROBAR, Y APROBADO SIN FILTRO 
     public function ListarAjax()
     {
-        $venta = $this->model->Listar(0);
+        //$venta = $this->model->Listar(0);
+        //metodo para listar por 30 días
+        $venta = $this->model->ListarUltimos30Dias(0);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
+    public function ListarAjaxAprobar()
+    {
+        //$venta = $this->model->ListarAprobar(0);
+        //metodo para listar por 30 días
+        $venta = $this->model->ListarAprobarultimos30dias(0);
+        echo json_encode($venta, JSON_UNESCAPED_UNICODE);
+    }
+    public function ListarAjaxAprobado()
+    {
+        //$venta = $this->model->ListarAprobado(0);
+        //metodo para listar por 30 días
+        $venta = $this->model->ListarAprobadoUltimos30dias(0);
+        echo json_encode($venta, JSON_UNESCAPED_UNICODE);
+    }
+
+    //FILTROS POR VENTAS CONTADO, A APROBAR, APROBADOS
     public function ListarFiltros()
     {
 
@@ -163,19 +187,22 @@ class ventaController
         $venta = $this->model->ListarFiltros($desde, $hasta);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
-     public function ListarProductoVenta()
+    public function ListarFiltrosAprobar()
     {
 
-        require_once 'view/header.php';
-        require_once 'view/venta/total_ventaproducto.php';
-        require_once 'view/footer.php';
-    }
-     public function ListarPorItem()
-    {
         $desde = ($_REQUEST["desde"]);
         $hasta = ($_REQUEST["hasta"]);
 
-        $venta = $this->model->ListarPorItem($desde, $hasta);
+        $venta = $this->model->ListarFiltrosAprobar($desde, $hasta);
+        echo json_encode($venta, JSON_UNESCAPED_UNICODE);
+    }
+    public function ListarFiltrosAprobado()
+    {
+
+        $desde = ($_REQUEST["desde"]);
+        $hasta = ($_REQUEST["hasta"]);
+
+        $venta = $this->model->ListarFiltrosAprobado($desde, $hasta);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
 
@@ -245,10 +272,13 @@ class ventaController
         require_once 'view/footer.php';
     }
 
+
+
     public function Cierre()
     {
 
-        require_once 'view/informes/cierrepdf.php';
+        //require_once 'view/informes/cierrepdf.php';
+        require_once 'view/informes/ventas_del_dia.php';
     }
 
     public function InformeDiario()
@@ -273,42 +303,26 @@ class ventaController
     {
 
         // require_once 'view/informes/cierremesnewpdf.php';
-        if($_REQUEST['balance']=='extracto'){
-            require_once 'view/informes/extracto_balance.php';
-        }else{
-            require_once 'view/informes/cierremesnew_pdf.php';
-        }
-        
+        require_once 'view/informes/cierremesnew_pdf.php';
     }
-    public function ExtractoBalance()
+    public function ventasPorVendedor()
     {
 
-        // require_once 'view/informes/cierremesnewpdf.php';
-        require_once 'view/informes/extracto_balance.php';
+        require_once 'view/informes/informevendedorpdf.php';
     }
 
     public function Factura()
     {
 
-        require_once 'view/informes/facturapdf.php';
-    }
-
-    public function Recibopdf()
-    {
-
-        require_once 'view/informes/recibopdf.php';
-    }
-
-    public function Recibodev()
-    {
-
-        require_once 'view/informes/recibodev.php';
+        require_once 'view/venta/informes/facturapdf.php';
+        // require_once 'view/informes/facturapdf.php';
+        // require_once 'view/informes/facturapdf_dani_8-3-23.php';
     }
 
     public function Ticket()
     {
 
-        require_once 'view/informes/ticketpdf.php';
+        require_once 'view/informes/ticketpdf_nuevo.php';
     }
 
     public function Obtener()
@@ -322,6 +336,7 @@ class ventaController
         require_once 'view/venta/venta-editar.php';
     }
 
+
     public function ObtenerProducto()
     {
         $venta = new venta();
@@ -330,16 +345,28 @@ class ventaController
 
         echo json_encode($venta);
     }
-
-    public function ObtenerCantMaxima()
+    public function Editar()
     {
+
+
         $venta = new venta();
 
-        $venta = $this->model->ObtenerCantMaxima($_REQUEST['id_venta'], $_REQUEST['id_producto']);
+        $venta->id_venta = $_REQUEST['id_venta'];
+        $venta->id_cliente = $_REQUEST['id_cliente'];
+        $venta->comprobante = $_REQUEST['comprobante'];
+        $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
 
-        echo json_encode($venta);
+        $id = $_REQUEST['id_venta'];
+        $this->model->Editar($venta);
+
+        if ($_REQUEST['comprobante'] == "Ticket") {
+            header("Location: index.php?c=venta&a=ticket&id=$id");
+        } elseif ($_REQUEST['comprobante'] == "Factura") {
+            header("Location: index.php?c=venta&a=factura&id=$id");
+        } else {
+            header('Location: index.php?c=venta_tmp');
+        }
     }
-
     public function GuardarUno()
     {
 
@@ -390,7 +417,13 @@ class ventaController
         $ven = new venta();
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
+        $autoimpresor = ($_REQUEST['comprobante'] == "Factura") ? $this->model->UltimoAutoimpresor()->autoimpresor + 1 : 0;
 
+        // Obtener las cotizaciones del cierre actual
+        if (!isset($_SESSION)) session_start();
+        $cierre_actual = $this->cierre->Consultar($_SESSION['user_id']);
+        $cot_dolar = $cierre_actual ? $cierre_actual->cot_dolar : 0;
+        $cot_real = $cierre_actual ? $cierre_actual->cot_real : 0;
 
         foreach ($this->venta_tmp->Listar() as $v) {
 
@@ -398,47 +431,53 @@ class ventaController
 
             $venta->id = 0;
             $venta->id_venta = $ven->id_venta + 1;
-            $venta->id_cliente = $_REQUEST['id_cliente'];
+            //guardar cliente, sino guardar id 81 que es el ocasional
+            $venta->id_cliente = $_REQUEST['id_cliente'] ? $_REQUEST['id_cliente'] : 85;
             $venta->id_vendedor = $v->id_vendedor;
             $venta->id_presupuesto = $v->id_presupuesto;
-            $venta->id_sucursal = $v->id_sucursal;
             $venta->vendedor_salon = 0;
             $venta->id_producto = $v->id_producto;
             $venta->precio_costo = $v->precio_costo;
             $venta->precio_venta = $v->precio_venta;
             $venta->subtotal = $v->precio_venta * $v->cantidad;
-            $venta->descuento = $v->descuento;
+            $venta->descuento = (!($_REQUEST['descuento_final'] == '')) ?  $_REQUEST['descuento_final'] : $v->descuento;
             $venta->iva = $_REQUEST['ivaval'];
-            $venta->total = ($v->precio_venta-$venta->descuento)*$v->cantidad;
+            $venta->total = $venta->subtotal - ($venta->subtotal * ($venta->descuento / 100));
             $venta->comprobante = $_REQUEST['comprobante'];
             $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
+            $venta->id_timbrado = $_REQUEST['id_timbrado'] ?? 1;
+            $venta->autoimpresor = $autoimpresor;
             $venta->cantidad = $v->cantidad;
-            $venta->can_factura = $v->can_factura;
-            $venta->prod_factura = $v->prod_factura;
-            $venta->margen_ganancia = ((($venta->precio_venta - ($venta->descuento)) - $venta->precio_costo) / ($venta->precio_costo)) * 100;
+            $venta->margen_ganancia = ((($venta->precio_venta - ($venta->precio_venta * ($venta->descuento / 100))) - $venta->precio_costo) / ($venta->precio_costo)) * 100;
             $venta->fecha_venta = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
             $venta->metodo = $_REQUEST['forma_pago'];
             $venta->contado = $_REQUEST['contado'];
             $venta->banco = $_REQUEST['banco'];
-            
-            $venta->id_devolucion = $_REQUEST['id_devolucion'];
+            $venta->id_devolucion = $_REQUEST['id_devolucion'] ?? 0;
+
+            // Guardar las cotizaciones del cierre actual
+            $venta->cot_usd = $cot_dolar;
+            $venta->cot_rs = $cot_real;
+            //por defecto en guarani
+            $venta->moneda = 'Gs';
+
             if ($_REQUEST['id_gift'] != '') {
                 $venta->id_gift = $_REQUEST['id_gift'];
             }
-            $venta->fecha = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
-            $venta->categoria = "Venta";
             $producto = $this->producto->Obtener($v->id_producto);
             $venta->concepto = $v->cantidad . " Kg - " . $producto->producto;
             $venta->monto = $venta->total;
-            $venta->fecha_emision = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
-            $venta->fecha_vencimiento = "2020-08-31";
-            $venta->moneda = "GS";
-            $venta->cot_dolar = $_REQUEST['cot_dolar'];
-            $venta->cot_real = $_REQUEST['cot_real'];
 
-            // //Registrar venta
+
+            if ($venta->contado == 'Credito') {
+                $venta->estado = 'PENDIENTE';
+            } else {
+                $venta->estado = 'APROBADO';
+            }
+
+
+            //Registrar venta
             $this->model->Registrar($venta);
-
             $this->presupuesto->CambiarEstado($venta);
 
             if ($_REQUEST['id_gift'] != '') {
@@ -446,214 +485,153 @@ class ventaController
             }
 
             //Restar Stock
-            $this->producto->RestarStock($venta);
-
-            if ($venta->prod_factura == null) {
-                $venta->prod_factura = 0;
+            if ($venta->contado != 'Credito') {
+                $this->producto->Restar($venta);
             }
-            if ($venta->prod_factura > 0 && $venta->comprobante == 'Factura') {
-
-                //$this->producto->RestarConFactura($venta);
-                //$this->producto->RestarSinFactura($venta);
-            } else {
-                $venta->can_factura = $v->cantidad;
-               $venta->prod_factura = $v->id_producto;
-
-                //$this->producto->RestarConFactura($venta);
-            }
-
             $sumaTotal += $venta->total;
         }
-
         $error = 0;
+        // if ($venta->contado == 'Credito') {
 
-        if ($venta->contado == 'Credito') {
+        //     $deuda = new deuda();
 
-            $deuda = new deuda();
+        //     $deuda->id_cliente =  $venta->id_cliente;
+        //     $deuda->id_venta = $venta->id_venta;
+        //     $deuda->fecha = $_REQUEST["fecha_venta"];
+        //     //$deuda->vencimiento = $_REQUEST['vencimiento'];
+        //     $deuda->concepto = 'Venta a crédito';
+        //     $deuda->monto = $sumaTotal;
+        //     $deuda->saldo = $sumaTotal - $_REQUEST['entrega'];
+        //     $deuda->sucursal = $_SESSION['sucursal'];
 
-            $deuda->id_cliente =  $venta->id_cliente;
-            $deuda->id_venta = $venta->id_venta;
-            $deuda->fecha = date("Y-m-d H:i");
-            //$deuda->vencimiento = $_REQUEST['vencimiento'];
-            $deuda->concepto = 'Venta a crédito';
-            $deuda->monto = $sumaTotal;
-            $deuda->moneda = "GS";
-            $deuda->cambio = $_REQUEST['cambio'];
+        //     //$this->deuda->Registrar($deuda);
 
-            $cambio = $_REQUEST['cambio'];
+        //     if ($_REQUEST['entrega'] > 0) {
 
-            if ($_REQUEST['entrega'] > 0) {
+        //         $ingreso = new ingreso();
 
-                $entrega = ($_REQUEST['entrega'] * $_REQUEST['cambio']);
-                // echo '<pre>'; var_dump(  $entrega); echo '</pre>';
+        //         $ingreso->id_cliente = $venta->id_cliente;
+        //         if (!isset($_SESSION)) session_start();
 
-                $deuda->saldo = $sumaTotal - $entrega;
-            } else {
-                $deuda->saldo = $sumaTotal;
-            }
-            // die();
+        //         $de = $this->deuda->Ultimo();
+        //         $cli = $this->cliente->Obtener($venta->id_cliente);
+        //         $cierre = $this->cierre->Consultar($_SESSION['user_id']);
 
-            $deuda->sucursal = $_SESSION['sucursal'];
+        //         if ($_REQUEST['forma_pago'] == "Efectivo") {
+        //             $ingreso->id_caja = 1; // caja chica
+        //         } else {
+        //             $ingreso->id_caja = 2; // banco
+        //         }
 
-            $this->deuda->Registrar($deuda);
+        //         $ingreso->id_venta = $venta->id_venta;
+        //         $ingreso->id_deuda = $de->id;
+        //         $ingreso->fecha = $_REQUEST["fecha_venta"];
+        //         $ingreso->categoria = 'Entrega';
+        //         $ingreso->concepto = 'Venta a credito a ' . $cli->nombre;
+        //         $ingreso->comprobante = $_REQUEST['comprobante'];
+        //         $ingreso->monto = $_REQUEST['entrega'];
+        //         $ingreso->forma_pago = $_REQUEST['forma_pago'];
+        //         $ingreso->sucursal = 0;
 
-            if ($_REQUEST['entrega'] > 0) {
+        //         $this->ingreso->Registrar($ingreso);
+        //     }} 
+        if ($venta->contado == 'Contado') {
 
-                $ingreso = new ingreso();
-
-                $ingreso->id_cliente = $venta->id_cliente;
-                session_start();
-
-                $de = $this->deuda->Ultimo();
-       
-                $cli = $this->cliente->Obtener($venta->id_cliente);
-                $cierre = $this->cierre->Consultar($_SESSION['user_id']);
-
-                if ($venta->metodo == "Efectivo") {
-                    $ingreso->id_caja = 1; //llevar a caja chica
-                } else {
-                    $ingreso->id_caja = 2; // llevar a banco
-                }
-
-                $ingreso->id_venta = $venta->id_venta;
-                $ingreso->id_deuda = $de->id;
-                $ingreso->fecha =$_REQUEST["fecha_venta"];
-                $ingreso->categoria = 'Entrega';
-                $ingreso->concepto = 'Venta a credito a ' . $cli->nombre;
-                $ingreso->comprobante = $_REQUEST['comprobante'] . ' N° ' . $_REQUEST['nro_comprobante'];
-                $ingreso->monto = $_REQUEST['entrega'];
-                $ingreso->moneda = $_REQUEST['moneda'];
-                $ingreso->cambio = $_REQUEST['cambio'];
-                $ingreso->forma_pago = $_REQUEST['forma_pago'];
-                $ingreso->sucursal = 0;
-
-                $this->ingreso->Registrar($ingreso);
-            }
-
-            $this->pago_tmp->Vaciar();
-            $this->venta_tmp->Vaciar();
-            $id = $ven->id_venta + 1;
-            if ($_REQUEST['comprobante'] == "Ticket") {
-                header("Location: index.php?c=venta&a=ticket&id=$id");
-            } elseif ($_REQUEST['comprobante'] == "Factura") {
-                header("Location: index.php?c=factura_tmp");
-                // header("Location: index.php?c=venta&a=factura&id=$id");
-            } elseif ($_REQUEST['comprobante'] == "Recibo") {
-                header("Location: index.php?c=venta&a=recibopdf&id=$id");
-            } else {
-                header('Location: index.php?c=venta_tmp');                 //header("refresh:0;index.php?c=venta&a=factura&id=$id");
-            }
-        } else {
             $suma = 0;
             $sumaBd = 0;
             foreach ($this->pago_tmp->Listar() as $r) {
-
+                $suma += $r->monto;
                 $ingreso = new ingreso();
-                session_start();
+                if (!isset($_SESSION)) session_start();
                 $cierre = $this->cierre->Consultar($_SESSION['user_id']);
 
-                if ($venta->metodo == "Efectivo") {
-                    $ingreso->id_caja = 1; //llevar a caja chica
+                if ($r->pago == "Efectivo") {
+                    $ingreso->id_caja = 1; // caja chica
                 } else {
-                    $ingreso->id_caja = 2; // llevar a banco
+                    $ingreso->id_caja = 2; // banco
                 }
-
-                $ingreso->id_cliente = $venta->id_cliente;
+                $ingreso->id_cliente = $_REQUEST['id_cliente'];
                 $ingreso->id_venta = $ven->id_venta + 1;
-                $ingreso->fecha =$_REQUEST["fecha_venta"];
-                // $ingreso->vencimiento = date("Y-m-d H:i", strtotime("+$cuotas MONTH"));
+                $ingreso->fecha = $_REQUEST["fecha_venta"];
                 $ingreso->categoria = 'Venta';
                 $ingreso->concepto = 'Venta al contado';
-                $ingreso->comprobante = $_REQUEST['comprobante'];
-                $ingreso->nro_comprobante = $_REQUEST['nro_comprobante'];
+                $ingreso->comprobante = $_REQUEST['comprobante'] . ' N° ' . $_REQUEST['nro_comprobante'];
                 $ingreso->forma_pago = $r->pago;
                 $ingreso->monto = $r->monto;
-                $ingreso->saldo = $r->monto;
                 $ingreso->moneda = $r->moneda;
-                $ingreso->tarjeta = $r->tarjeta;
-                if ($ingreso->moneda == 'GS') {
-                    $ingreso->cambio = 1;
-                } elseif ($ingreso->moneda == 'RS') {
-                    $ingreso->cambio = $cierre->cot_real_tmp;
-                } elseif ($ingreso->moneda == 'USD') {
-                    $ingreso->cambio = $cierre->cot_dolar_tmp;
-                }
+                $ingreso->cambio = $r->cambio;
                 $ingreso->sucursal = 0;
-
-                $suma += $r->monto * $ingreso->cambio;
 
                 $this->ingreso->Registrar($ingreso);
             }
-
-            $suma = round($suma, 2);
-
-            $id = $ven->id_venta + 1;
-            $sumaBd = $this->ingreso->consultarVenta($id)->total;
-            $sumaBd = round($sumaBd, 2);
-
-            if ($sumaBd != $suma || $suma == 0) {
-                $error = 1;
-            }
-
-            if ($error == 0) {
-                $this->pago_tmp->Vaciar();
-                $this->venta_tmp->Vaciar();
-                if ($_REQUEST['comprobante'] == "Ticket") {
-                    header("Location: index.php?c=venta&a=ticket&id=$id");
-                } elseif ($_REQUEST['comprobante'] == "Factura") {
-                    header("Location: index.php?c=factura_tmp");
-                    // header("Location: index.php?c=venta&a=factura&id=$id");
-                } elseif ($_REQUEST['comprobante'] == "Recibo") {
-                    header("Location: index.php?c=venta&a=ticket&id=$id");
-                } else {
-                    header('Location: index.php?c=venta_tmp');                 //header("refresh:0;index.php?c=venta&a=factura&id=$id");
-                }
-            } else {
-                require_once 'view/header.php';
-                echo
-                "<script>
-                Swal.fire({
-                    title: 'HUBO UN ERROR ',
-                    text: 'LA VENTA NO PUDO REALIZARSE  VUELVA A REINTENTAR !!!',
-                    icon: 'error',
-                    showCancelButton: false,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'OK!'
-                }).then((result) => {
-                    if (result.value) {
-                    
-                    window.history.back();
-                    
-                    }
-                });
-                </script>";
-                require_once 'view/footer.php';
-
-                //restaurar stock
-
-                foreach ($this->model->Listar($ven->id_venta + 1) as $v) {
-
-                    $producto = new producto();
-                    $producto->id_producto = $v->id_producto;
-                    $producto->cantidad = $v->cantidad;
-
-                   // $this->producto->Sumar($producto);
-                }
-                //Eliminar ingreso
-                //$this->ingreso->EliminarVenta($ven->id_venta + 1);
-                //eliminar venta 
-                //$this->model->Eliminar($ven->id_venta + 1);
-                //Cambiar el estado del presupuesto VentaAnulada
-                //$this->presupuesto->VentaAnulada($venta);
-                $this->pago_tmp->Vaciar();
-                $this->venta_tmp->Vaciar();
-
-                header('Location: index.php?c=presupuesto');
-            }
         }
-    }
+        $idd = $ven->id_venta + 1;
+        $this->pago_tmp->Vaciar();
+        $this->venta_tmp->Vaciar();
+        if ($_REQUEST['comprobante'] == "Ticket") {
+            header("Location: index.php?c=venta&a=ticket&id=$idd");
+        } elseif ($_REQUEST['comprobante'] == "Factura") {
+            header("Location: index.php?c=venta&a=factura&id=$idd");
+        } else {
+            header('Location: index.php?c=venta_tmp');                 //header("refresh:0;index.php?c=venta&a=factura&id=$id");
+        }
 
+        // $id = $ven->id_venta + 1;
+        // $sumaBd = $this->ingreso->consultarVenta($id)->total;
+        // if ($sumaBd != $suma || $suma == 0) {
+        //     $error = 1;
+        // }
+        // // echo "sumaBd = $sumaBd; suma = $suma; error = $error";
+        // // if ($error == 0) {
+        //     $this->pago_tmp->Vaciar();
+        //     $this->venta_tmp->Vaciar();
+        //     if ($_REQUEST['comprobante'] == "Ticket") {
+        //         header("Location: index.php?c=venta&a=ticket&id=$id");
+        //     } elseif ($_REQUEST['comprobante'] == "Factura") {
+        //         header("Location: index.php?c=venta&a=factura&id=$id");
+        //     } else {
+        //         header('Location: index.php?c=venta_tmp');                 //header("refresh:0;index.php?c=venta&a=factura&id=$id");
+        //     }
+        // } else {
+        //     require_once 'view/header.php';
+        //     echo
+        //     "<script>
+        //         Swal.fire({
+        //             title: 'HUBO UN ERROR ',
+        //             text: 'LA VENTA NO PUDO REALIZARSE  VUELVA A INTENTAR !!!',
+        //             icon: 'error',
+        //             showCancelButton: false,
+        //             confirmButtonColor: '#3085d6',
+        //             cancelButtonColor: '#d33',
+        //             confirmButtonText: 'OK!'
+        //         }).then((result) => {
+        //             if (result.value) {
+        //                 window.history.back();
+        //             }
+        //         });
+        //     </script>";
+        //     require_once 'view/footer.php';
+
+        //eliminar venta 
+
+        // foreach ($this->model->Listar($ven->id_venta + 1) as $v) {
+
+        //     $producto = new producto();
+        //     $producto->id_producto = $v->id_producto;
+        //     $producto->cantidad = $v->cantidad;
+
+        //     $this->producto->Sumar($producto);
+        // }
+
+        // $this->ingreso->EliminarVenta($ven->id_venta + 1);
+        // $this->model->Eliminar($ven->id_venta + 1);
+        // header('Location: index.php?c=venta_tmp'); 
+
+        //restaurar stock
+        // }
+
+
+    }
     public function Eliminar()
     {
 
@@ -668,31 +646,44 @@ class ventaController
         header('Location: index.php?c=venta');
     }
 
+    public function aprobarVenta()
+    {
+        $this->model->aprobarVenta($_REQUEST['id_venta']);
+        $sumaTotal = 0;
+
+        foreach ($this->model->ListarAprobado($_REQUEST['id_venta'])  as $v) {
+            $id_cliente = $v->id_cliente;
+            $id_venta = $v->id_venta;
+            $sumaTotal += $v->total;
+            $fecha_venta = $v->fecha_venta;
+            $this->producto->Restar($v);
+        }
+        $deuda = new deuda();
+
+        $deuda->id_cliente = $id_cliente;
+        $deuda->id_venta = $id_venta;
+        $deuda->fecha = $fecha_venta;
+        //$deuda->vencimiento = $_REQUEST['vencimiento'];
+        $deuda->concepto = 'Venta a crédito';
+        $deuda->monto = $sumaTotal;
+        $deuda->saldo = $sumaTotal;
+        $deuda->sucursal = $_SESSION['sucursal'];
+
+        $this->deuda->Registrar($deuda);
+
+        header('Location: index.php?c=venta');
+    }
+
     public function Anular()
     {
 
-        foreach ($this->model->Listar($_REQUEST['id']) as $v){
+        foreach ($this->model->Listar($_REQUEST['id']) as $v) {
             $venta = new venta();
-
-            if ($venta->prod_factura > 0) {
-                $venta->id_producto = $v->id_producto;
-                $venta->cantidad = $v->cantidad;
-                $venta->prod_factura = $v->prod_factura;
-                $venta->can_factura = $v->can_factura;
-                $this->producto->Sumar($venta);
-               // $this->producto->SumarConfactura($venta);
-              //  $this->producto->SumarSinfactura($venta);
-            }else {
-                $venta->prod_factura = $v->id_producto;
-                $venta->can_factura = $v->cantidad;
-                $venta->id_producto = $v->id_producto;
-                $venta->cantidad = $v->cantidad;
-                $this->producto->Sumar($venta);
-                //$this->producto->SumarConfactura($venta);
-            }
-             $venta->id_presupuesto = $v->id_presupuesto;
+            $venta->id_producto = $v->id_producto;
+            $venta->cantidad = $v->cantidad;
+            $this->producto->Sumar($venta);
+            $venta->id_presupuesto = $v->id_presupuesto;
         }
-        //var_dump($venta->id_presupuesto);
         $this->presupuesto->VentaAnulada($venta);
         $this->ingreso->AnularVenta($_REQUEST['id']);
         $this->deuda->AnularVenta($_REQUEST['id']);

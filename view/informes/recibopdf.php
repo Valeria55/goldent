@@ -1,5 +1,3 @@
-
-
 <?php
 
 // PRUEBA
@@ -160,12 +158,12 @@ class NumeroALetras
 // FIN  PRUEBA 
 
 
-require_once('plugins/tcpdf2/tcpdf.php');
+require_once('plugins/tcpdf/pdf/tcpdf_include.php');
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 $medidas = array(210, 340); // Ajustar aqui segun los milimetros necesarios;
-$pdf = new TCPDF('A4', 'mm', $medidas, true, 'UTF-8', false); 
+$pdf = new TCPDF('P', 'mm', $medidas, true, 'UTF-8', false); 
 $pdf->SetPrintHeader(false);
 $pdf->SetPrintFooter(false);
 $pdf->SetHeaderMargin(0);
@@ -175,225 +173,125 @@ $pdf->AddPage();
 
 $id = $_GET['id'];
 
+$ingreso = $this->model->ListarVenta($id);
 
-foreach($this->model->Listar($id) as $r){
-    $cliente = $r->nombre_cli;
-    $ruc = $r->ruc;
-    $fecha = date("d/m/Y", strtotime($r->fecha_venta));
-    $telefono = $r->telefono;
-    $direccion = $r->direccion;
-    $vendedor = $r->vendedor;
-    $contado = "";
-    $credito = "";
-    if($r->contado=="Contado"){
-        $contado = "Contado";
-    }else{
-        $contado = "Credito";
-    }
+$meses = array('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
+
+$dia = date("d", strtotime($ingreso->fecha));
+$mes = date("m", strtotime($ingreso->fecha));
+$anho = date("Y", strtotime($ingreso->fecha));
+
+$monto = number_format($ingreso->monto, 0,",",".");
+
+$letras = NumeroALetras::convertir($ingreso->monto);
+
+if($ingreso->forma_pago == "Efectivo "){
+    $efectivo = "X";
+    $cheque = "";
+    $nroCheque = "";
+    $banco = "";
+}elseif($ingreso->forma_pago == "Cheque"){
+    $efectivo = "";
+    $cheque = "X";
+    $nroCheque = $ingreso->comprobante;
+    $banco = $ingreso->banco;
 }
 
+$mes = $meses[$mes-1];
 
-//============================================================+
-// INICIO HEADER
-//============================================================+
 $header = <<<EOF
-<table width ="100%" style="border: 1px solid #333; text-align:center; line-height: 15px; font-size:9px">
-
-	<tr>
-		<td width="65%"  style="border: 1px solid #666; line-height: 80px;"><img src="assets/img/pdohouse.jpeg" width="70px"></td>
-		<td width="35%"  style="border: 1px solid #666;line-height: 80px; font-size:10px"><b>Nota interna N°:</b> $id </td>
-	</tr>
-    <tr align="left">
-        <td width="50%"><b>Nombre:</b>$cliente</td>
-        <td width="50%"><b>Vendedor:</b> $vendedor</td>
-      </tr>
-      <tr align="left">
-        <td width="50%"><b>RUC/CI:</b> $ruc</td>
-        <td width="30%"><b>Fecha de Emisión:</b> $fecha </td>
-        <td width="20%"><b> $contado </b></td>
-      </tr>
-      <tr align="left">
-        <td width="50%"><b>Telefono:</b> $telefono </td>
-        <td width="50%"><b>PC:</b> </td>
-       
-      </tr>
-      <tr align="center"style="border: 1px solid #333; text-align:center; line-height: 15px; font-size:7px">
-        <td width="16%" style="border: 1px solid #666"><b>CODIGO.</b></td>
-        <td width="40%" style="border: 1px solid #666"><b>DESCRIPCION DEL ARTICULO</b></td>
-        <td width="7%" style="border: 1px solid #666"><b>CANT</b></td>
-        <td width="7%" style="border: 1px solid #666"><b>FARDO</b></td>
-        <td width="15%" style="border: 1px solid #666"><b>PRECIO</b></td>
-        <td width="15%" style="border: 1px solid #666"><b>SUBTOTAL</b></td>
-      </tr>
-    
-    </table>
+    <p> </p>
+    <p> </p>
+	<table width ="100%" style="text-align:center; line-height: 18px; font-size:9px">
+	    <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="31%" align="left" nowrap>  </td>
+          <td width="12%" align="left">$dia</td>
+          <td width="20%" align="left">$mes</td>
+          <td width="10%" align="left">$anho</td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap> $ingreso->nro_comprobante </td>
+          <td width="30%" align="left" nowrap> $monto </td>
+          <td width="40%" align="left">$ingreso->nombre</td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="48%" align="left" nowrap>  </td>
+          <td width="40%" align="left">$ingreso->ruc</td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="32%" align="left" nowrap></td>
+          <td width="40%" align="left"></td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="15%" align="left" nowrap></td>
+          <td width="40%" align="left" style="font-size:8px;">$letras</td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="31%" align="left" nowrap></td>
+          <td width="40%" align="left">$ingreso->concepto</td>
+        </tr>
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="15%" align="left" nowrap></td>
+          <td width="40%" align="left"></td>
+        </tr>
+        
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="15%" align="left" nowrap></td>
+          <td width="40%" align="left"></td>
+        </tr>
+        
+        <tr>
+          <td width="10%"></td>
+          <td width="20%" align="left" nowrap>  </td>
+          <td width="40%" align="left">$monto</td>
+        </tr>
+        <tr>
+          <td width="15%">$efectivo</td>
+          <td width="20%" align="left" nowrap> $cheque</td>
+          <td width="40%" align="left">$nroCheque</td>
+          <td width="40%" align="left">$banco</td>
+        </tr>
+        <tr>
+          <td width="11%"></td>
+          <td width="18%" align="left" nowrap></td>
+          <td width="40%" align="left"></td>
+          <td width="40%" align="left"></td>
+        </tr>
+        <tr>
+          <td width="11%"></td>
+          <td width="18%" align="left" nowrap> X</td>
+          <td width="40%" align="left">$monto</td>
+          <td width="40%" align="left"></td>
+        </tr>
+	</table>
 EOF;
 
 $pdf->writeHTML($header, false, false, false, false, '');
-
-//============================================================+
-// INICIO LISTAR
-//============================================================+
-$sumaTotal = 0;
-$cantidad = 0;
-foreach($this->model->Listar($id) as $v){
-$cantidad++; 
-if($v->fardo!=0){
-if($v->cantidad >= $v->fardo){
-    $fardo=floor($v->cantidad/$v->fardo);
-    $fardo =  number_format($fardo, 0, "," , ".");
-    $fardo=$fardo;
-    $can=$v->cantidad-($fardo*$v->fardo);
-    //$can =  number_format($can, 0, "," , ".");
-    
-}else{
-    $fardo='';
-    $can=$v->cantidad;
-}
-}else{
-    $fardo='';
-    $can=$v->cantidad;
-}
-$porunidad =  number_format($v->precio_venta, 2, "," , ".");
-$sumasubtotal +=$v->total;
-$totalnota +=($v->precio_venta*$v->cantidad);
-$sumadescuento +=(($v->precio_venta*$v->cantidad)*($v->descuento/100));
-$porcantidad =  number_format($v->total, 2, "," , ".");
-
-if($fardo!=''){
-$items = <<<EOF
-        <table width ="100%" style="border: 1px solid #333; text-align:right; line-height: 10px; font-size:7px">
-        
-         	<tr align="right"style="border: 1px solid #333; text-align:right; line-height: 10px; font-size:7px">
-    				<td width="16%" style="border: 1px solid #666; text-align:left">$v->codigo</td>
-                    <td width="40%" style="border: 1px solid #666; text-align:left; line-height:10px ;font-size:5px">$v->producto</td>
-                    <td width="7%" style="border: 1px solid #666"></td>
-                    <td width="7%" style="border: 1px solid #666">$fardo</td>
-                    <td width="15%" style="border: 1px solid #666">$porunidad</td>
-                    <td width="15%" style="border: 1px solid #666">$porcantidad</td>
-    		</tr>
-    		
-        </table>
+$espacio = <<<EOF
+    <p> </p>
 EOF;
-$items_fardo .= $items;
- $pdf->writeHTML($items, false, false, false, false, '');
-}        
-if($can>0){      
-
-$itemss = <<<EOF
-        <table width ="100%" style="border: 1px solid #333; text-align:right; line-height: 10px; font-size:7px">
-        
-         	<tr align="right"style="border: 1px solid #333; text-align:right; line-height: 10px; font-size:7px">
-    				<td width="16%" style="border: 1px solid #666; text-align:left">$v->codigo</td>
-                    <td width="40%" style="border: 1px solid #666; text-align:left; line-height: 10px; font-size:5px">$v->producto</td>
-                    <td width="7%" style="border: 1px solid #666">$can</td>
-                    <td width="7%" style="border: 1px solid #666"></td>
-                    <td width="15%" style="border: 1px solid #666">$porunidad</td>
-                    <td width="15%" style="border: 1px solid #666">$porcantidad</td>
-    		</tr>
-    		
-        </table>
-EOF;
-$items_cantidad .= $itemss;
- $pdf->writeHTML($itemss, false, false, false, false, '');
-}
-
-}
-
-$c=(17-$cantidad);
-    
-    for($i=0;$i<$c;$i++){
-        
-$espacio .= <<<EOF
-    
-    		<table>
-    			<tr align="center"style="border: 1px solid #333; text-align:center; line-height: 10px; font-size:7px">
-    				<td width="16%" style="border: 1px solid #666"><b></b></td>
-                    <td width="40%" style="border: 1px solid #666"><b></b></td>
-                    <td width="7%" style="border: 1px solid #666"><b></b></td>
-                    <td width="7%" style="border: 1px solid #666"><b></b></td>
-                    <td width="15%" style="border: 1px solid #666"><b></b></td>
-                    <td width="15%" style="border: 1px solid #666"><b></b></td>
-    			</tr>
-    		</table>
-    
-EOF;
-    
-    }
-    $pdf->writeHTML($espacio, false, false, false, false, '');
-
-
-
-
-//============================================================+
-// INICIO FOOTER
-//============================================================+
-$deuda=$this->deuda->Obtenerdeudas($r->id_cliente, $id);
-$entrega=$this->ingreso->ObtenerExtra($id);
-
-$saldoanterior =  number_format($deuda->saldo, 2, "," , ".");
-$saldorestante =$deuda->saldo + $sumasubtotal;
-$saldorestante =  number_format($saldorestante-$entrega->monto, 2, "," , ".");
-$sumasubtotal =  number_format($sumasubtotal-$entrega->monto, 2, "," , ".");
-$sumadescuento =  number_format($sumadescuento, 2, "," , ".");
-$totalnota =  number_format($totalnota, 2, "," , ".");
-$entregaventa = number_format($entrega->monto, 2, "," , ".");
-$footer = <<<EOF
-<table width ="100%" style="border: 1px solid #333; text-align:left; line-height: 15px; font-size:9px">
-    <tr align="center">
-    	<td width="16%" style="border: 1px solid #666"><b></b></td>
-        <td width="40%" style="border: 1px solid #666"><b></b></td>
-        <td width="7%" style="border: 1px solid #666"><b></b></td>
-        <td width="7%" style="border: 1px solid #666"><b></b></td>
-        <td width="15%" style="border: 1px solid #666"><b></b></td>
-        <td width="15%" style="border: 1px solid #666"><b>$totalnota</b></td>
-	</tr>
-    
-    <tr>
-		 <td width="25%"><b>Entrega:</b>$entregaventa</td>
-		 <td width="35%"><b>Descuento:</b>$sumadescuento</td>
-		 <td width="25%" style="text-align:right"><b>Total Nota:</b></td>
-		 <td width="15%" style="text-align:right">$sumasubtotal</td>
-	</tr> 
-	 <tr>
-		 <td width="40%"><b>Moneda:</b>Dolar</td>
-		 <td width="45%" style="text-align:right"><b>Saldo Anterior:</b> </td>
-		 <td width="15%" style="text-align:right">$saldoanterior</td>
-	</tr> 
-	<tr>
-		 <td width="40%"></td>
-		 <td width="45%" style="text-align:right"><b>Saldo Restante:</b> </td>
-		 <td width="15%" style="text-align:right">$saldorestante</td>
-	</tr> 
-    
-    
-       
-    </table>
-EOF;
-
-$pdf->writeHTML($footer, false, false, false, false, '');
-$espacio1 = <<<EOF
-    
-    		<table>
-    			<tr align="center"style=" font-size:23px">
-    				<td width="16%" ><b></b></td>
-                    <td width="40%" ><b></b></td>
-                    <td width="7%" ><b></b></td>
-                    <td width="7%" ><b></b></td>
-                    <td width="15%" ><b></b></td>
-                    <td width="15%" ><b></b></td>
-    			</tr>
-    		</table>
-    
-EOF;
-$pdf->writeHTML($espacio1, false, false, false, false, '');
-$pdf->writeHTML($header, false, false, false, false, '');
-$pdf->writeHTML($items_fardo, false, false, false, false, '');
-$pdf->writeHTML($items_cantidad, false, false, false, false, '');
 $pdf->writeHTML($espacio, false, false, false, false, '');
-$pdf->writeHTML($footer, false, false, false, false, '');
+$pdf->writeHTML($espacio, false, false, false, false, '');
+$pdf->writeHTML($header, false, false, false, false, '');
+$pdf->writeHTML($espacio, false, false, false, false, '');
+$pdf->writeHTML($header, false, false, false, false, '');
 
-ob_end_clean();
 $pdf->Output('uin.pdf', 'I');
 
 
@@ -401,4 +299,3 @@ $pdf->Output('uin.pdf', 'I');
 // END OF FILE
 //============================================================+
   ?>
-.php at master · Valeria55/dalihome

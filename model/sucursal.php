@@ -24,7 +24,7 @@ class sucursal
 		{
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT * FROM sucursales ORDER BY sucursal ASC");
+			$stm = $this->pdo->prepare("SELECT * FROM sucursales ORDER BY sucursal DESC");
 			$stm->execute();
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);

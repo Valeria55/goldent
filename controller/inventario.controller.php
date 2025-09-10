@@ -138,19 +138,12 @@ class inventarioController
         $cierre_inventario->fecha_cierre = null;
         $cierre_inventario->usuario_inicial = $_SESSION['user_id'];
 
+        if ($this->cierre_inventario->CierrePendiente()){
+            header('Location:' . getenv('HTTP_REFERER'));
+            die;
+        }
+
         $new_cierre_inv = $this->cierre_inventario->Registrar($cierre_inventario);
-
-        // foreach($this->producto->Listar() as $p){
-
-        //     $inventario = new inventario();
-
-        //     $inventario->id_inventario = $new_cierre_inv->id;
-        //     $inventario->id_producto = $p->id;
-        //     $inventario->id_usuario = $_SESSION['user_id'];
-        //     $inventario->stock_actual = $p->stock;
-        //     $inventario->fecha = date("Y-m-d");
-        //     $this->model->Registrar($inventario);
-        // }   
 
         $inventario = new inventario();
         $inventario->id_inventario = $new_cierre_inv->id;
@@ -194,7 +187,7 @@ class inventarioController
                 'db' => 'codigo',  'dt' => 1
             ),
             array(
-                'db' => 'marca',  'dt' =>
+                'db' => 'categoria',  'dt' =>
                 2,
                 'formatter' => function ($d, $row) {
                     return ($d) ?? "<small>(sin especificar)</small>";
@@ -218,7 +211,7 @@ class inventarioController
                 'db' => 'precio_minorista',  'dt' =>
                 5,
                 'formatter' => function ($d, $row) {
-                    return number_format($row['precio_minorista']);
+                    return number_format($d);
                 }
             ),
             array(
@@ -229,8 +222,15 @@ class inventarioController
                 }
             ),
             array(
-                'db' => 'stock_real',  'dt' =>
+                'db' => 'stock_productos_view',  'dt' =>
                 7,
+                'formatter' => function ($d, $row) {
+                    return $d;
+                }
+            ),
+            array(
+                'db' => 'stock_real',  'dt' =>
+                8,
                 'formatter' => function ($d, $row) {
                     if (is_null($row['fecha_cierre'])) {
                         $disabled = '';
@@ -252,7 +252,7 @@ class inventarioController
             ),
             array(
                 'db' => 'fecha_stock_real',  'dt' =>
-                8,
+                9,
                 'formatter' => function ($d, $row) {
                     //fecha de carga del stock
                     if (is_null($row['fecha_stock_real'])) {
@@ -262,14 +262,35 @@ class inventarioController
                     }
                 }
             ),
-            array(
+            array( // PRODUCTOS SOBRANTES, COLUMNA SOBRANTE
                 'db' => 'faltante',  'dt' =>
-                9,
+                10,
                 'formatter' => function ($d, $row) {
                     //CANTIDAD DE PRODUCTOS FALTANTES
-                    if (is_null($row['fecha_cierre'])) {
-
-                        return (is_null($row['faltante'])) ? '' : number_format($row['faltante']);
+                    if (is_null($row['fecha_cierre'])) { // si inventario esta abierto
+                        if (is_null($row['faltante'])){ //si todavia no se cargo el stock real
+                            return '';
+                        }else{ // si el stock ya se cargo
+                            // solo mostrar en esta columna si faltante es negativo
+                            return ($row['faltante'] < 0) ? number_format($row['faltante'] * -1) : '';
+                        }
+                    } else {
+                        return (is_null($row['faltante'])) ? '0' : number_format($row['faltante'] * -1);
+                    }
+                }
+            ),
+            array(
+                'db' => 'faltante',  'dt' =>
+                11,
+                'formatter' => function ($d, $row) {
+                    //CANTIDAD DE PRODUCTOS FALTANTES
+                    if (is_null($row['fecha_cierre'])) { // si inventario esta abierto
+                        if (is_null($row['faltante'])){ //si todavia no se cargo el stock real
+                            return '';
+                        }else{ // si el stock ya se cargo
+                            // solo mostrar en esta columna si faltante es positivo o 0
+                            return ($row['faltante'] >= 0) ? number_format($row['faltante']) : '';
+                        }
                     } else {
                         return (is_null($row['faltante'])) ? '0' : number_format($row['faltante']);
                     }
@@ -277,7 +298,7 @@ class inventarioController
             ),
             array(
                 'db' => 'faltante',  'dt' =>
-                10,
+                12,
                 'formatter' => function ($d, $row) {
 
                     // MONTO DE VENTA DE FALTANTES
@@ -360,16 +381,20 @@ class inventarioController
         $inventario->id = $_REQUEST['id'];
         $inventario->stock_real = $_REQUEST['stock_real'];
 
+        $producto = $this->producto->Obtener($i->id_producto);
+
         if(!($inventario->id > 0) || (!(is_numeric($inventario->stock_real)) && ($inventario->stock_real != '')) ){
             die('Error al guardar los datos.');
         }
         if($inventario->stock_real < 0) $inventario->stock_real = 0;
 
-        if ($inventario->stock_actual < 0) {
+        //calcular faltante con stock que hay en la tabla productos al cargar
+        if ($producto->stock < 0) {
             $inventario->faltante = 0;
         } else {
-            $inventario->faltante = $i->stock_actual - $inventario->stock_real;
+            $inventario->faltante = $producto->stock - $inventario->stock_real;
         }
+        $inventario->stock_tabla_productos = $producto->stock;
         $inventario->fecha_stock_real = date("Y-m-d H:i:s");
         
         //Inserta en el modelo los datos de arriba.

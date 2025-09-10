@@ -1,4 +1,3 @@
- 
 <?php $fecha = date("Y-m-d"); ?>
 <h1 class="page-header">Detalles de Cobros</h1> 
 <div align="center" width="30%"> 
@@ -14,42 +13,63 @@
             <th>Fecha</th>
             <th>Comprobante</th>
             <th>Monto</th>
+            <th>Moneda</th>
+            <th>Cotización</th>
+            <th>Equivalente Gs</th>
         </tr>
     </thead>
     <tbody>
     <?php
      $sumatotal = 0;
-     $id_cliente = $_REQUEST['id_cliente'];
-     foreach($this->model->ListarDeuda($id_cliente) as $r):  ?>
-
-        <?php 
-            $monto = $r->monto;
-            $total = $r->monto * $r->cambio;
-        ?>
+     $id_deuda = $_GET['deuda'];
+     foreach($this->model->ListarDeuda($id_deuda) as $r):  
+         // Calcular equivalente en Gs si no es Gs
+         $equivalente_gs = $r->monto;
+         if ($r->moneda == 'USD' && $r->cambio > 0) {
+             $equivalente_gs = $r->monto * $r->cambio;
+         } elseif ($r->moneda == 'RS' && $r->cambio > 0) {
+             $equivalente_gs = $r->monto * $r->cambio;
+         }
+         $sumatotal += $equivalente_gs;
+     ?>
         <tr>
-            
             <td><?php echo date("d/m/Y", strtotime($r->fecha)); ?></td>
             <td><?php echo $r->comprobante; ?></td>
-            <td><?php echo number_format($monto, 0, "," , "."); echo ('  '.$r->moneda ); 
-                if ($r->cambio != 1) {
-                echo ' ' . $moneda . ' -> ';
-                echo number_format($total, 0, "," , ".") . ' Gs'; // Imprimir el monto convertido a Gs
-                    } ?>
+            <td><?php echo number_format($r->monto, ($r->moneda == 'Gs' ? 0 : 2), "," , "."); ?></td>
+            <td>
+                <?php 
+                    $moneda_display = $r->moneda ?? 'Gs';
+                    echo $moneda_display;
+                ?>
+            </td>
+            <td>
+                <?php 
+                    if ($r->moneda == 'Gs' || $r->moneda == '' || $r->moneda == null) {
+                        echo '-';
+                    } else {
+                        echo number_format($r->cambio ?? 1, 0, ",", ".");
+                    }
+                ?>
+            </td>
+            <td>
+                <?php 
+                    if ($r->moneda == 'Gs' || $r->moneda == '' || $r->moneda == null) {
+                        echo '-';
+                    } else {
+                        echo number_format($equivalente_gs, 0, ",", ".");
+                    }
+                ?>
             </td>
         </tr>
-
-
-    <?php
+    <?php endforeach; ?>
         
-        $sumatotal += $total ;
-        
-        endforeach; ?>
-        
-        
-        <tr>
+        <tr style="background-color: #f0f0f0; font-weight: bold;">
             <td></td>
             <td></td>
-            <td>Total: <div id="total" style="font-size: 20px"><?php echo number_format($sumatotal, 0, ",", ".") ?> Gs</div></td>
+            <td></td>
+            <td></td>
+            <td><strong>Total:</strong></td>
+            <td><strong>Gs <?php echo number_format($sumatotal, 0, ",", ".") ?></strong></td>
         </tr>
     </tbody>
 </table> 

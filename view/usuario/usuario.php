@@ -15,7 +15,7 @@
         </tr>
     </thead>
     <tbody>
-    <?php foreach($this->model->Listar() as $r): ?>
+    <?php foreach($this->model->ListarUsuarios() as $r): ?>
         <?php 
             if($r->nivel==1){
                 $nivel = 'Administrador';

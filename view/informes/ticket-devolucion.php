@@ -158,7 +158,6 @@ class NumeroALetras
 // FIN  PRUEBA 
 
 
-// require_once('plugins/tcpdf/pdf/tcpdf_include.php');
 require_once('plugins/tcpdf2/tcpdf.php');
 $medidas = array(80, 250); // Ajustar aqui segun los milimetros necesarios;
 
@@ -192,7 +191,7 @@ $html1 = <<<EOF
 	<table width ="100%" style="text-align:center; line-height: 15px; font-size:10px">
 	    <p></p>
 		<tr>
-			<td style="vertical-align: middle;"><img src="assets/img/logonegro.png" width="70"></td>
+			<td style="vertical-align: middle;"><img src="assets/img/SCORECARLOGO.png" width="120"></td>
 		</tr>
 	<tr>
 	    <td><b>Ticket N°:</b> $id_venta </td>    

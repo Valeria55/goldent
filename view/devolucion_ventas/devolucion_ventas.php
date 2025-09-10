@@ -28,7 +28,7 @@
             <td><?php echo $r->id_venta; ?></td>
             <td><?php echo $r->vendedor; ?></td>
              <td><?php echo $r->nombre_cli; ?></td>
-            <td><?php echo number_format($r->total,0,",","."); ?></td>
+            <td><?php echo number_format($r->total,0,".",","); ?></td>
             <td><?php echo date("d/m/Y H:i", strtotime($r->fecha_venta)); ?></td>
             <?php if (!isset($_GET['id_venta'])): ?>
             <td>

@@ -83,25 +83,6 @@ class clienteController{
         require_once 'view/cliente/cliente-editar.php';
         
     }
-    public function ConsultaCde(){
-        $persona = new cliente();
-        if(isset($_REQUEST['ruc'])){
-            $persona = $this->model->ConsultaCde($_REQUEST['ruc']);
-        }
-        echo json_encode($persona);
-        
-    }
-    public function BuscarRuc(){
-        $perclientesona = new cliente();
-        $cliente= $this->model->BuscarRuc($_REQUEST['ci']);
-      if ($cliente->ruc == $_REQUEST["ci"]) {
-             echo "true";
-         }
-         if($cliente->ruc != $_REQUEST["ci"]){
-             echo "false";
-         //header('Location: index.php?success=Eliminado&c='.$_REQUEST['c']);
-         }
-     }
 
     public function Buscar(){
         $cliente = new cliente();
@@ -248,14 +229,8 @@ class clienteController{
         
     }
     
-    // public function Eliminar(){
-    //     $this->model->Eliminar($_REQUEST['id']);
-    //     header('Location: index.php?success=Eliminado&c='.$_REQUEST['c']);
-    // }
-
-    public function Anular(){
-        $this->model->Anular($_REQUEST['id']);
-        header('Location:' . getenv('HTTP_REFERER'));
-        // header('Location: index.php?success=Eliminado&c='.$_REQUEST['c']);
+    public function Eliminar(){
+        $this->model->Eliminar($_REQUEST['id']);
+        header('Location: index.php?success=Eliminado&c='.$_REQUEST['c']);
     }
 }

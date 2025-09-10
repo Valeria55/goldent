@@ -1,6 +1,6 @@
 <?php
 
-require_once('plugins/tcpdf2/tcpdf.php');
+require_once('plugins/tcpdf/pdf/tcpdf_include.php');
 
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);

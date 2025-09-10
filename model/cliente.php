@@ -2,6 +2,7 @@
 class cliente
 {
     private $pdo;
+    private $pdo_tienda;
 
     public $id;
     public $ruc;
@@ -37,7 +38,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE anulado IS NULL ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -75,21 +76,7 @@ class cliente
             die($e->getMessage());
         }
     }
-
-    public function ConsultaCde($ruc)
-    {
-        try
-        {
-            $result = array();
-
-            $stm = $this->pdo->prepare("SELECT *, CONCAT(nombre,' ',apellido) AS persona FROM consultacde WHERE cedula=?");
-            $stm->execute(array($ruc));
-
-            return $stm->fetch(PDO::FETCH_OBJ);
-        } catch (Exception $e) {
-            die($e->getMessage());
-        }
-    }
+    
     public function ListarMayorista()
     {
         try
@@ -135,19 +122,6 @@ class cliente
         }
     }
 
-    public function BuscarRuc($ruc)
-    {
-        try
-        {
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE ruc = ?");
-            $stm->execute(array($ruc));
-
-            return $stm->fetch(PDO::FETCH_OBJ);
-        } catch (Exception $e) {
-            die($e->getMessage());
-        }
-    }
-
     public function Obtener($id)
     {
         try
@@ -161,28 +135,34 @@ class cliente
         }
     }
 
+    public function ObtenerTaller($ruc) {
+        try {
+            $pdo_tienda = Database::StartUp_taller();
     
-
-    // public function Eliminar($id)
-    // {
-    //     try
-    //     {
-    //         $stm = $this->pdo
-    //             ->prepare("DELETE FROM clientes WHERE id = ?");
-
-    //         $stm->execute(array($id));
-    //     } catch (Exception $e) {
-    //         die($e->getMessage());
-    //     }
-    // }
-
+            $stm = $pdo_tienda->prepare("SELECT id FROM clientes WHERE ruc = ?");
+            $stm->execute(array($ruc));
     
-    public function Anular($id)
+            $result = $stm->fetch(PDO::FETCH_OBJ);
+            if ($result) {
+                return $result;
+            } else {
+                // Devolver un mensaje personalizado si no se encuentra nada
+                return ['message' => 'No se encontraron coincidencias para el RUC proporcionado.'];
+            }
+    
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        } finally {
+            $pdo_tienda = null;
+        }
+    }    
+
+    public function Eliminar($id)
     {
         try
         {
             $stm = $this->pdo
-                ->prepare("UPDATE clientes SET anulado = 1 WHERE id = ?");
+                ->prepare("DELETE FROM clientes WHERE id = ?");
 
             $stm->execute(array($id));
         } catch (Exception $e) {

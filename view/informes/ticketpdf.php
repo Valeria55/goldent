@@ -158,9 +158,9 @@ class NumeroALetras
 // FIN  PRUEBA 
 
 
-require_once('plugins/tcpdf/pdf/tcpdf_include.php');
-$medidas = array(80, 250); // Ajustar aqui segun los milimetros necesarios;
+require_once('plugins/tcpdf2/tcpdf.php');
 
+$medidas = array(80, 250); // Ajustar aqui segun los milimetros necesarios;
 $pdf = new TCPDF('P', 'mm', $medidas, true, 'UTF-8', false);
 $pdf->SetPrintHeader(false);
 $pdf->SetPrintFooter(false);
@@ -171,11 +171,10 @@ $pdf->SetMargins(7,0,7, true);
 $pdf->SetAutoPageBreak(TRUE, 0);
 
 
-
 $pdf->AddPage();
 
 $id_venta = $_GET['id'];
-foreach($this->model->Listar($id_venta) as $r){
+foreach($this->venta->Listar($id_venta) as $r){
     $cliente = $r->nombre_cli;
     $ruc = $r->ruc;
     $fecha = date("d/m/Y", strtotime($r->fecha_venta));
@@ -191,7 +190,7 @@ $html1 = <<<EOF
 	<table width ="100%" style="text-align:center; line-height: 15px; font-size:10px">
 	    <p></p>
 		<tr>
-			<td style="vertical-align: middle;"><img src="assets/img/logo.png" width="80"></td>
+			<td style="vertical-align: middle;"><img src="assets/img/SCORECARTicket.png" width="100"></td>
 		</tr>
 	<tr>
 	    <td><b>Ticket N°:</b> $id_venta </td>    
@@ -210,12 +209,11 @@ $html1 = <<<EOF
     <table>
 		<tr><td>----------------------------------------------</td></tr>
 	</table>
-    <table width ="100%" style=" text-align:center; line-height: 15px; font-size:7px">
+    <table width ="100%" style=" text-align:center; line-height: 20px; font-size:12px">
     <tr align="center">
-      <td width="10%"><b>Ca.</b></td>
-      <td width="15%"><b>Cod.</b></td>
-      <td width="40%"><b>Prod / UN</b></td>
-      <td width="35%"><b>| Monto</b></td>
+      <td width="40%"><b>Descripción </b></td>
+      <td width="35%"><b>| Importe</b></td>
+      <td width="25%"><b>| Dto.</b></td>
     </tr>
     </table>
     
@@ -225,12 +223,12 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 
 $sumaTotal = 0;
 $items = 0;
-foreach($this->model->Listar($id_venta) as $r){
-$items +=$r->cantidad ;
+foreach($this->venta->Listar($id_venta) as $r){
+$items++;
 
 $subTotal = number_format(($r->precio_venta), 0, "," , ".");
-$venta = ($r->precio_venta*$r->cantidad)-($r->descuento*$r->cantidad);
-$venta =  number_format($venta, 2, "," , ".");
+$venta = ($r->precio_venta*$r->cantidad);
+$venta =  number_format($venta, 0, "," , ".");
 
 if($r->descuentov == 0){
     $descuento = 0;
@@ -238,23 +236,22 @@ if($r->descuentov == 0){
 
 }else{
     $descuento = ($r->precio_venta)-($r->precio_venta*($r->descuento/100)); //precio con descuento
-    $des = ($r->descuento*$r->cantidad);
+    $des = ($r->precio_venta*$r->cantidad)*($r->descuentov/100);
 }
 $descuento = number_format($descuento, 0, "," , ".");
 $total = (($r->precio_venta*$r->cantidad)-($r->precio_venta*$r->cantidad*($r->descuento/100)));
 $total =  number_format($total, 0, "," , ".");
-$precio_venta =  number_format(($r->precio_venta-$r->descuento), 0, "," , ".");
+$precio_venta =  number_format($r->precio_venta, 0, "," , ".");
 $descuentov =  number_format($des, 0, "," , ".");
 
 
 $html1 = <<<EOF
-<br><br>
-		<table width="100%" style="text-align:center; line-height: 8px; font-size:7px">
+
+		<table width="100%" style="text-align:center; line-height: 8px; font-size:8px">
 			<tr nowrap="nowrap">
-		        <td width="10%" >$r->cantidad</td>
-		        <td width="15%" style="text-align:center; font-size:6px">$r->codigo</td>
-				<td width="40%" style="text-align:center; font-size:6px">$r->producto<b> (UN. $precio_venta)</b></td>
-                <td width="35%" >$venta</td>
+				<td width="40%" style="text-align: left; font-size:5px"><b>$r->cantidad -</b> $r->producto <b>($precio_venta C/u)</b></td>
+                <td width="30%" style=""><b>$venta</b></td>
+				<td width="30%" style=""><b>- $descuentov</b></td>
 			</tr>
 			
 	    </table>
@@ -268,60 +265,39 @@ $sumaTotal += ($r->precio_venta*$r->cantidad);
 $sumades += $des;
 
 }
-
-// $sumaTotades =  number_format($sumades, 0, "," , ".");
-// $sumaTotalV =  number_format($sumaTotal, 0, "," , ".");
-// $sumaTotalpago =  number_format($totalventa, 0, "," , ".");
-
-$f=date('Y-m-d');
-$vende=46;
-// $c=$this->cierre->ListarCierreUsuario($f,$vende); VER
-$c = $this->cierre->UltimoUsuario($_SESSION['user_id']);
 $totalventa=$sumaTotal-$sumades;
 $sumaTotades =  number_format($sumades, 0, "," , ".");
-$sumaTotalgs =  number_format($totalventa, 0, "," , ".");
-$sumaTotalV =  number_format($totalventa/$c->cot_dolar_tmp, 2, "," , ".");
-$sumaTotalrs =  number_format($totalventa/$c->cot_real_tmp, 2, "," , ".");
+$sumaTotalV =  number_format($sumaTotal, 0, "," , ".");
+$sumaTotalpago =  number_format($totalventa, 0, "," , ".");
 $html2 = <<<EOF
 
 	<table>
 		<tr><td>----------------------------------------------</td></tr>
 	</table>
-    <table width="100%" style="text-align:center; line-height: 15px; font-size:10px">
 	
-        <tr>
-        <td width="30%"></td>
-        <td width="20%" align="right"style="text-align:center;font-size:8px">GS.</td>
-        <td width="40%" align="right">$sumaTotalgs</td>
-        </tr>
-    </table>
-	
-	<table width="100%" style="text-align:center; line-height: 15px; font-size:10px">
+	<table width="100%" style="text-align:center; line-height: 7px; font-size:8px">
 	
 	    <tr>
 	      <td width="30%">Items:$items</td>
-	      <td width="20%" align="right"style="text-align:center;font-size:8px">USD.</td>
-	      <td width="40%" align="right">$sumaTotalV</td>
+	      <td width="30%" align="right"style="text-align:center;font-size:5px">TOTAL VENTA: Gs.</td>
+	      <td width="40%"><b>$sumaTotalV</b></td>
+	    </tr>
+        <tr>
+        <td width="60%" align="right"style="text-align:center;font-size:5px">TOTAL DESC: Gs.</td>
+        <td width="40%"> <b>- $sumaTotades</b></td>
+	    </tr>
+        <tr>
+        <td width="60%" align="right"style="text-align:center;font-size:5px">TOTAL: Gs.</td>
+        <td width="40%"><b> $sumaTotalpago</b></td>
 	    </tr>
 	</table>
-	<br>
-
-	<br>
-	<table width="100%" style="text-align:center; line-height: 15px; font-size:10px">
-	    <tr>
-	      <td width="30%"></td>
-	      <td width="20%" align="right"style="text-align:center;font-size:8px">RS.</td>
-	      <td width="40%" align="right">$sumaTotalrs</td>
-	    </tr>
-	</table>
-	<br><br>.
+	<br><br><br><br>.
 	
 	
     
 EOF;
 
 $pdf->writeHTML($html2, false, false, false, false, '');
-
 
 
 

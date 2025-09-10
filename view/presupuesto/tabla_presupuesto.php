@@ -1,15 +1,14 @@
-<?php $cierre = $this->cierre->UltimoUsuario($_SESSION['user_id']); ?>
+<?php $cierre = $this->cierre->Consultar($_SESSION['user_id']); ?>
 <table class="table table-striped table-bordered display responsive nowrap" width="100%" id="tabla1">
 
     <thead>
         <tr style="background-color: #000; color:#fff">
             <th>Código</th>
             <th>Producto</th>
-            <th>P/Venta</th>
+            <th>Precio por Unidad</th>
             <th>Cantidad</th>
-            <th>Descuento</th>
-            <th>P/Unidad</th>
-            <th>Total (GS)</th>
+            <th>Descuento (%)</th>
+            <th>Total (Gs.)</th>
             <th></th>
         </tr>
     </thead>
@@ -18,7 +17,7 @@
      $subtotal=0;
      $totalItem=0;
      foreach($this->model->Listar() as $r): 
-        $totalItem = (($r->precio_venta*$r->cantidad)-($r->descuento*$r->cantidad));
+        $totalItem = (($r->precio_venta*$r->cantidad)-(($r->precio_venta*$r->cantidad)*($r->descuento/100)));
         $subtotal += ($totalItem);?>
         <tr>
             <td><?php echo $r->codigo; ?></td>
@@ -26,7 +25,6 @@
             <td><?php echo number_format($r->precio_venta, 0, "," , "."); ?></td>
             <td><?php echo $r->cantidad; ?></td>
             <td><?php echo $r->descuento; ?></td>
-            <td><?php echo number_format($r->precio_venta - $r->descuento, 0, ",", "."); ?></td>
             <td><div id="precioTotal<?php echo $r->id; ?>" class="total_item">
                 <?php echo number_format( $totalItem, 0, "," , "."); ?></div></td>
             <td>
@@ -40,25 +38,22 @@
         <tr>
             <td></td>
             <td></td>
-            <td>Total USD: <div id="totalus" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/USA.png"><?php echo number_format(($subtotal)/$cierre->cot_dolar_tmp, 2, ",", ".") ?></div>
-            </td>
-            <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i></i> <span id="total_gua"><?php echo number_format(($subtotal), 0, ",", ".") ?></span></div>
-            </td>
-            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Brazil.png"></i></i><span id="total_real"> <?php echo number_format(($subtotal / $cierre->cot_real_tmp), 2, ",", ".") ?></span></div>
-            </td>
+            <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i><?php echo number_format($subtotal,0,",",".") ?></div></td>
+            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Brazil.png"></i><?php echo number_format(($subtotal/$cierre->cot_real), 2, "," , ".") ?></div></td>
+            <td>Total Us: <div id="totalus" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/USA.png"></i><?php echo number_format(($subtotal/$cierre->cot_dolar), 2, "," , ".") ?></div></td>
             <td></td>
             <td></td>
         </tr>
     </tbody>
 </table>
- <?php if ($subtotal >= 0) { ?>
-        <div align="center">
-            <a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto">Finalizar(F4)</a>
-            <a class="btn btn-lg btn-danger delete" href="?c=presupuesto_tmp&a=CancelarPresupuesto">Cancelar Todo</a>
-        </div>
-    <?php } ?>
 
-<?php //include("view/presupuesto/finalizar-modal.php"); ?>
+<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto">Finalizar (F4)</a></div>
+
+</div>
+</div>
+</div>
+</div>
+<?php include("view/presupuesto/finalizar-modal.php"); ?>
 <script>
     $('.cancelar').on('click',function(){
       

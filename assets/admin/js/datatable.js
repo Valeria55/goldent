@@ -18,9 +18,9 @@ $(document).ready(function() {
             },
             'colvis'
         ],
-        "stateSave": true,
-        // "scrollY":        '50vh',
-        // "scrollCollapse": true,
+        //"stateSave": true,
+        //"scrollY":        '50vh',
+       // "scrollCollapse": true,
         "paging":         true,
     	responsive: {
         	details: true

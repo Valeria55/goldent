@@ -1,17 +1,20 @@
 <?php
 require_once 'model/dbconfig.php';
-session_start();
-if ($_SESSION["validar"] != "true") {
+if (!isset($_SESSION)) session_start();
 
+
+if ($_SESSION["sistema"] != $_SERVER['HTTP_HOST'] . "/" . explode("/", $_SERVER['REQUEST_URI'])[1] || $_SESSION["validar"] != "true") {
+    session_destroy();
     header("location: login.php");
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <title>AFRODITE PY</title>
+    <title>SCORECAR</title>
 
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -41,22 +44,17 @@ if ($_SESSION["validar"] != "true") {
     <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js" type="text/javascript"></script>
     <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.colVis.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         .page-header {
             margin: 0px 0 20px;
         }
-        .my-class {
-            text-align: center;
-        }
-        .my-class2 {
-            text-align: right;
-        }
-
 
         /* ================================ 
         estilos para sweetalert
         con custom class
-    ================================ */
+        ================================ */
         /* toast en la esquina superior derecha */
         .swal-wide {
             font-size: 15px;

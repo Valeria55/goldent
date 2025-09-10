@@ -1,6 +1,5 @@
 <h1 class="page-header">
-    <?php echo $producto->id != null ? $producto->producto : 'Nuevo Registro';
-    $user = $_SESSION['nivel'] ?>
+    <?php echo $producto->id != null ? $producto->producto : 'Nuevo Registro'; ?>
 </h1>
 
 <ol class="breadcrumb">
@@ -8,41 +7,41 @@
     <li class="active"><?php echo $producto->id != null ? $producto->producto : 'Nuevo Registro'; ?></li>
 </ol>
 
-<form id="crud-frm" method="post" action="?c=producto&a=guardar" enctype="multipart/form-data">
+<form id="frm-producto" method="post" action="?c=producto&a=guardar" enctype="multipart/form-data">
     <input type="hidden" name="c" value="producto" id="c" />
     <input type="hidden" name="id" value="<?php echo $producto->id; ?>" id="id" />
     <input type="hidden" name="stock" value="<?php echo $producto->stock; ?>" id="stock" />
-   
-        <div class="form-group col-md-12">
-            <div class="alert alert-danger alert-dimdissible fade in" role="alert" style="display: none;" id="incorrecta">
-                <strong> Error!</strong> Ya existe el Codigo
-            </div>
-            <label>Código <a href='#' class='btn btn-default' id="autocodigo">Auto código</a></label>
-            <input type="text" name="codigo" id="codigo" value="<?php echo $producto->codigo; ?>" class="form-control" placeholder="Ingrese el codigo" required>
-        </div>
-    
 
+    <div class="row">
+        <div class="form-group col-md-12">
+            <label>Código <a href='#' class='btn btn-default' id="autocodigo" <?php if ($producto->id != null) echo 'disabled'; ?>>Auto código</a></label>
+            <input type="text" name="codigo" id="codigo" value="<?php echo $producto->codigo; ?>" <?php if ($producto->id != null) echo 'readonly'; ?> class="form-control" placeholder="Ingrese el codigo" required>
+        </div>
+    </div>
+    <div class="row">
         <div class="form-group col-md-6">
             <label>Categoría</label>
-            <select name="id_categoria" class="form-control">
+            <select name="id_categoria" class="form-control selectpickerr" data-show-subtext="true" data-live-search="true" data-style="form-control">
                 <?php foreach ($this->categoria->Listar() as $r) : ?>
                     <option value="<?php echo $r->id; ?>" <?php echo ($r->id == $producto->id_categoria) ? "selected" : ""; ?>><?php echo $r->categoria; ?></option>
-
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="form-group col-md-6">
             <label>Marca</label>
-            <select name="marca" class="form-control" data-show-subtext="true" data-live-search="true" data-style="form-control">
+            <select name="marca" class="form-control selectpickerr" data-show-subtext="true" data-live-search="true" data-style="form-control">
                 <?php foreach ($this->marca->Listar() as $r) : ?>
                     <option value="<?php echo $r->id; ?>" <?php echo ($r->id == $producto->marca) ? "selected" : ""; ?>><?php echo $r->marca; ?></option>
-
                 <?php endforeach; ?>
             </select>
         </div>
-  
-
-    
+    </div>
+    <div class="row">
+        <div class="form-group col-md-6">
+            <?php  // if (!isset($_SESSION)) session_start(); 
+            ?>
+            <input type="hidden" name="sucursal" value="<?php echo $_SESSION['sucursal']; ?>">
+        </div>
         <div class="form-group col-md-12">
             <label>Producto</label>
             <input type="text" name="producto" value="<?php echo $producto->producto; ?>" class="form-control" placeholder="Ingrese el producto" list="prod" required>
@@ -52,95 +51,71 @@
                 <?php endforeach; ?>
             </datalist>
         </div>
- 
-        <div class="form-group col-md-12" style="display:none;">
+    </div>
+
+    <div class="row">
+        <div class="form-group col-md-6" style="display:none;">
             <label>Descripción</label>
             <textarea name="descripcion" id="editorr" class="form-control"><?php echo $producto->descripcion; ?></textarea>
         </div>
-
-    <div class="form-group col-md-3" >
-        <label>Stock con factura</label>
-        <input type="number" name="confactura" value="<?php echo $producto->confactura; ?>" class="form-control" placeholder="Ingrese el stock "required>
     </div>
-    <div class="form-group col-md-3" >
-        <label>Stock sin factura</label>
-        <input type="number" name="sinfactura" value="<?php echo $producto->sinfactura; ?>" class="form-control" placeholder="Ingrese el stock "required>
+    <div class="row">
+        <div class="form-group col-md-6">
+            <label>Precio costo</label>
+            <input type="text" name="precio_costo" id="precio_costo" value="<?php echo $producto->precio_costo; ?>" class="form-control" placeholder="Ingrese el precio" required <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label>Precio de venta</label>
+            <input type="number" id="porcentaje_minorista" class="form-control" placeholder="Ingrese el porcentaje" <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))   echo "readonly"; ?>>
+            <input type="number" name="precio_minorista" id="precio_minorista" value="<?php echo $producto->precio_minorista; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
+        </div>
     </div>
-    
-        <div class="form-group col-md-3">
-            <label>Stock</label>
-            <input type="number" name="stock_s1" value="<?php echo $producto->stock_s1; ?>" class="form-control" placeholder="Ingrese el stock " readonly>
-        </div>
-        <div class="form-group col-md-3">
-            <label>Stock minimo</label>
-            <input type="number" name="stock_minimo" value="<?php echo $producto->stock_minimo; ?>" class="form-control" placeholder="Ingrese el stock minimo" >
-        </div>
-        <div class="form-group col-md-5"style="display:none;">
-            <label>Stock Suc. 2 </label>
-            <input type="number" name="stock_s2" value="<?php echo $producto->stock_s2; ?>" class="form-control" placeholder="Ingrese el stock " readonly>
-        </div>
-         <div class="form-group col-md-3">
-            <label>P. Costo</label>
-            <input type="text" name="precio_costo" id="precio_costo" value="<?php echo $producto->precio_costo; ?>" class="form-control" placeholder="Ingrese el precio"  <?php if (($_SESSION['nivel'] != 1)) echo "readonly"; ?>>
-        </div>
-        <div class="form-group col-md-3">
-            <label>P. Minorista</label>
-            <input type="float" name="precio_minorista" id="precio_minorista" value="<?php echo $producto->precio_minorista; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?> >
-        </div>
-        <div class="form-group col-md-3">
-            <label>P. Intermedio</label>
-            <input type="float" name="precio_intermedio" id="precio_intermedio" value="<?php echo $producto->precio_intermedio; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?>>
-        </div>
-   
-        <div class="form-group col-md-3">
-            <label>P. Mayorista</label>
-            <input type="float" name="precio_mayorista" id="precio_mayorista" value="<?php echo $producto->precio_mayorista; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?> >
-        </div>
-        <div class="form-group col-md-3">
-            <label>A partir de</label>
-            <input type="float" name="apartir" id="apartir" value="<?php echo $producto->apartir; ?>" class="form-control" placeholder="Ingrese la cantidad" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?> >
-        </div>
-        <div class="form-group col-md-3">
-            <label>P. Especial</label>
-            <input type="float" name="ultimo_precio" id="ultimo_precio" value="<?php echo $producto->ultimo_precio; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?> >
-        </div>
-        <div class="form-group col-md-3"style="display:none;">
-            <label>Cantidad por fardo</label>
-            <input type="float" name="fardo" id="fardo" value="<?php echo $producto->fardo; ?>" class="form-control" placeholder="Ingrese la cantidad" >
+
+    <div class="row">
+        <div class="form-group col-md-6" style="display:none;">
+            <label>Precio may</label>
+            <input type="number" id="porcentaje_mayorista" class="form-control" placeholder="Ingrese el porcentaje">
+            <input type="number" name="precio_mayorista" id="precio_mayorista" value="<?php echo $producto->precio_mayorista; ?>" class="form-control" placeholder="Ingrese el precio">
         </div>
 
-       
-        <div class="form-group col-md-3">
-            <label>Precio promocional</label>
-            <input type="number" name="precio_promo" id="precio_promo" value="<?php echo $producto->precio_promo; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?>>
-        </div>
-
-        <div class="form-group col-md-3">
-            <label>Promo desde</label>
-            <input type="date" name="desde" id="desde" value="<?php echo $producto->desde; ?>" class="form-control" >
-        </div>
-
-        <div class="form-group col-md-3">
-            <label>Promo hasta</label>
-            <input type="date" name="hasta" id="hasta" value="<?php echo $producto->hasta; ?>" class="form-control" >
-        </div>
-
-        <div class="form-group col-md-4" >
-            <label>Descuento máximo</label>
-            <input type="number" name="descuento_max" value="<?php echo $producto->descuento_max; ?>" class="form-control" placeholder="Ingrese el descuento máximo" <?php if (($_SESSION['nivel'] != 1))  echo "readonly"; ?>>
-        </div>
-        
         <div class="form-group col-md-4">
+            <label>Precio promocional</label>
+            <input type="number" name="precio_promo" id="precio_promo" value="<?php echo $producto->precio_promo; ?>" class="form-control" placeholder="Ingrese el precio">
+        </div>
+        <div class="form-group col-md-4">
+            <label>Promo desde</label>
+            <input type="date" name="desde" id="desde" value="<?php echo $producto->desde; ?>" class="form-control">
+        </div>
+
+        <div class="form-group col-md-4">
+            <label>Promo hasta</label>
+            <input type="date" name="hasta" id="hasta" value="<?php echo $producto->hasta; ?>" class="form-control">
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="form-group col-md-6">
+            <label>Stock </label>
+            <input type="number" name="stock" value="<?php echo $producto->stock; ?>" <?php if ($producto->id != null) echo 'readonly'; ?> class="form-control" placeholder="Ingrese el stock " readonly <?php //if (($_SESSION['nivel'] == 1) && ($producto->id != null))   echo "readonly"; ?>>
+        </div>
+
+        <div class="form-group col-md-6">
             <label>IVA</label>
             <select name="iva" class="form-control">
                 <option value="10" <?php echo ($producto->iva == '10') ? "selected" : ""; ?>>10%</option>
-                <option value="0" <?php echo ($producto->iva == '0') ? "selected" : ""; ?>>0%</option>
                 <option value="5" <?php echo ($producto->iva == '5') ? "selected" : ""; ?>>5%</option>
             </select>
-         </div>
- 
+        </div>
 
- 
+    </div>
+
+    <div class="row">
+        <div class="form-group col-md-6" style="display:none;">
+            <label>Descuento máximo</label>
+            <input type="number" name="descuento_max" value="<?php echo $producto->descuento_max; ?>" class="form-control" placeholder="Ingrese el descuento máximo">
+        </div>
         <div class="form-group col-md-12" style="display:none;">
             <label>Importado</label>
             <select name="importado" class="form-control">
@@ -149,8 +124,7 @@
             </select>
         </div>
 
-
-
+    </div>
 
     <input type="hidden" name="imagen[]" class="form-control" multiple>
 
@@ -172,41 +146,51 @@
 </script>
 
 <script type="text/javascript">
-    $('#codigo').change(function() {
-
-        event.preventDefault();
-        var codigo = $("#codigo").val();
-
-        var url = "?c=producto&a=BuscarCodigo&codigo=" + codigo;
-        console.log(url);
-        $.ajax({
-            url: url,
-            method: "POST",
-            data: id,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(respuesta) {
-                var correcta = respuesta;
-                //alert(correcta);
-
-
-                if (correcta == "true") {
-                    $("#incorrecta").show();
-                } else {
-                    $("#incorrecta").hide();
-                }
+     $("#frm-producto").submit(function(e) {
+       var precio_costo = $("#precio_costo").val();
+        var precio_minorista = $("#precio_minorista").val();
+        var precio_mayorista = $("#precio_mayorista").val();
 
 
 
+        if ((precio_costo * 1.05) >= precio_minorista) {
+            e.preventDefault();
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-right',
+                iconColor: 'red',
 
-                // alert(respuesta);
+                customClass: 'swal-wide',
+                showConfirmButton: false,
+                timer: 6000,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'error',
+                title: `La ganancia no puede ser menor al 5%`
+            });
+            $("#precio_minorista").select();
+        }
+        // if ((precio_costo * 1.05) >= precio_mayorista) {
+        //     e.preventDefault();
+        //     const Toast = Swal.mixin({
+        //         toast: true,
+        //         position: 'top-right',
+        //         iconColor: 'red',
 
-            }
+        //         customClass: 'swal-wide',
+        //         showConfirmButton: false,
+        //         timer: 6000,
+        //         timerProgressBar: true
+        //     });
+        //     Toast.fire({
+        //         icon: 'error',
+        //         title: `La ganancia no puede ser menor al 5%`
+        //     });
+        //     $("#precio_mayorista").select();
+        // }
 
-        })
     });
-
     $("#porcentaje_minorista").keyup(function() {
 
         var costo = parseInt($("#precio_costo").val());

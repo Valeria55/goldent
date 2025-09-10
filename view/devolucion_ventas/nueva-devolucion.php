@@ -6,29 +6,27 @@
 <div class="container">
     <div class="row" >
         <form method="post">
-                <input type="hidden" id="id_venta" name="id_venta" value="<?php echo $id_venta ?>">
-                <input type="hidden" name="c" value="devolucion_tmpventas">
-                <input type="hidden" name="a" value="guardar">
-                <div class="col-sm-3">
-                <label>Producto</label>
-                <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
-                            title="-- Seleccione el producto --" autofocus>
-                        <?php foreach($this->producto->ListarVentaProducto($id_venta) as $producto): ?> 
-                            <?php if ($producto->cantidad_restante > 0): ?>
-                                <option style="font-size: 18px" data-subtext="<?php echo $producto->id; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' ( '.$producto->stock_s1.' ) - '.number_format($producto->precio_minorista,0,".","."); ?> </option>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                </select>
-            </div>
+            <input type="hidden" id="id_venta" name="id_venta" value="<?php echo $id_venta ?>">
+            <input type="hidden" name="c" value="devolucion_tmpventas">
+            <input type="hidden" name="a" value="guardar">
+            <div class="col-sm-3">
+            <label>Producto</label>
+            <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
+                    title="-- Seleccione el producto --" autofocus>
+                <?php foreach($this->producto->ListarVentaProducto($id_venta) as $producto): ?> 
+                <option style="font-size: 18px" data-subtext="<?php echo $producto->id; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' ( '.$producto->cantidad.' ) - '.number_format($producto->precio_venta,0,".","."); ?> </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
             <div class="col-sm-3">
                 <label>Cantidad</label>
                 <input type="number" name="cantidad" class="form-control" id="cantidad" value="1" step="any" min="0" max="">   
             </div>
              <div class="col-sm-3">
                 <label>Precio</label>
-               <input type="float" name="precio_venta" class="form-control" id="precio_venta" value="">   
+               <input type="number" name="precio_venta" class="form-control" id="precio_venta" value="">   
             </div>
-            <div class="col-sm-3" style="display: none">
+            <div class="col-sm-3">
                 <label>Descuento (%)</label>
                 <input type="number" name="descuento" class="form-control" id="descuento" value="0">
                 <input type="submit" name="bton" style="display: none">   
@@ -46,7 +44,7 @@
             <th>Producto</th>
             <th>Precio por Unidad</th>
             <th>Cantidad</th>
-            <th>Descuento (%) <?php echo $cierre->cot_real ;?></th>
+            <th>Descuento (%)</th>
             <th>Total (Gs.)</th>
             <th></th>
         </tr>
@@ -55,7 +53,7 @@
     <?php
      $subtotal=0;
      foreach($this->model->Listar() as $r): 
-        $totalItem = ($r->precio_venta*$r->cantidad);
+        $totalItem = ($r->precio_venta*$r->cantidad)-(($r->precio_venta*$r->cantidad)*($r->descuento/100));
         $subtotal += ($totalItem);?>
         <tr>
             
@@ -75,9 +73,9 @@
         
         <tr>
             <td></td>
-               <td>Total Usd: <div id="totalus" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/USA.png"><?php echo number_format($subtotal/$cierre->cot_dolar,2,",",".") ?></div></td>
-            <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i></i> <span id="total_gua"><?php echo number_format(($subtotal), 0, "," , ".") ?></div></td>
-            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Brazil.png"></i></i><span id="total_real"><?php echo number_format(($subtotal/$cierre->cot_real), 2, "," , ".") ?></div></td>   
+            <td>Total Gs: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
+            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><?php echo number_format(($subtotal/$cierre->cot_real), 2, "," , ".") ?></div></td>
+            <td>Total Us: <div id="totalus" style="font-size: 30px"><?php echo number_format(($subtotal/$cierre->cot_dolar), 2, "," , ".") ?></div></td>
             <td></td>
             <td></td>
         </tr>
@@ -99,7 +97,7 @@
         var id_producto = $(this).val();
         var id_venta = $("#id_venta").val();
         //alert(id_producto);
-        var url = "?c=venta&a=ObtenerCantMaxima&id_venta="+id_venta+"&id_producto="+id_producto;
+        var url = "?c=venta&a=ObtenerProducto&id_venta="+id_venta+"&id_producto="+id_producto;
             $.ajax({
 
                 url: url,
@@ -110,11 +108,10 @@
                 processData: false,
                 success:function(respuesta){
                     var producto = JSON.parse(respuesta);
-                    console.log(producto);
                     $("#precio_venta").val(producto.precio_venta);
                     $("#precio_venta").html(producto.precio_venta);
-                    // $("#descuento").attr("max",producto.descuento);
-                    $("#cantidad").attr("max",producto.cantidad_maxima);
+                    //$("#descuento").attr("max",producto.descuento);
+                    $("#cantidad").attr("max",producto.cantidad);
                     //alert(producto.cantidad);
                     $("#cantidad").focus();
                 }

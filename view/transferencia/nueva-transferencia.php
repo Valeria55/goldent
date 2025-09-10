@@ -1,10 +1,10 @@
  
 <?php $fecha = date("Y-m-d"); 
 $transferencia= new transferencia(); ?>
-<h1 class="page-header">Agregar transferencias </h1>
+<h1 class="page-header">Agregar transferencias</h1>
 <div class="container">
     <div class="row">
-        <form id="crud-frm" method="post" action="?c=transferencia&a=guardarVarios" enctype="multipart/form-data">
+        <form id="crud-frm" method="post" action="?c=transferencia_tmp&a=guardar" enctype="multipart/form-data">
             
 
             <input type="hidden" name="c" value="transferencia" id="c"/>
@@ -121,14 +121,14 @@ $transferencia= new transferencia(); ?>
 <?php include("view/venta/finalizar-modal.php"); ?>
 
 <script type="text/javascript">
-    $('#tipo').on('change',function(){
-        var tipo = $(this).val();
-        alert(tipo);
-        if(tipo=='solicitud'){
-            window.location="https://trinitytech.com.py/sionsys/index.php?c=transferencia&a=varios&tipo=solicitud";
-        }else{
-            window.location="https://trinitytech.com.py/sionsys/index.php?c=transferencia&a=varios&tipo=transferencia";
-        }
-    });
+    // $('#tipo').on('change',function(){
+    //     var tipo = $(this).val();
+    //     alert(tipo);
+    //     if(tipo=='solicitud'){
+    //         window.location="https://trinitytech.com.py/sionsys/index.php?c=transferencia&a=varios&tipo=solicitud";
+    //     }else{
+    //         window.location="https://trinitytech.com.py/sionsys/index.php?c=transferencia&a=varios&tipo=transferencia";
+    //     }
+    // });
     
 </script>

@@ -15,16 +15,31 @@
         })">Exportar a PDF</a>
 
 <br><br>
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="center col-md-4 offset-md-1">
+        <div class="form-group">
+            <select style="width: 100%;" class="form-control form-control-lg selectpickerr" onchange="filtrarTabla()" data-show-subtext="true" data-live-search="true" name="filtrar_inventario" id="filtrar_inventario">
+                <option value="0">Sin Filtrar</option>
+                <option value="3">Productos sobrantes</option>
+                <option value="4">Productos faltantes</option>
+                <option value="5">Productos con stock correcto</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</div>
 <table class="table table-striped table-bordered display nowrap responsive" width="100%" id="tabla">
 
     <thead>
         <tr style="background-color: black; color:#fff">
             <th>Codigo</th>
-            <th>Marca</th>
+            <th>Categoria</th>
             <th>Producto</th>
             <th>Costo</th>
             <th>Venta</th>
-            <th>Stock Actual</th>
+            <th>Stock Al Iniciar</th>
+            <th>Stock Al Cargar</th>
             <th>Inventario </th>
             <th>Diferencia</th>
             <th>Monto Falt.</th>
@@ -36,11 +51,12 @@
     <tfoot>
         <tr style="background-color: black; color:#fff">
             <th>Codigo</th>
-            <th>Marca</th>
+            <th>Categoria</th>
             <th>Producto</th>
             <th>Costo</th>
             <th>Venta</th>
-            <th>Stock Actual</th>
+            <th>Stock Al Iniciar</th>
+            <th>Stock Al Cargar</th>
             <th>Inventario </th>
             <th>Diferencia</th>
             <th>Monto Falt.</th>
@@ -54,7 +70,24 @@
 </div>
 </div>
 <script type="text/javascript">
+    function filtrarTabla() {
+        let filtro = $("#filtrar_inventario").val();
+        let descripcion_filtro = $("#filtrar_inventario option:selected" ).text();
+        cargarTabla(filtro, descripcion_filtro);
+    }
+    var tabla;
     $(document).ready(function() {
+        var filtro = '0';
+        cargarTabla(filtro, 'Sin Filtrar');
+    });
+
+    function cargarTabla(filtro, descripcion_filtro_func) {
+        $('#tabla').DataTable().destroy(); //linea necesaria para evitar el error de reinicializacion (cannot reinitialize datatable)
+        let url = "?c=inventario&a=ListarInventario&id_c=<?php echo ($_REQUEST['id_c']) ?>&q=" + filtro;
+
+        // console.log(descripcion_filtro_func);
+        // console.log(url);
+
         var suma_faltante = 0;
         var suma_sobrante = 0;
         // DataTable
@@ -63,13 +96,16 @@
             "dom": 'Bfrtip',
             "buttons": [{
                 extend: 'excelHtml5',
+                title: "Inventario Nro. <?php echo ($_REQUEST['id_c']);?>",
+                messageTop: "Filtrado por: " + descripcion_filtro_func,
                 exportOptions: {
                     columns: [0,1,2,3,4,5,6,7,8,9]
                 }
             }, {
                 extend: 'pdfHtml5',
                 footer: true,
-                title: "Inventario",
+                title: "Inventario Nro. <?php echo ($_REQUEST['id_c']);?>",
+                messageTop: "Filtrado por: " + descripcion_filtro_func,
                 orientation: 'landscape',
                 pageSize: 'LEGAL',
                 exportOptions: {
@@ -85,7 +121,7 @@
             },
 
             "ajax": {
-                "url": "?c=inventario&a=ListarInventario&id_c=<?php echo ($_REQUEST['id_c']) ?>",
+                "url": url,
                 "dataSrc": ""
             },
 
@@ -93,30 +129,34 @@
                     "data": "codigo"
                 },
                 {
-                    "data": "marca"
+                    "data": "categoria_hijo"
                 },
                 {
                     "data": "producto"
                 },
                 {
                     "data": "costo",
-                    render: $.fn.dataTable.render.number(',', ',', 0)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
                 {
                     "data": "venta",
-                    render: $.fn.dataTable.render.number(',', ',', 0)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
                 {
                     "data": "stock_actual",
-                    render: $.fn.dataTable.render.number(',', ',', 0)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
+                },
+                {
+                    "data": "stock_productos_view",
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
                 {
                     "data": "inventario",
-                    render: $.fn.dataTable.render.number(',', ',', 0)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
                 {
                     "data": "faltante",
-                    render: $.fn.dataTable.render.number(',', ',', 0)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
 
                 {
@@ -133,9 +173,9 @@
                     "data": "monto",
                     render: function(data, type, row) {
                         let monto_sobrante = (row.faltante * row.venta);
-                        if (row.faltante < 0) suma_sobrante += monto_sobrante;
+                        if (row.faltante < 0) suma_sobrante += (monto_sobrante*-1);
                         //cuadno sobran mercaderias,row.faltante es negativo
-                        return (row.faltante < 0) ? (monto_sobrante.toLocaleString("en-US")) : '';
+                        return (row.faltante < 0) ? ((monto_sobrante*-1).toLocaleString("en-US")) : '';
                     }
                 }
 
@@ -191,68 +231,16 @@
                     }) :
                     0;
 
-
-
-                // computing column Total of the complete result 
-
-                // var mont_falt = api
-                //     .column(8)
-                //     .data()
-                //     .reduce(function(a, b) {
-                //         return intVal(a) + intVal(b);
-                //     }, 0);
-
-                // var mont_sobr = api
-                //     .column(9)
-                //     .data()
-                //     .reduce(function(a, b) {
-                //         return intVal(a) + intVal(b);
-                //     }, 0);
-
-                $(api.column(8).footer()).html(total.toLocaleString('es-ES'));
-                $(api.column(9).footer()).html(total_2.toLocaleString('es-ES'));
-                // Update footer by showing the total with the reference of the column index 
-                // $(api.column(8).footer()).html(suma_faltante.toLocaleString('en-US'));
-                // $(api.column(9).footer()).html(suma_sobrante.toLocaleString('en-US'));
+                $(api.column(8).footer()).html(total.toLocaleString('en-US'));
+                $(api.column(9).footer()).html(total_2.toLocaleString('en-US'));
             },
-            // drawCallback: function() {
-            //     var api = this.api(),
-            //         data;
-
-            //     // converting to interger to find total
-            //     var intVal = function(i) {
-            //         return typeof i === 'string' ?
-            //             i.replace(/[\$,]/g, '') * 1 :
-            //             typeof i === 'number' ?
-            //             i : 0;
-            //     };
-
-            //     // computing column Total of the complete result 
-            //     var monTotal = api
-            //         .column(1)
-            //         .data()
-            //         .reduce(function(a, b) {
-            //             return intVal(a) + intVal(b);
-            //         }, 0);
-
-            //     var api = this.api();
-            //     var sum = 0;
-            //     var formated = 0;
-            //     //to show first th
-            //     $(api.column(0).footer()).html('Total');
-
-            //     for (var i = 8; i <= 9; i++) {
-            //         sum = api.column(i).data().sum();
-
-            //         //to format this sum
-            //         formated = parseFloat(sum).toLocaleString(undefined, {
-            //             minimumFractionDigits: 0
-            //         });
-            //         $(api.column(i).footer()).html('Gs.' + formated);
-            //     }
-
-            // }
 
         });
+    }
+
+
+
+    $(document).ready(function() {
+        
     });
 </script>

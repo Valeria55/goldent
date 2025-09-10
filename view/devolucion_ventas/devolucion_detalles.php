@@ -15,7 +15,7 @@
             <th>Costo</th>
             <th>Cant</th>
             <th>Motivo</th>
-            <th>Total (GS)</th>
+            <th>Total (Gs.)</th>
         </tr>
     </thead>
     <tbody>
@@ -42,7 +42,7 @@
             <td></td>
             <td></td>
             <td></td>
-            <td>Total GS: <div id="total" style="font-size: 20px"><?php echo number_format($sumatotal,0,",",".") ?></div></td>
+            <td>Total Gs: <div id="total" style="font-size: 20px"><?php echo number_format($sumatotal,0,",",".") ?></div></td>
         </tr>
     </tbody>
 </table> 

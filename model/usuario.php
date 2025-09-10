@@ -38,6 +38,27 @@ class usuario
 		}
 	}
 	
+	public function ListarUsuarios() //lista todos menos el usuario Trinity
+	{
+		try
+		{
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT *, u.id, s.sucursal 
+											FROM usuario u 
+											LEFT JOIN sucursales s 
+												ON u.sucursal = s.id
+											WHERE u.id <> 6  
+											ORDER BY u.id DESC");
+			$stm->execute();
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		}
+		catch(Exception $e)
+		{
+			die($e->getMessage());
+		}
+	}
 
 	public function Obtener($id)
 	{

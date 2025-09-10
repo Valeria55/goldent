@@ -9,11 +9,13 @@ require_once 'model/cliente.php';
 require_once 'model/cierre.php';
 require_once 'model/metodo.php';
 
-class acreedorController{
-    
+class acreedorController
+{
+
     private $model;
-    
-    public function __CONSTRUCT(){
+
+    public function __CONSTRUCT()
+    {
         $this->model = new acreedor();
         $this->compra_tmp = new compra_tmp();
         $this->producto = new producto();
@@ -25,148 +27,173 @@ class acreedorController{
         $this->cierre = new cierre();
         $this->metodo = new metodo();
     }
-    
-    public function Index(){
+
+    public function Index()
+    {
         require_once 'view/header.php';
         require_once 'view/acreedor/acreedor.php';
         require_once 'view/footer.php';
-       
     }
 
 
 
-    public function Listar(){
+    public function Listar()
+    {
         require_once 'view/acreedor/acreedor.php';
     }
 
-    public function Pagado(){
-        require_once 'view/header.php';
-        require_once 'view/acreedor/pagado.php';
-        require_once 'view/footer.php';
-    }
-    
-    public function Crud(){
+
+
+    public function Crud()
+    {
         $acreedor = new acreedor();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $acreedor = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         require_once 'view/header.php';
         require_once 'view/acreedor/acreedor-editar.php';
         require_once 'view/footer.php';
     }
-    
-    public function Obtener(){
+
+    public function Obtener()
+    {
         $acreedor = new acreedor();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $acreedor = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         require_once 'view/acreedor/acreedor-editar.php';
-        
     }
 
-    public function clientepdf(){
+    public function clientepdf()
+    {
         $acreedor = new acreedor();
 
         require_once 'view/informes/extractoproveedorpdf.php';
-        
     }
 
-    public function PagarModal(){
+    public function PagarModal()
+    {
         $acreedor = new acreedor();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $r = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
+        // Obtener cotizaciones del cierre actual
+        if (!isset($_SESSION)) session_start();
+        $cierre_actual = $this->cierre->Consultar($_SESSION['user_id']);
+        $cotizacion_usd = $cierre_actual->cot_dolar ?? 7500; // Valor por defecto si no hay cierre
+        $cotizacion_rs = $cierre_actual->cot_real ?? 1500; //
+
         require_once 'view/acreedor/pagar-form.php';
-        
     }
-    
-    public function Guardar(){
+
+    public function Guardar()
+    {
         $acreedor = new acreedor();
 
-        session_start();
-        
+        if (!isset($_SESSION)) session_start();
+
         $acreedor->id = $_REQUEST['id'];
         $acreedor->id_cliente = $_REQUEST['id_cliente'];
         $acreedor->id_compra = $_REQUEST['id_compra'];
         $acreedor->fecha = $_REQUEST['fecha'];
         $acreedor->concepto = $_REQUEST['concepto'];
         $acreedor->monto = $_REQUEST['monto'];
-        $acreedor->saldo = $_REQUEST['saldo'];  
-        $acreedor->sucursal = $_SESSION['sucursal'];      
-        $acreedor->moneda = 'GS';      
-        $acreedor->cambio = 1;      
+        $acreedor->saldo = $_REQUEST['saldo'];
+        $acreedor->sucursal = $_SESSION['sucursal'];
 
-        $acreedor->id > 0 
+        $acreedor->id > 0
             ? $this->model->Actualizar($acreedor)
             : $this->model->Registrar($acreedor);
-        
+
         header('Location: index.php?c=acreedor');
     }
-    
-    public function Pagar(){
-        
-        session_start();
-        $egreso = new egreso();
-        
-        $egreso->id_cliente  = $_REQUEST['id_cliente'];
-        $cierre = $this->cierre->Consultar($_SESSION['user_id']);
 
-        if($_REQUEST['forma_pago']=="Efectivo"){
-            $egreso->id_caja = 1;
-        }else{
-            $egreso->id_caja = 2;
+    public function Pagar()
+    {
+        if (!isset($_SESSION)) session_start();
+        $egreso = new egreso();
+
+        $egreso->id_cliente = $_REQUEST['id_cliente'];
+
+        if ($_REQUEST['forma_pago'] == "Efectivo") {
+            if ($_SESSION['nivel'] == 4) { // es gerente, ir a tesoreria
+                $egreso->id_caja = 3;    //tesoreria
+            } else {
+                $egreso->id_caja = 1; //caja chica
+            }
+        } else {
+            $egreso->id_caja = 2; // banco
         }
-        
-        $egreso->id_compra  = $_REQUEST['id_compra'];
-        $egreso->id_acreedor  = $_REQUEST['id'];
-        $egreso->forma_pago  = $_REQUEST['forma_pago'];
+
+        $egreso->id_compra = $_REQUEST['id_compra'];
+        $egreso->id_acreedor = $_REQUEST['id'];
+        $egreso->forma_pago = $_REQUEST['forma_pago'];
         $egreso->fecha = date("Y-m-d H:i");
         $egreso->categoria = 'Pago';
-        $egreso->concepto = "Pago a proveedor ".$_REQUEST['cli'];
-        $egreso->comprobante  = $_REQUEST['comprobante'];
-        $egreso->monto  = $_REQUEST['mon'];
-        $egreso->sucursal = $_SESSION['sucursal'];
-        $egreso->moneda = $_REQUEST['moneda'];
-        $egreso->moneda = $_REQUEST['moneda'];
-        $egreso->id_usuario = $_SESSION['user_id'];
-        $egreso->tipo_egreso = 'COMPRA';
-        
-         if($egreso->moneda=='GS'){
-             $egreso->cambio = 1;
-        }else{
-             $egreso->cambio = $_REQUEST['cambio'];
+        $egreso->concepto = "Pago a proveedor " . $_REQUEST['cli'];
+        $egreso->comprobante = $_REQUEST['comprobante'];
+
+        // Obtener cotizaciones del cierre actual
+        $cierre_actual = $this->cierre->Consultar($_SESSION['user_id']);
+        $cot_dolar = $cierre_actual ? $cierre_actual->cot_dolar : 7500;
+        $cot_real = $cierre_actual ? $cierre_actual->cot_real : 1500;
+
+        // Manejar monedas y montos
+        $moneda = $_REQUEST['moneda'] ?? 'Gs';
+        $montoOriginal = floatval($_REQUEST['mon']);
+
+        // El monto del egreso se guarda en la moneda original
+        $egreso->monto = $montoOriginal;
+        $egreso->moneda = $moneda;
+
+        // Calcular el monto en guaraníes para descontar de la deuda
+        $montoGs = $montoOriginal;
+        if ($moneda === 'USD') {
+            $montoGs = $montoOriginal * $cot_dolar;
+            $egreso->cambio = $cot_dolar;
+        } elseif ($moneda === 'RS') {
+            $montoGs = $montoOriginal * $cot_real;
+            $egreso->cambio = $cot_real;
+        } else {
+            // Para guaraníes
+            $egreso->cambio = 1;
         }
+
+        $egreso->sucursal = $_SESSION['sucursal'];
 
         $acreedor = new acreedor();
         $acreedor->id = $_REQUEST['id'];
-        
-         //PARA OBTENER PAGOS EN OTRAS MONEDAS NECESITAMOS SABER EN QUE MONEDA ESTA LA DEUDA 
-        $moneda=$this->model->Obtener($acreedor->id);
+        $acreedor->monto = $montoGs; // Descontar en guaraníes de la deuda
 
-         if($moneda->moneda == $_REQUEST['moneda'] ){
-		        $monto_pago= $_REQUEST['mon'];
-		        $acreedor->monto = round($monto_pago, 2);
-		    }else{
-		       $monto_pago = $_REQUEST['mon']*$_REQUEST['cambio'];
-		       $acreedor->monto= round($monto_pago, 2);
-		    }
-        $acreedor->monto = $_REQUEST['mon'];
-        $acreedor->moneda = $_REQUEST['moneda'];
-        $acreedor->cambio = $_REQUEST['cambio'];
-        
+        // Debug para verificar los valores
+        error_log("Moneda: " . $moneda);
+        error_log("Monto original: " . $montoOriginal);
+        error_log("Monto en GS: " . $montoGs);
+        error_log("Cotización USD: " . $cot_dolar);
+        error_log("Cotización RS: " . $cot_real);
+
         $this->egreso->Registrar($egreso);
         $this->model->Restar($acreedor);
-       header('Location:' . getenv('HTTP_REFERER'));
-        
+
+        header('Location: index.php?c=acreedor');
     }
-    
-    public function Eliminar(){
+
+    public function PagosModal()
+    {
+        if (isset($_REQUEST['id'])) {
+            $id_acreedor = $_REQUEST['id'];
+            require_once 'view/acreedor/pago_detalles.php';
+        }
+    }
+
+    public function Eliminar()
+    {
         $this->model->Eliminar($_REQUEST['id']);
         header('Location: index.php?c=acreedor');
     }

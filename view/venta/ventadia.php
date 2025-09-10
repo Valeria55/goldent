@@ -1,6 +1,6 @@
 <h1 class="page-header">Ventas del <?php echo date("d/m/Y"); ?> &nbsp;
 <?php if($_SESSION['nivel']<=1){ ?>
-<a class="btn btn-success" href="index.php?c=venta&a=cierre&fecha=<?php echo date("Y-m-d"); ?>" style="display: none">Informe del día</a></h1>
+<a class="btn btn-success" href="index.php?c=venta&a=cierre&fecha=<?php echo date("Y-m-d"); ?>">Informe del día</a></h1>
 <!--<a class="btn btn-success" href="index.php?c=venta&a=cierremes&desde=<?php //echo date("Y-m-d"); ?>&hasta=<?php //echo date("Y-m-d"); ?>">Informe del Mes</a>-->
 <?php } ?>
 </h1>
@@ -16,9 +16,11 @@
             <?php endif ?>
             <th>Cliente</th>
             <th>Sub tot. (Gs.)</th>
-            <th>Desc.</th>
+            <th>Desc. (%)</th>
             <th>Total (Gs.)</th>
+            <?php if ($_SESSION['nivel'] == 1) { ?>
             <th>Ganan. (%)</th>
+            <?php } ?>
             <th>Hora</th>
             <?php if (!isset($_GET['id_venta'])): ?>        
             <th></th>
@@ -34,10 +36,12 @@
             <td><?php echo $r->producto; ?></td>    
             <?php endif ?>
             <td><?php echo $r->nombre_cli; ?></td>
-            <td><?php echo number_format($r->subtotal,0,",","."); ?></td>
+            <td><?php echo number_format($r->subtotal,0,".",","); ?></td>
             <td><?php echo $r->descuento; ?></td>
-            <td><?php echo number_format($r->total,0,",","."); ?></td>
-            <td><?php // echo round($r->margen_ganancia,2); ?></td>
+            <td><?php echo number_format($r->total,0,".",","); ?></td>
+            <?php if ($_SESSION['nivel'] == 1) { ?>
+            <td><?php echo round($r->margen_ganancia,2); ?></td>
+            <?php } ?>
             <td><?php echo date("H:i", strtotime($r->fecha_venta)); ?></td>
             <?php if (!isset($_GET['id_venta'])): ?>
             <td>

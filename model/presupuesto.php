@@ -2,148 +2,171 @@
 class presupuesto
 {
 	private $pdo;
-    
-    public $id;
-    public $id_presupuesto;
-    public $id_cliente;
-    public $id_vendedor;
-    public $id_producto;
-    public $precio_venta;
-    public $cantidad;
-    public $fecha_presupuesto; 
-    public $anulado;
+
+	public $id;
+	public $id_presupuesto;
+	public $id_cliente;
+	public $id_vendedor;
+	public $id_producto;
+	public $precio_venta;
+	public $cantidad;
+	public $fecha_presupuesto;
+	public $anulado;
 	public $descuento;
 	public $estado;
-    
+	public $aprobado;
+
 	public function __CONSTRUCT()
 	{
-		try
-		{
-			$this->pdo = Database::StartUp();     
-		}
-		catch(Exception $e)
-		{
+		try {
+			$this->pdo = Database::StartUp();
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Listar()
 	{
-		try
-		{ session_start();
-			$userId= $_SESSION['user_id'];
-			if(($_SESSION['nivel']<3)){
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
 				$vendedor = "";
-            }else{
+			} else {
 				$vendedor = "AND v.id_vendedor = '$userId'";
-                
-            }
-			//$rango = $desde != '' ? "AND v.fecha_presupuesto = '$desde'":"";
+			}
+
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, v.anulado AS anulado,  SUM((v.cantidad*v.precio_venta)-(v.cantidad*v.descuento))AS total
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
 			FROM presupuestos v 
 			LEFT JOIN productos p ON v.id_producto = p.id
 			LEFT JOIN usuario u ON v.id_vendedor = u.id
 			LEFT JOIN clientes c ON v.id_cliente = c.id
-			WHERE 1=1 $vendedor AND v.anulado=0  GROUP BY v.id_presupuesto ORDER BY v.id DESC");
+			WHERE 1=1 $vendedor GROUP BY v.id_presupuesto ORDER BY v.fecha_presupuesto DESC");
 			$stm->execute(array());
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	public function ListarPresupuestoDesde($desde)
+		public function ListarFiltros($desde, $hasta)
 	{
-		try
-		{ session_start();
-			$userId= $_SESSION['user_id'];
-			 if ($_SESSION['nivel']==1 || $_SESSION['nivel']==2 || $_SESSION['nivel']==4 ) { 
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
 				$vendedor = "";
-            }else{
+			} else {
 				$vendedor = "AND v.id_vendedor = '$userId'";
-                
-            }
-			$rango = $desde != '' ? "AND CAST(v.fecha_presupuesto AS date)>= '$desde'":"AND DATE(fecha_presupuesto) = CURRENT_DATE()";
+			}
+			$mes=date('m');
+			$rango=$desde==!''?"AND CAST(fecha_presupuesto AS date)>='$desde' AND CAST(fecha_presupuesto AS date)<='$hasta' ":"AND MONTH(fecha_presupuesto)='$mes'";
+
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, v.anulado AS anulado,  SUM((v.cantidad*v.precio_venta)-(v.cantidad*v.descuento))AS total
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
 			FROM presupuestos v 
 			LEFT JOIN productos p ON v.id_producto = p.id
 			LEFT JOIN usuario u ON v.id_vendedor = u.id
 			LEFT JOIN clientes c ON v.id_cliente = c.id
-			WHERE 1=1 $vendedor $rango AND v.anulado=0  GROUP BY v.id_presupuesto ORDER BY v.id DESC");
+			WHERE 1=1 $vendedor $rango GROUP BY v.id_presupuesto ORDER BY v.id DESC");
 			$stm->execute(array());
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-		public function ListarFiltros($desde)
+	public function ListarAnulado()
 	{
-		try
-		{ session_start();
-			$userId= $_SESSION['user_id'];
-			if(($_SESSION['nivel']<3)){
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
 				$vendedor = "";
-            }else{
+			} else {
 				$vendedor = "AND v.id_vendedor = '$userId'";
-                
-            }
-			$rango = $desde != '' ? "AND v.fecha_presupuesto >= '$desde'":"";
+			}
+
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, v.anulado AS anulado,  SUM((v.cantidad*v.precio_venta)-(v.cantidad*v.descuento))AS total
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
 			FROM presupuestos v 
 			LEFT JOIN productos p ON v.id_producto = p.id
 			LEFT JOIN usuario u ON v.id_vendedor = u.id
 			LEFT JOIN clientes c ON v.id_cliente = c.id
-			WHERE 1=1 $vendedor $rango AND v.anulado=0  GROUP BY v.id_presupuesto ORDER BY v.id DESC");
+			WHERE v.anulado=1 $vendedor GROUP BY v.id_presupuesto ORDER BY v.id DESC");
 			$stm->execute(array());
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
 		}
-		catch(Exception $e)
-		{
+	}
+
+	public function ListarPendientes()
+	{
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
+				$vendedor = "";
+			} else {
+				$vendedor = "AND v.id_vendedor = '$userId'";
+			}
+
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
+			FROM presupuestos v 
+			LEFT JOIN productos p ON v.id_producto = p.id
+			LEFT JOIN usuario u ON v.id_vendedor = u.id
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE v.aprobado='no' AND v.anulado!=1 $vendedor GROUP BY v.id_presupuesto ORDER BY v.id DESC");
+			$stm->execute(array());
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+	
+
+	public function ListarFiltrosAnulado($desde, $hasta)
+	{
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
+				$vendedor = "";
+			} else {
+				$vendedor = "AND v.id_vendedor = '$userId'";
+			}
+
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
+			FROM presupuestos v 
+			LEFT JOIN productos p ON v.id_producto = p.id
+			LEFT JOIN usuario u ON v.id_vendedor = u.id
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE 1=1 $vendedor GROUP BY v.id_presupuesto ORDER BY v.id DESC");
+			$stm->execute(array());
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 	public function ListarDetalle($id_presupuesto)
 	{
-		try
-		{
-			
+		try {
+
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, v.id as id, p.codigo 
-			FROM presupuestos v 
-			LEFT JOIN productos p ON v.id_producto = p.id
-			LEFT JOIN usuario u ON v.id_vendedor = u.id
-			LEFT JOIN clientes c ON v.id_cliente = c.id
-			WHERE id_presupuesto = ? AND v.anulado = '0' ORDER BY v.id DESC");
-			$stm->execute(array($id_presupuesto));
-
-			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
-			die($e->getMessage());
-		}
-	}
-	public function ListarPresupuesto($id_presupuesto)
-	{
-		try
-		{
-			
-			$result = array();
-
-			$stm = $this->pdo->prepare("SELECT SUM((v.cantidad*v.precio_venta)-(v.cantidad*v.descuento))AS total
+			$stm = $this->pdo->prepare("SELECT *
 			FROM presupuestos v 
 			LEFT JOIN productos p ON v.id_producto = p.id
 			LEFT JOIN usuario u ON v.id_vendedor = u.id
@@ -152,246 +175,133 @@ class presupuesto
 			$stm->execute(array($id_presupuesto));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	public function ListarPresupuestoticket($id_presupuesto)
+	public function ListarPresupuesto($id_presupuesto)
 	{
-		try
-		{
-			
+		try {
+
 			$result = array();
 
-		$stm = $this->pdo->prepare("SELECT *,
-                                        IF(LENGTH(p.codigo) > 6, SUBSTRING(p.codigo, -5), p.codigo) AS codigo_producto
-                                        FROM presupuestos v
-                                        LEFT JOIN productos p ON v.id_producto = p.id
-                                        LEFT JOIN usuario u ON v.id_vendedor = u.id
-                                        LEFT JOIN clientes c ON v.id_cliente = c.id
-                                        WHERE id_presupuesto = ?
-                                        ORDER BY v.id DESC");
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
+			FROM presupuestos v 
+			LEFT JOIN productos p ON v.id_producto = p.id
+			LEFT JOIN usuario u ON v.id_vendedor = u.id
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE id_presupuesto = ? ORDER BY v.id DESC");
 			$stm->execute(array($id_presupuesto));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 	public function ObtenerId_presupuesto($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo->prepare("SELECT * FROM presupuestos WHERE id_presupuesto = ?");
-			          
+
 
 			$stm->execute(array($id));
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Obtener()
 	{
-		try 
-		{
-		    if(!isset($_SESSION['user_id'])){
-				session_start();
+		try {
+			if (!isset($_SESSION['user_id'])) {
+				if (!isset($_SESSION)) session_start();
 			}
-		    $user_id = $_SESSION['user_id'];
+			$user_id = $_SESSION['user_id'];
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM presupuestos  WHERE id_vendedor = '$user_id' GROUP BY id_presupuesto");
-			          
+				->prepare("SELECT * FROM presupuestos  WHERE id_vendedor = '$user_id' GROUP BY id_presupuesto");
+
 
 			$stm->execute();
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
-	public function ObtenerUno($id)
-	{
-		try 
-		{
-			$stm = $this->pdo
-			          ->prepare("SELECT * FROM presupuestos WHERE id_presupuesto = ? LIMIT 1");
-			          
-
-			$stm->execute(array($id));
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-	
-	public function ObtenerRegistro($id)
-	{
-		try 
-		{
-			$stm = $this->pdo
-			          ->prepare("SELECT * FROM presupuestos WHERE id = ? ");
-			          
-
-			$stm->execute(array($id));
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-	
 	public function Ultimo()
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT MAX(id_presupuesto) as id_presupuesto FROM presupuestos");
+				->prepare("SELECT MAX(id_presupuesto) as id_presupuesto FROM presupuestos");
 			$stm->execute();
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ObtenerMoneda()
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM monedas WHERE id = 1");
-			          
+				->prepare("SELECT * FROM monedas WHERE id = 1");
+
 
 			$stm->execute();
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Eliminar($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("UPDATE presupuestos SET anulado=1 WHERE id_presupuesto = ?");			          
+				->prepare("DELETE FROM presupuestos WHERE id = ?");
 
 			$stm->execute(array($id));
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Vaciar()
 	{
-		try 
-		{
-		    session_start();
-		    $id_vendedor = $_SESSION['user_id'];
+		try {
+			if (!isset($_SESSION)) session_start();
+			$id_vendedor = $_SESSION['user_id'];
 			$stm = $this->pdo
-			            ->prepare("DELETE FROM presupuestos WHERE id_vendedor = ? ");
-			$stm->execute(array($id_vendedor));			          
-
-		} catch (Exception $e) 
-		{
+				->prepare("DELETE FROM presupuestos WHERE id_vendedor = ? ");
+			$stm->execute(array($id_vendedor));
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-
-	public function Cantidad($id_item, $id_presupuesto, $cantidad)
-	{
-		try 
-		{
-			$stm = $this->pdo
-			          ->prepare("UPDATE presupuestos SET cantidad = ? WHERE id = ?");
-			$stm->execute(array($cantidad, $id_item));
-			$stm = $this->pdo
-			          ->prepare("SELECT *, (SELECT SUM((precio_venta*cantidad)-(descuento*cantidad)) FROM presupuestos WHERE id_presupuesto = ? GROUP BY id_presupuesto) as total_venta FROM presupuestos WHERE id = ?");
-			$stm->execute(array($id_presupuesto, $id_item));
-		
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-
-	public function AnularItem($id_item, $id_presupuesto)
-	{
-		try 
-		{
-
-			$stm = $this->pdo
-			          ->prepare("UPDATE presupuestos SET anulado ='1' WHERE  id = ? 
-					  AND  id_presupuesto = ( SELECT id_presupuesto FROM presupuestos where id_presupuesto = ? limit 1)");
-			$stm->execute(array($id_item, $id_presupuesto));
-		
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-
-
-
 	public function CambiarEstado($data)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("UPDATE presupuestos SET estado='Vendido' WHERE id_presupuesto = ? ");
-			$stm->execute(array($data->id_presupuesto));			          
-
-		} catch (Exception $e) 
-		{
+				->prepare("UPDATE presupuestos SET estado='Vendido' WHERE id_presupuesto = ? ");
+			$stm->execute(array($data->id_presupuesto));
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-
-	public function EditarCantidad($id_item,$cantidad)
+	public function Restaurar($data)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("UPDATE presupuestos SET cantidad = ? WHERE id = ? ");			          
-
-			$stm->execute(array($cantidad, $id_item ));
-		} catch (Exception $e) 
-		{
+				->prepare("UPDATE presupuestos SET estado=null WHERE id_presupuesto = ? ");
+			$stm->execute(array($data->id_presupuesto));
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
-	public function VentaAnulada($data)
-	{
-		try 
-		{
-			$stm = $this->pdo
-			            ->prepare("UPDATE presupuestos SET estado='NULL' WHERE id_presupuesto = ? ");
-			$stm->execute(array($data->id_presupuesto));			          
-
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-
 	public function Actualizar($data)
 	{
-		try 
-		{
+		try {
 			$sql = "UPDATE presupuestos SET
 						id_presupuesto     = ?,
 						id_vendedor     = ?,
@@ -403,27 +313,25 @@ class presupuesto
 				    WHERE id = ?";
 
 			$this->pdo->prepare($sql)
-			     ->execute(
-				    array(
-                        $data->id_presupuesto,
-                        $data->id_vendedor, 
-                        $data->id_producto,                 
-                        $data->precio_venta,
-                        $data->cantidad,
-                        $data->fecha_presupuesto,
-                        $data->id
+				->execute(
+					array(
+						$data->id_presupuesto,
+						$data->id_vendedor,
+						$data->id_producto,
+						$data->precio_venta,
+						$data->cantidad,
+						$data->fecha_presupuesto,
+						$data->id
 					)
 				);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Moneda($data)
 	{
-		try 
-		{
+		try {
 			$sql = "UPDATE monedas SET
 						reales     = ?,
 						dolares     = ?,
@@ -431,118 +339,134 @@ class presupuesto
 						";
 
 			$this->pdo->prepare($sql)
-			     ->execute(
-				    array(
-                        $data->reales,
-                        $data->dolares,
-                        $data->monto_inicial
+				->execute(
+					array(
+						$data->reales,
+						$data->dolares,
+						$data->monto_inicial
 					)
 				);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Registrar($data)
 	{
-		try 
-		{
-		$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto,id_sucursal, precio_venta, cantidad, fecha_presupuesto, descuento) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try {
+			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-		$this->pdo->prepare($sql)
-		     ->execute(
-				array(
-                    $data->id_presupuesto,
-					$data->id_cliente,
-                    $data->id_vendedor,
-                    $data->id_producto,                 
-                    $data->id_sucursal,                 
-                    $data->precio_venta,
-                    $data->cantidad, 
-                    $data->fecha_presupuesto,
-					$data->descuento
-                   
-                )
-			);
-		} catch (Exception $e) 
-		{
+			$this->pdo->prepare($sql)
+				->execute(
+					array(
+						$data->id_presupuesto,
+						$data->id_cliente,
+						$data->id_vendedor,
+						$data->id_producto,
+						$data->precio_venta,
+						$data->cantidad,
+						$data->fecha_presupuesto,
+						$data->descuento,
+						$data->aprobado,
+						$data->estado
+
+					)
+				);
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
-	public function CompararProducto($data)
+	public function VentaAnulada($data)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM presupuestos WHERE id_producto = ? AND id_presupuesto = ? AND anulado = 0");
-			$stm->execute(array($data->id_producto, $data->id_presupuesto ));
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+				->prepare("UPDATE presupuestos SET estado='NULL', estado = 'Aprobado' WHERE id_presupuesto = ? ");
+			$stm->execute(array($data->id_presupuesto));
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
-	public function ObtenerTotalPorUsuarioPorMes()
+	public function Aprobar($id_presupuesto)
 	{
-		try
-		{ 
-			$result = array();
-			session_start();
-			$userId= $_SESSION['user_id'];
+		try {
+			$stm = $this->pdo
+				->prepare("UPDATE presupuestos SET aprobado='si', estado='Aprobado' WHERE id_presupuesto = ? ");
+			$stm->execute(array($id_presupuesto));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
 
-			// Para todos los niveles
-			$vendedor = "AND id_vendedor = '$userId'";
-                
-			// Obtener el mes actual
-			$mesActual = date('m');
-	
-			$stm = $this->pdo->prepare("SELECT *,  SUM((precio_venta*cantidad) - (descuento*cantidad)) AS total 
-			FROM presupuestos 
-			WHERE 1=1 $vendedor
-			AND anulado = 0 
-			AND estado = 'vendido'
-			AND MONTH(fecha_presupuesto) = $mesActual");
-			
-			$stm->execute(array());
+	public function ActualizarEstado($id_presupuesto, $estado)
+	{
+		try {
+			$stm = $this->pdo
+				->prepare("UPDATE presupuestos SET estado = ? WHERE id_presupuesto = ? ");
+			$stm->execute(array($estado, $id_presupuesto));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ObtenerEstados()
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT DISTINCT estado FROM presupuestos WHERE estado IS NOT NULL AND estado != '' ORDER BY estado");
+			$stm->execute();
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarPorEstado($estado, $desde = '', $hasta = '')
+	{
+		try {
+			if (!isset($_SESSION)) session_start();
+			$userId = $_SESSION['user_id'];
+			if (($_SESSION['nivel'] <> 3)) {
+				$vendedor = "";
+			} else {
+				$vendedor = "AND v.id_vendedor = '$userId'";
+			}
+
+			// Agregar filtro de fechas si se proporcionan
+			$filtroFecha = "";
+			if (!empty($desde) && !empty($hasta)) {
+				$filtroFecha = "AND CAST(v.fecha_presupuesto AS date) >= '$desde' AND CAST(v.fecha_presupuesto AS date) <= '$hasta'";
+			} elseif (!empty($desde)) {
+				$filtroFecha = "AND CAST(v.fecha_presupuesto AS date) >= '$desde'";
+			} elseif (!empty($hasta)) {
+				$filtroFecha = "AND CAST(v.fecha_presupuesto AS date) <= '$hasta'";
+			}
+
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT *, SUM((v.cantidad*v.precio_venta)-(((v.cantidad*v.precio_venta)*v.descuento))/100) AS total
+			FROM presupuestos v 
+			LEFT JOIN productos p ON v.id_producto = p.id
+			LEFT JOIN usuario u ON v.id_vendedor = u.id
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE v.estado = ? $vendedor $filtroFecha GROUP BY v.id_presupuesto ORDER BY v.fecha_presupuesto DESC");
+			$stm->execute(array($estado));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
-		public function ObtenerTotalPorUsuarioPorDia()
+	public function Anular($id_presupuesto)
 	{
-		try
-		{ 
-			$result = array();
-			session_start();
-			$userId= $_SESSION['user_id'];
-
-			// Para todos los niveles
-			$vendedor = "AND id_vendedor = '$userId'";
-                
-			// Obtener la fecha actual
-			$fechaActual = date('Y-m-d');
-	
-			$stm = $this->pdo->prepare("SELECT *, SUM((precio_venta*cantidad) - (descuento*cantidad)) AS total 
-        FROM presupuestos 
-        WHERE  anulado = 0 AND estado='Vendido' $vendedor AND CAST(fecha_presupuesto AS date) = '$fechaActual'");
-			
-			$stm->execute(array());
-
-			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		try {
+			$stm = $this->pdo
+				->prepare("UPDATE presupuestos SET anulado=1 WHERE id_presupuesto = ? ");
+			$stm->execute(array($id_presupuesto));
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-
 }

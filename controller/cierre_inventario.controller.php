@@ -99,6 +99,8 @@ class cierre_inventarioController{
         //$this->model->Registrar($cierre);
         $fecha = date("Y-m-d");
 
+        // carga el faltante de los productos no cargados
+        $this->inventario->SetFaltanteNoCargado($cierre_inventario);
         //actualiza los productos con su nuevo stock segun inventario
         $this->inventario->StockDeInventario($cierre_inventario);
         // listar  por id

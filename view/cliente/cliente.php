@@ -5,15 +5,18 @@
 
     <thead>
         <tr style="background-color: #000; color:#fff">
-            <th>CI/RUC/CPF</th>
+            <th>CI/RUC</th>
             <th>Nombre y Apellido</th>
             <th>Teléfono</th>
             <th>Direccion</th>
             <th>Mayorista</th>
-            <th>Fecha registrada</th>
-          
+            <th>Registro</th>
+            <th>Fecha de Nac.</th>
+            
             <th></th>
+            <?php if($_SESSION['nivel']<=1){ ?>
             <th></th>
+            <?php } ?>
         </tr>
     </thead>
     <tbody>
@@ -28,19 +31,21 @@
     ?>
         <tr class="click">
             <td><?php echo $r->ruc; ?></td>
-            <td><a class="btn btn-default" href="?c=ingreso&a=ListarEntradaSalidad&id_persona=<?php echo $r->id; ?>"><?php echo $r->nombre; ?></a></td>
+            <td><a href="?c=venta&a=listarcliente&id_cliente=<?php echo $r->id; ?>"><?php echo $r->nombre; ?></a></td>
             <td><?php echo $r->telefono; ?></td>
             <td><?php echo $r->direccion; ?></td>
             <td><?php echo $r->mayorista; ?></td>
             <td><?php echo  date("d/m/Y",strtotime($r->fecha_registro)); ?></td>
-            
+            <td><?php echo  date("d/m/Y",strtotime($r->cumple)); ?></td>
             <td>
                 <a  class="btn btn-warning edit" href="#crudModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-id="<?php echo $r->id; ?>" data-c="cliente">Editar</a>
             </td>
+            <?php if($_SESSION['nivel']<=1){ ?>
+            
             <td>
-                <a  class="btn btn-danger delete" href="?c=cliente&a=Anular&id=<?php echo $r->id; ?>">Eliminar</a>
+                <a  class="btn btn-danger delete" href="?c=cliente&a=Eliminar&id=<?php echo $r->id; ?>">Eliminar</a>
             </td>
-           
+            <?php } ?>
         </tr>
     <?php endforeach;?>
     </tbody>

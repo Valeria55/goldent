@@ -7,10 +7,8 @@
     <thead>
         <tr style="background-color: black; color:#fff">
             <th>Usuario</th>
-            <th>Fecha</th>
-        	<th>Apertura GS</th>
-            <th>Apertura RS</th>
-            <th>Apertura USD</th>
+        	<th>Apertura</th>
+            <th>Monto de apertura</th>
             <th></th>
         </tr>
     </thead>
@@ -22,12 +20,9 @@
         <tr class="click">
             <td><?php echo $r->user; ?></td>
         	<td><?php echo date("d/m/Y H:i", strtotime($r->fecha_apertura)); ?></td>
-            <td><?php echo number_format($r->monto_apertura,0,",","."); ?></td>
-            <td><?php echo number_format($r->apertura_rs,2,".",","); ?></td>
-            <td><?php echo number_format($r->apertura_usd,2,".",","); ?></td>
+            <td><?php echo number_format($r->monto_apertura,0,".",","); ?></td>
             <td>
                 <a href="?c=cierre&a=movimientos&id=<?php echo $r->id_usuario; ?>&fecha=<?php echo $r->fecha_apertura; ?>" class="btn btn-warning">Ver detalles</a>
-                <a href="?c=cierre&a=cierrepdf&id_cierre=<?php echo $r->id; ?>" class="btn btn-info">Informe</a>
             </td>    
         </tr>
     <?php endforeach; ?>

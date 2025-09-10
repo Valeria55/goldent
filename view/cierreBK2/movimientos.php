@@ -25,7 +25,7 @@
             <td><?php echo "Apertura"; ?></td>
             <td><?php echo "Apertura de caja del día"; ?></td>
             <td><?php echo ""; ?></td>
-            <td class="monto"><?php echo number_format($cierre->monto_apertura,2,".",","); ?></td>
+            <td class="monto"><?php echo number_format($cierre->monto_apertura,0,".",","); ?></td>
             <td><?php echo "Efectivo"; ?></td>
         </tr>
     <?php 
@@ -41,7 +41,7 @@
             <td><?php echo $r->categoria; ?></td>
             <td><?php echo $r->concepto; ?></td>
             <td><?php echo $r->comprobante; ?></td>
-            <td><?php echo number_format($r->monto,2,".",","); ?></td>
+            <td><?php echo number_format($r->monto,0,".",","); ?></td>
             <td><?php echo $r->forma_pago; ?></td>
         </tr>
     <?php 

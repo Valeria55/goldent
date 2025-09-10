@@ -15,11 +15,13 @@ require_once 'model/caja.php';
 require_once 'model/cliente.php';
 
 
-class devolucionController{
-    
+class devolucionController
+{
+
     private $model;
-    
-    public function __CONSTRUCT(){
+
+    public function __CONSTRUCT()
+    {
         $this->model = new devolucion();
         $this->venta = new venta();
         $this->usuario = new usuario();
@@ -35,98 +37,106 @@ class devolucionController{
         $this->caja = new caja();
         $this->cliente = new cliente();
     }
-    
-    public function Index(){
+
+    public function Index()
+    {
         require_once 'view/header.php';
         require_once 'view/devolucion/devolucion.php';
         require_once 'view/footer.php';
-       
     }
 
-    public function Sesion(){
+    public function Sesion()
+    {
         require_once 'view/header.php';
-        if ($cierre = $this->cierre->Consultar($_SESSION['user_id'])) {          
+        if ($cierre = $this->cierre->Consultar($_SESSION['user_id'])) {
             require_once 'view/venta/venta-sesion.php';
-        }else{
+        } else {
             echo "<h1>Debe hacer apertura de caja</h1>";
         }
         require_once 'view/footer.php';
     }
 
-    public function NuevaVenta(){
+    public function NuevaVenta()
+    {
         require_once 'view/header.php';
         require_once 'view/venta/nueva-venta.php';
         require_once 'view/footer.php';
-       
     }
 
 
-    public function Listar(){
+    public function Listar()
+    {
         require_once 'view/venta/venta.php';
     }
-    
-    public function ListarCliente(){
+
+    public function ListarCliente()
+    {
         require_once 'view/header.php';
         require_once 'view/venta/ventacliente.php';
         require_once 'view/footer.php';
     }
-    
-    public function ListarUsuario(){
+
+    public function ListarUsuario()
+    {
         require_once 'view/header.php';
         require_once 'view/venta/ventausuario.php';
         require_once 'view/footer.php';
     }
-    
-    public function ListarProducto(){
+
+    public function ListarProducto()
+    {
         require_once 'view/header.php';
         require_once 'view/venta/ventaproducto.php';
         require_once 'view/footer.php';
     }
-    
 
-    public function detalles(){
+
+    public function detalles()
+    {
         require_once 'view/devolucion/devolucion_detalles.php';
     }
-    
-    
-    public function ListarDia(){
-        
+
+
+    public function ListarDia()
+    {
+
         require_once 'view/header.php';
         require_once 'view/venta/ventadia.php';
         require_once 'view/footer.php';
     }
 
-    public function Cambiar(){
+    public function Cambiar()
+    {
 
         $venta = new venta();
-        
+
         $id_item = $_REQUEST['id_item'];
         $id_venta = $_REQUEST['id_venta'];
         $cantidad = $_REQUEST['cantidad'];
         $codigo = $_REQUEST['codigo'];
         $cantidad_ant = $_REQUEST['cantidad_ant'];
-        
+
         $cant = $cantidad_ant - $cantidad;
 
-        if($cantidad>0){
+        if ($cantidad > 0) {
             $venta = $this->model->Cantidad($id_item, $id_venta, $cantidad);
-            
-            if($venta->contado=='Cuota')
+
+            if ($venta->contado == 'Cuota')
                 $deuda = $this->deuda->EditarMonto($id_venta, $venta->total_venta);
 
-            if($venta->contado=='Contado')
+            if ($venta->contado == 'Contado')
                 $deuda = $this->ingreso->EditarMonto($id_venta, $venta->total_venta);
 
-            
-            $this->producto->Sumar($codigo, $cant);
 
+            $this->producto->Sumar($codigo, $cant);
         }
-        
+
         echo json_encode($venta);
     }
 
-    public function Cancelar(){
-        
+    public function Cancelar()
+    {
+
         $id_item = $_REQUEST['id_item'];
         $id_venta = $_REQUEST['id_venta'];
         $codigo = $_REQUEST['codigo'];
@@ -134,106 +144,108 @@ class devolucionController{
 
 
         $venta = $this->model->Cantidad($id_item, $id_venta, 0);
-            
-        if($venta->contado=='Cuota')
+
+        if ($venta->contado == 'Cuota')
             $deuda = $this->deuda->EditarMonto($id_venta, $venta->total_venta);
 
-        if($venta->contado=='Contado')
+        if ($venta->contado == 'Contado')
             $deuda = $this->ingreso->EditarMonto($id_venta, $venta->total_venta);
 
         $venta = $this->model->CancelarItem($id_item);
         $this->producto->Sumar($codigo, $cantidad);
-        header('location: ?c=venta_tmp&a=editar&id='.$id_venta);
+        header('location: ?c=venta_tmp&a=editar&id=' . $id_venta);
     }
 
 
-    
-    public function Crud(){
+
+    public function Crud()
+    {
         $venta = new venta();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $venta = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         require_once 'view/header.php';
         require_once 'view/venta/venta-editar.php';
         require_once 'view/footer.php';
     }
 
-    public function Cierre(){
-        
+    public function Cierre()
+    {
+
         require_once 'view/informes/cierrepdf.php';
-        
     }
-    
-    public function InformeDiario(){
-        
+
+    public function InformeDiario()
+    {
+
         require_once 'view/informes/ventadiapdf.php';
-        
     }
-    
-    public function InformeRango(){
-        
+
+    public function InformeRango()
+    {
+
         require_once 'view/informes/ventarangopdf.php';
-        
     }
-    
-    public function InformeUsados(){
-        
+
+    public function InformeUsados()
+    {
+
         require_once 'view/informes/productosusadospdf.php';
-        
     }
-    
-    public function CierreMes(){
+
+    public function CierreMes()
+    {
         $venta = new venta();
-        
-        if(isset($_REQUEST['fecha'])){
+
+        if (isset($_REQUEST['fecha'])) {
             $venta = $this->model->ListarMes($_REQUEST['fecha']);
         }
         require_once 'view/informes/cierremesnewpdf.php';
-        
     }
-        
-    public function Factura(){
-        
+
+    public function Factura()
+    {
+
         require_once 'view/informes/facturapdf.php';
-        
     }
-    
-    public function Ticket(){
-        
+
+    public function Ticket()
+    {
+
         require_once 'view/informes/ticketpdf.php';
-        
     }
-    
-    public function Obtener(){
+
+    public function Obtener()
+    {
         $venta = new venta();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $venta = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         require_once 'view/venta/venta-editar.php';
-        
     }
 
-    public function ObtenerProducto(){
+    public function ObtenerProducto()
+    {
         $venta = new venta();
-        
+
         $venta = $this->model->ObtenerProducto($_REQUEST['id_venta'], $_REQUEST['id_producto']);
-        
+
         echo json_encode($venta);
-        
     }
 
-    public function GuardarUno(){
-         
+    public function GuardarUno()
+    {
+
 
         $venta = new venta();
 
-        $costo = $_REQUEST['precio_costo']*$_REQUEST['cantidad'];
-        $p_venta = $_REQUEST['precio_venta']*$_REQUEST['cantidad'];
-        
+        $costo = $_REQUEST['precio_costo'] * $_REQUEST['cantidad'];
+        $p_venta = $_REQUEST['precio_venta'] * $_REQUEST['cantidad'];
+
         $venta->id = 0;
         $venta->id_venta = $_REQUEST['id_venta'];
         $venta->id_cliente = $_REQUEST['id_cliente'];
@@ -249,7 +261,7 @@ class devolucionController{
         $venta->comprobante = $_REQUEST['comprobante'];
         $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
         $venta->cantidad = $_REQUEST['cantidad'];
-        $venta->margen_ganancia = round(((($p_venta - $costo)*100)/$costo),2);
+        $venta->margen_ganancia = round(((($p_venta - $costo) * 100) / $costo), 2);
         $venta->fecha_venta = $_REQUEST['fecha_venta'];
         $venta->metodo = $_REQUEST['metodo'];
         $venta->banco = $_REQUEST['banco'];
@@ -257,56 +269,56 @@ class devolucionController{
 
 
         $this->producto->Restar($venta);
-        
 
-        $venta->id > 0 
+
+        $venta->id > 0
             ? $this->model->Actualizar($venta)
             : $this->model->Registrar($venta);
 
 
 
-        header('Location: index.php?c=venta_tmp&a=editar&id='.$venta->id_venta);
+        header('Location: index.php?c=venta_tmp&a=editar&id=' . $venta->id_venta);
     }
-    
-     public function Guardar(){
+
+    public function Guardar()
+    {
 
         $ven = new venta();
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
-        session_start();
+        if (!isset($_SESSION)) session_start();
 
-        foreach($this->devolucion_tmp->Listar() as $v){
+        foreach ($this->devolucion_tmp->Listar() as $v) {
 
             $devolucion = new devolucion();
 
             $devolucion->id = 0;
-            $devolucion->id_venta = $ven->id_venta+1;
+            $devolucion->id_venta = $ven->id_venta + 1;
             $devolucion->id_cliente = 0;
             $devolucion->id_vendedor = $_SESSION['user_id'];
             $devolucion->vendedor_salon = 0;
             $devolucion->id_producto = $v->id_producto;
             $devolucion->precio_costo = $v->precio_costo;
             $devolucion->precio_venta = $v->precio_venta;
-            $devolucion->subtotal = $v->precio_venta*$v->cantidad;
+            $devolucion->subtotal = $v->precio_venta * $v->cantidad;
             $devolucion->descuento = $v->descuento;
             $devolucion->iva = 0;
             $devolucion->total = $devolucion->subtotal;
-            $devolucion->comprobante = $_REQUEST['comprobante'];
+            $devolucion->comprobante = 0;
             $devolucion->nro_comprobante = 0;
             $devolucion->cantidad = $v->cantidad;
             $devolucion->margen_ganancia = 0;
-            $devolucion->fecha_venta = date("Y-m-d H:i");//date("Y-m-d H:i");
+            $devolucion->fecha_venta = date("Y-m-d H:i"); //date("Y-m-d H:i");
             $devolucion->metodo = 0;
             $devolucion->contado = $_REQUEST['contado'];
-            $devolucion->banco = 0;            
-    
+            $devolucion->banco = 0;
+
             //Registrar venta
             $this->model->Registrar($devolucion);
             //Sumar Stock
             $this->producto->SumarProducto($devolucion);
 
-            $sumaTotal+=$devolucion->total; 
-
+            $sumaTotal += $devolucion->total;
         }
 
         /*
@@ -314,7 +326,7 @@ class devolucionController{
 
                 $egreso = new egreso();
             
-                session_start();
+                if (!isset($_SESSION)) session_start();
                 $cierre = $this->cierre->Consultar($_SESSION['user_id']);
                 $egreso->id_caja = ($cierre->id_caja)? $cierre->id_caja:$_SESSION['id_caja'];
                 $egreso->id_cliente = $devolucion->id_cliente;
@@ -330,7 +342,7 @@ class devolucionController{
 
             }elseif($_REQUEST['contado']=="Credito"){
 
-                session_start();
+                if (!isset($_SESSION)) session_start();
                 $acreedor = new acreedor();
                 $acreedor->id_cliente = $devolucion->id_cliente;
                 $acreedor->id_compra = 0;
@@ -344,20 +356,21 @@ class devolucionController{
                 $this->egreso->Registrar($egreso);
             }*/
 
-            $this->devolucion_tmp->Vaciar();
-            
-            if(false){
-                header('refresh:0;index.php?c=venta&a=ticket&id=$id');
-            }else{
-                //header('Location: index.php?c=venta&a=sesion');
-                header('Location:' . getenv('HTTP_REFERER'));
-            }
+        $this->devolucion_tmp->Vaciar();
+
+        if (false) {
+            header('refresh:0;index.php?c=venta&a=ticket&id=$id');
+        } else {
             //header('Location: index.php?c=venta&a=sesion');
+            header('Location:' . getenv('HTTP_REFERER'));
+        }
+        //header('Location: index.php?c=venta&a=sesion');
     }
-    
-    public function Eliminar(){
-        
-        foreach($this->model->Listar($_REQUEST['id']) as $v){
+
+    public function Eliminar()
+    {
+
+        foreach ($this->model->Listar($_REQUEST['id']) as $v) {
             $venta = new venta();
             $venta->id_producto = $v->codigo;
             $venta->cantidad = $v->cantidad;
@@ -368,8 +381,9 @@ class devolucionController{
         header('Location: index.php?c=venta');
     }
 
-    public function Anular(){
-        foreach($this->model->Listar($_REQUEST['id']) as $v){
+    public function Anular()
+    {
+        foreach ($this->model->Listar($_REQUEST['id']) as $v) {
             $devolucion = new devolucion();
             $devolucion->id_producto = $v->id_producto;
             $devolucion->cantidad = $v->cantidad;

@@ -24,11 +24,124 @@
 		})
 	})
 
+	$('#finalizarModal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var c = button.data('c'); 
+		var url = "?c=compra&a=Finalizar&id="+id;
+		$.ajax({
 
+			url: url,
+			method : "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success:function(respuesta){
+				$("#finalizar_form").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
+
+		})
+	})
+
+	$('#devolucionCompraModal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var url = "?c=devolucion_compras&a=detalles&id="+id;
+		$.ajax({
+
+			url: url,
+			method : "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success:function(respuesta){
+				$("#devolucion-detalles").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
+
+		})
+	})
+
+	//controlador rango p clientes deudores
+	$('#rangoModal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var url = "?c=deuda&a=RangoForm&id="+id;
+		
+		$.ajax({
+
+			url: url,
+			method : "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success:function(respuesta){
+				$("#modal-rango").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
+
+		})
+	})
+
+
+	$('#large-modal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var c = button.data('c');
+		var a = button.data('a');
+		if (typeof (a) == "undefined") {
+			a = "obtener";
+		}
+		if (id > 0) {
+			var url = "?c=" + c + "&a=" + a + "&id=" + id;
+		} else {
+			var url = "?c=" + c + "&a=" + a;
+		}
+		$.ajax({
+	
+			url: url,
+			method: "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function (respuesta) {
+				$("#lg-form").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
+	
+		})
+	})
+
+	$('#editarModal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var url = "?c=venta&a=EditarVenta&id="+id;
+		$.ajax({
+
+			url: url,
+			method : "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success:function(respuesta){
+				$("#editarModal").html(respuesta);
+				$("#id").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
+
+		})
+	})
 	$('#detallesModal').on('show.bs.modal', function (event) {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var id = button.data('id');
-		var url = "?c=venta&a=detalles&id="+id;
+		var tabla = button.data('tabla');
+		var url = "?c=venta&a=detalles&id="+id+"&tabla="+tabla;
 		$.ajax({
 
 			url: url,
@@ -44,26 +157,7 @@
 
 		})
 	})
-	$('#detallesGastos').on('show.bs.modal', function (event) {
-		var button = $(event.relatedTarget); // Button that triggered the modal
-		var id = button.data('id');
-		var url = "?c=gastos_fijos&a=Detalles&id="+id;
-		$.ajax({
-
-			url: url,
-			method : "POST",
-			data: id,
-			cache: false,
-			contentType: false,
-			processData: false,
-			success:function(respuesta){
-				$("#modal-gastos").html(respuesta);
-				
-			}
-
-		})
-	})
-
+	
 	$('#presupuestoModal').on('show.bs.modal', function (event) {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var id = button.data('id');
@@ -104,26 +198,6 @@
 		})
 	})
 	
-	$('#rangoModal').on('show.bs.modal', function (event) {
-		var button = $(event.relatedTarget); // Button that triggered the modal
-		var id = button.data('id');
-		var url = "?c=deuda&a=RangoForm&id="+id;
-		
-		$.ajax({
-
-			url: url,
-			method : "POST",
-			data: id,
-			cache: false,
-			contentType: false,
-			processData: false,
-			success:function(respuesta){
-				$("#modal-rango").html(respuesta);
-				$('.selectpicker').selectpicker();
-			}
-
-		})
-	})
 	
 	
 	$('#devolucionModal').on('show.bs.modal', function (event) {
@@ -146,18 +220,10 @@
 		})
 	})
 
-
 	$('#detallesCompraModal').on('show.bs.modal', function (event) {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var id = button.data('id');
-		var presupuesto = button.data('presupuesto');
-		console.log(id);
-		if(presupuesto){
-			var url = "?c=presupuesto_compra&a=detalles&id="+id;
-		}else{
-			var url = "?c=compra&a=detalles&id="+id;
-		}
-
+		var url = "?c=compra&a=detalles&id="+id;
 		$.ajax({
 
 			url: url,
@@ -173,12 +239,11 @@
 		})
 	})
 
+
 	$('#cobrosModal').on('show.bs.modal', function (event) {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var id = button.data('id');
-		var id_cliente = button.data('cliente');
-		console.log(id_cliente);
-		var url = "?c=ingreso&a=detalles&deuda="+id+"&id_cliente="+id_cliente;
+		var url = "?c=ingreso&a=detalles&deuda="+id;
 		$.ajax({
 
 			url: url,
@@ -189,9 +254,7 @@
 			processData: false,
 			success:function(respuesta){
 				$("#ingreso-detalles").html(respuesta);
-				
 			}
-
 		})
 	})
 
@@ -214,6 +277,8 @@
 
 		})
 	})
+
+
 
 
 	function load(c){
@@ -252,6 +317,46 @@
 
 		});
 	}
+
+$('#transferencia_productoModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget); // Button that triggered the modal
+	var id = button.data('id');
+	var rec = button.data('rec');
+	var url = "?c=transferencia_producto&a=detalles&recibido=" + rec + "&id_transferencia_producto=" + id;
+	$.ajax({
+
+		url: url,
+		method: "POST",
+		data: id,
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function (respuesta) {
+			$("#modal-detalles").html(respuesta);
+
+		}
+
+	})
+});
+$('#transf_cajaModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget); // Button that triggered the modal
+	// var id = button.data('id');
+	var caja = button.data('id_caja');
+	var url = "?c=caja&a=transferenciaModal&id_caja=" + caja;
+	$.ajax({
+
+		url: url,
+		method: "POST",
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function (respuesta) {
+			$("#transferencia_form").html(respuesta);
+
+		}
+
+	})
+})
 
     
 

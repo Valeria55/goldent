@@ -1,11 +1,59 @@
+<style>
+    /* para que los estilos del sidebar no obliguen a que iconos no deseados aparezcan en los tabs */
+    a[aria-expanded="true"][data-toggle="tab"]::before {
+        content: '';
+    }
+
+    a[aria-expanded="false"][data-toggle="tab"]::before {
+        content: '';
+    }
+</style>
+
+<style>
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 25px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .quantity-control button {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: white;
+        color: var(--primary);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    /* Estilos adicionales para los botones de estado */
+    .btn-group .btn {
+        margin-right: 5px;
+    }
+
+    .btn-group .btn.active {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+</style>
+
+
 <h1 class="page-header">Lista de ventas &nbsp;
-     <?php if($_SESSION['nivel']==1){ ?>
-    <a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
-    <a class="btn btn-primary" href="#mesModal" class="btn btn-primary" data-toggle="modal" data-target="#mesModal">Informe Mensual</a>
-         <?php } ?>
+    <!-- <a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
+    <a class="btn btn-primary" href="#mesModal" class="btn btn-primary" data-toggle="modal" data-target="#mesModal">Informe Mensual</a> -->
+    <?php if ($_SESSION['nivel'] <> 2) : ?>
+        <a class="btn btn-primary" href="#mesModalVendedor" class="btn btn-primary" data-toggle="modal" data-target="#mesModalVendedor">Ventas por cada vendedor</a>
+    <?php endif; ?>
 </h1>
-<a class="btn btn-primary pull-right" href="?c=venta_tmp" class="btn btn-success">Nueva venta</a>
-<br><br><br>
 
 <h3 id="filtrar" align="center">Filtros <i class="fas fa-angle-right"></i><i class="fas fa-angle-left" style="display: none"></i></h3>
 <div class="row">
@@ -20,12 +68,12 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Desde</label>
-                    <input type="date" name="desde" value="<?php //echo (isset($_GET['desde']))? $_GET['desde']:''; 
+                    <input type="date" name="desde" value="<?php echo (isset($_GET['desde'])) ? $_GET['desde'] : '';
                                                             ?>" class="form-control">
                 </div>
                 <div class="form-group col-md-2">
                     <label>Hasta</label>
-                    <input type="date" name="hasta" value="<?php //echo (isset($_GET['hasta']))? $_GET['hasta']:''; 
+                    <input type="date" name="hasta" value="<?php echo (isset($_GET['hasta'])) ? $_GET['hasta'] : '';
                                                             ?>" class="form-control">
                 </div>
 
@@ -38,222 +86,117 @@
         </div>
     </div>
 </div>
-<!--<table class="table table-striped table-bordered display responsive nowrap " id="tabla" width="100%">-->
-<table id="tabla" class="table table-striped table-bordered display responsive " width="100%">
 
-    <thead>
-        <tr style="background-color: black; color:#fff">
-            <th>Presupuesto</th>
-            <th>Cliente</th>
-            <th>Fecha y Hora</th>
-            <th>Comprobante</th>
-            <th>Nro. comprobante</th>
-            <th>Pago</th>
-            <th>Total</th>
-            <th></th>
-            <?php session_start();
-            if ($_SESSION['nivel'] == 1) { ?>
-                <th></th>
-            <?php } ?>
-            <th></th>
-            <th></th>
-    </thead>
-    <tbody>
-        <?php /*
-        $suma = 0; $count = 0;  
-        $id_venta = (isset($_REQUEST['id_venta']))? $_REQUEST['id_venta']:0;
-        $suma = 0; $count = 0;  
-        foreach($this->model->Listar($id_venta) as $r): ?>
-            <tr class="click" <?php if($r->anulado){echo "style='color:gray'";} ?>>
-                <?php if (isset($_REQUEST['id_venta'])): ?>
-                <td><?php echo $r->producto; ?></td>    
-                <?php endif ?>
-                <td><?php echo $r->id_venta; ?></td>
-                <td><?php echo date("d/m/Y H:i", strtotime($r->fecha_venta)); ?></td>
-                <td><?php echo $r->comprobante; ?></td>
-                <td><?php echo $r->nro_comprobante; ?></td>
-                <td><?php echo $r->metodo; ?></td>
-                <td><?php echo $r->contado; ?></td>
-                <td><?php echo number_format($r->total,0,".",","); ?></td>
-                <?php if (!isset($_GET['id_venta'])): ?>
-                <td>
-                    <a href="#detallesModal" class="btn btn-success" data-toggle="modal" data-target="#detallesModal" data-id="<?php echo $r->id_venta;?>">Ver</a>
-                    <a  class="btn btn-warning" href="?c=venta&a=ticket&id=<?php echo $r->id_venta ?>" class="btn btn-success">Reimprimir</a>
-                    <!--<a  class="btn btn-primary edit" href="?c=venta_tmp&a=editar&id=<?php //echo $r->id_venta ?>" class="btn btn-success" >Editar</a>-->
-                    <?php if ($r->anulado): ?>
-                    ANULADO    
-                    <?php else: ?>
-                    <?php if($r->comprobante=="Factura"){ ?>
-                    
-                    <a  class="btn btn-warning" href="?c=devolucion_tmp&id_venta=<?php echo $r->id_venta ?>" class="btn btn-success">Devolución</a>
-                    <?php } ?>
-                    <a  class="btn btn-danger delete" href="?c=venta&a=anular&id=<?php echo $r->id_venta ?>" class="btn btn-success">ANULAR</a>
-                    <?php endif ?>
-                </td>
-                <?php endif ?>
-            </tr>
-        <?php 
-            $count++;
-        endforeach; */ ?>
-    </tbody>
 
-</table>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#tab1" data-toggle="tab">Ventas Contado</a></li>
+    <?php if (!isset($_SESSION)) session_start();
+    if ($_SESSION['nivel'] == 1) { ?>
+        <li><a href="#tab2" data-toggle="tab">A aprobar</a></li>
+    <?php } ?>
+
+    <li><a href="#tab3" data-toggle="tab">Aprobados</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane active" id="tab1">
+        <br>
+        <?php require_once 'venta-finalizado.php'; ?>
+    </div>
+
+    <div class="tab-pane" id="tab2">
+        <br>
+        <?php require_once 'venta-a-aprobar.php'; ?>
+    </div>
+    <div class="tab-pane" id="tab3">
+        <br>
+        <?php require_once 'venta-aprobado.php'; ?>
+    </div>
+</div>
 
 </div>
 </div>
 </div>
+
 
 <?php include("view/crud-modal.php"); ?>
 <?php include("view/venta/mes-modal.php"); ?>
+<?php include("view/venta/mes-modal-vendedores.php"); ?>
 <?php include("view/venta/dia-modal.php"); ?>
-<?php include("view/venta/detalles-modal.php");
-session_start();
-?>
-<script type="text/javascript">
+<?php include("view/venta/editar_venta.php"); ?>
+<?php include("view/venta/detalles-modal.php"); ?>
+
+
+<script>
     $(document).ready(function() {
+        // Ocultar todas las tablas excepto la primera al cargar la página
+        $("#tab2, #tab3").hide();
 
-        let tablaUsuarios = $('#tabla').DataTable({
+        // Verificar el nivel de usuario antes de mostrar la pestaña "tab2"
+        <?php if (!isset($_SESSION)) session_start(); ?>
+        <?php if ($_SESSION['nivel'] == 1) : ?>
+            $('a[href="#tab2"]').parent('li').show(); // Mostrar la pestaña "tab2" si el nivel es 1
+        <?php else : ?>
+            $('a[href="#tab2"]').parent('li').hide(); // Ocultar la pestaña "tab2" si el nivel no es 1
+        <?php endif; ?>
 
-            "dom": 'Bfrtip',
-            "buttons": [{
-                extend: 'excelHtml5',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            }, {
-                extend: 'pdfHtml5',
-                footer: true,
-                title: "Gastos",
-                orientation: 'landscape',
-                pageSize: 'LEGAL',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
-                }
-            }, 'colvis'],
-
-            responsive: {
-                details: true
-            },
-            "sort": false,
-            <?php if (isset($_GET['desde'])) { ?> "ajax": {
-                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $_GET['desde'] ?>&hasta=<?php echo $_GET['hasta'] ?>",
-                    "dataSrc": ""
-                },
-            <?php } else { ?>
-
-                "ajax": {
-                    "url": "?c=venta&a=ListarAjax",
-                    "dataSrc": ""
-                },
-            <?php } ?>
-
-            "columns": [
-                {
-                    "data": "id_presupuesto"
-                },
-                {
-                    "data": "",
-                    render: function(data, type, row) {
-
-                        if (row.id_cliente == 0) {
-
-                            return 'Cliente ocacional';
-
-                        } else {
-
-                            return row.nombre_cli;
-                        }
-                    }
-                },
-                {
-                    "data": "fecha_venta"
-                },
-                {
-                    "data": "",
-                    render: function(data, type, row) {
-
-                        if (row.comprobante == 'Ticket') {
-                            return 'Ticket';
-                        } else if (row.comprobante == 'TicketSi') {
-                            return 'Sin Impresión';
-                        } else if (row.comprobante == 'Recibo') {
-                            return 'Recibo';
-                        } else {
-                            return 'Factura';
-                        }
-                    }
-                },
-                {
-                    "data": "nro_comprobante"
-                },
-                {
-                    "data": "contado"
-                },
-                {
-                    "data": "total",
-                    render: $.fn.dataTable.render.number('.', ',', 0)
-                },
-                
-                {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-
-
-                        return "<a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-c='venta' data-id='" + row.id_venta + "'>Ver</a>";
-
-                    }
-                },
-                {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-                        if(row.comprobante == 'Recibo'){
-                            let link = "?c=venta&a=recibo&id=" + row.id_venta;
-                            return '<a href="' + link + '" class="btn btn-sucess">Recibo</a>';
-                        }else if(row.comprobante == 'Factura'){
-                            let link = "?c=venta&a=factura&id=" + row.id_venta;
-                            return '<a href="' + link + '" class="btn btn-primary">Factura</a>';  
-                        }else{
-                            let link = "?c=venta&a=Ticket&id=" + row.id_venta;
-                            return '<a href="' + link + '" class="btn btn-warning">Ticket</a>';
-                        }
-                       
-                    }
-                },
-                <?php
-                if ($_SESSION['nivel'] == 1) { ?> {
-                        "defaultContent": "",
-                        render: function(data, type, row) {
-                            if (row.anulado == 1) {
-                                return 'ANULADO'
-                            } else {
-
-                                let link = "?c=venta&a=anular&id=" + row.id_venta;
-                                return '<a href="' + link + '" class="btn btn-danger">Eliminar</a>';
-
-                            }
-
-                        }
-                    },
-                <?php } ?> {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-                        if (row.anulado == 0) {
-                            let link = "?c=devolucion_tmpventas&id_venta=" + row.id_venta;
-                            return '<a href="' + link + '" class="btn btn-warning">Devolución</a>';
-                        }
-                    }
-                }
-
-
-
-            ],
-
+        // Manejar el cambio de pestañas
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            var targetTab = $(e.target).attr("href"); // Obtener el ID de la pestaña seleccionada
+            $(".tab-pane").hide(); // Ocultar todas las tablas
+            $(targetTab).show(); // Mostrar la tabla correspondiente a la pestaña seleccionada
         });
+
+        // Mostrar la tabla de la pestaña activa al cargar la página
+        var activeTab = $('.nav-tabs li.active a').attr("href");
+        $(activeTab).show();
     });
 </script>
-<script type="text/javascript">
+
+<script>
     $("#filtrar").click(function() {
         $("#filtro").toggle("slow");
         $("i").toggle();
     });
+
+    $('#editarVentaModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var id = button.data('id');
+        var n = button.data('n');
+        var co = button.data('co');
+        var cli = button.data('cli');
+        $('#tipo').val(id);
+        $('#n').val(n);
+        $('#co').val(co);
+        //$('#cli').val(cli);
+        $('#cli option[value="' + cli + '"]').prop("selected", true);
+        $('.selectpicker').selectpicker('refresh');
+        $('.selectpicker').selectpicker('refresh');
+
+    })
 </script>
+
+
+<!-- <script>
+$(document).ready(function() {
+    // Guardar la URL base
+    var baseUrl = "index.php?c=venta";
+
+    // Manejar el cambio de pestañas
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        var targetTab = $(e.target).attr("href"); // Obtener el ID de la pestaña seleccionada
+        $(".tab-pane").hide(); // Ocultar todas las tablas
+        $(targetTab).show(); // Mostrar la tabla correspondiente a la pestaña seleccionada
+
+        // Limpiar el parámetro de fecha de la URL manteniendo la URL base
+        if (history.pushState) {
+            var newurl = baseUrl + targetTab; // Reconstruir la URL completa
+            window.history.pushState({ path: newurl }, '', newurl);
+        }
+    });
+
+    // Mostrar la tabla de la pestaña activa al cargar la página
+    var activeTab = $('.nav-tabs li.active a').attr("href");
+    $(activeTab).show();
+});
+</script> -->

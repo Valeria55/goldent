@@ -209,7 +209,8 @@ class cierre_inventario
 
 			$stm->execute();
 			$data = $stm->fetch(PDO::FETCH_OBJ);
-			if($data->id > 0){
+			if ($data && $data->id > 0) {
+			// if($data->id > 0){
 				return (is_null($data->fecha_cierre));
 			}else{
 				return false;

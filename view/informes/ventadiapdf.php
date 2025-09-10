@@ -1,6 +1,6 @@
 <?php
 
-require_once('plugins/tcpdf2/tcpdf.php');
+require_once('plugins/tcpdf/pdf/tcpdf_include.php');
 
 $moneda = $this->venta_tmp->ObtenerMoneda();
 

@@ -6,8 +6,6 @@ require_once 'model/cliente.php';
 class sucursalController{
     
     private $model;
-    private $cierre;
-    private $cliente;
     
     public function __CONSTRUCT(){
         $this->model = new sucursal();

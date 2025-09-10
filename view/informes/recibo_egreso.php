@@ -141,7 +141,7 @@ class NumeroALetras
 }
 
 
-require_once('plugins/tcpdf/tcpdf.php');
+require_once('plugins/tcpdf2/tcpdf.php');
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -178,23 +178,23 @@ $html1 = <<<EOF
 
    <table  width ="100%"<span style="border: 1px solid #333; text-align:justify; line-height: 15px; font-size:9px ">>
        <tr><br>
-          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/nl.png" width="100"></td>
-          <td width="50%" align="left" style=" font-size:12px; line-height: 50px" ><h2>RECIBO DE PAGO</h2></td>
+          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/SCORECARLOGO.png" width="200"></td>
+          <td width="50%" align="left" style=" font-size:12px; line-height: 35px" ><h2>RECIBO</h2></td>
        </tr>
          <tr>
            <td  width="100%" align="center" style="border: 1px solid #959595"><b>CIUDAD DEL ESTE, $d DE $m DEL $y </b> </td>
        </tr>
        <tr>
           <td  width="20%" align="justify" style="border: 1px solid #000000">RECIBIMOS DE: </td>
-          <td width="80%" align="center" style="border: 1px solid #000000;  font-size:9px"> <b>NL MULTIMARCAS</b></td>
+          <td width="80%" align="center" style="border: 1px solid #000000;  font-size:9px"> <b> SCORE CAR PRO</b></td>
        </tr>
         <tr>
           <td width="20%" align="justify" style="border: 1px solid #000000">RUC:</td>
-          <td width="80%" align="center" style="border: 1px solid #000000"> <b> </b></td>
+          <td width="80%" align="center" style="border: 1px solid #000000"> <b> 80.098.689-0</b></td>
        </tr>
         <tr>
           <td width="20%" align="justify" style="border: 1px solid #000000">EN CONCEPTO DE:</td>
-          <td width="80%" align="left" style="border: 1px solid #000000"> <b> $concepto 
+          <td width="80%" align="left" style="border: 1px solid #000000"> <b>$categoria $concepto 
           ($monto)</b></td>
        </tr>
          <tr>

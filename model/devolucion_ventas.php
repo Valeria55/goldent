@@ -2,47 +2,43 @@
 class devolucion_ventas
 {
 	private $pdo;
-    
-    public $id;
-    public $id_venta;
-    public $id_cliente;
-    public $id_vendedor;
-    public $vendedor_salon;
-    public $id_producto;
-    public $precio_costo;
-    public $precio_venta;
-    public $subtotal;
-    public $descuento;
-    public $total;
-    public $comprobante;
-    public $nro_comprobante;
-    public $cantidad;
-    public $margen_ganancia;
-    public $fecha_venta;
-    public $metodo;
-    public $contado;
-    public $motivo;    
-    
+
+	public $id;
+	public $id_venta;
+	public $id_cliente;
+	public $id_vendedor;
+	public $vendedor_salon;
+	public $id_producto;
+	public $precio_costo;
+	public $precio_venta;
+	public $subtotal;
+	public $descuento;
+	public $total;
+	public $comprobante;
+	public $nro_comprobante;
+	public $cantidad;
+	public $margen_ganancia;
+	public $fecha_venta;
+	public $metodo;
+	public $contado;
+	public $motivo;
+
 	public function __CONSTRUCT()
 	{
-		try
-		{
-			$this->pdo = Database::StartUp();     
-		}
-		catch(Exception $e)
-		{
+		try {
+			$this->pdo = Database::StartUp();
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Listar($id_venta)
 	{
-		try
-		{
-			
-			if($id_venta==0){
-			    
-				$stm = $this->pdo->prepare("SELECT v.id, p.codigo, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) AS subtotal, descuento, 
+		try {
+
+			if ($id_venta == 0) {
+
+				$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) AS subtotal, descuento, 
 					SUM(total) as total, AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante, 
 					c.nombre AS nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
 					(SELECT user FROM usuario WHERE id = v.id_vendedor) AS vendedor, 
@@ -53,8 +49,8 @@ class devolucion_ventas
 					LEFT JOIN clientes c ON v.id_cliente = c.id 
 					GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute();
-			}else{
-				$stm = $this->pdo->prepare("SELECT v.id, p.codigo, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre AS nombre_cli,
+			} else {
+				$stm = $this->pdo->prepare("SELECT v.id, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre AS nombre_cli,
 				 c.ruc, c.direccion, c.telefono, v.id_producto 
 				 FROM devoluciones_ventas v 
 				 LEFT JOIN productos p ON v.id_producto = p.id 
@@ -64,61 +60,15 @@ class devolucion_ventas
 			}
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
-			die($e->getMessage());
-		}
-	}
-	
-	public function ListarProducto($id_producto, $desde, $hasta)
-	{
-		try
-		{
-			
-			$rango = ($desde==0)? "":"AND fecha_venta >= '$desde' AND fecha_venta <= '$hasta'";
-			$stm = $this->pdo->prepare("SELECT v.id, 
-			p.producto,
-			v.comprobante,
-			v.metodo, 
-			v.anulado, 
-			v.contado, 
-			p.codigo,
-			p.iva,
-			SUM(v.cantidad) AS cantidad, 
-			AVG(v.precio_costo) AS precio_costo, 
-			AVG(v.precio_venta) AS precio_venta,
-			v.subtotal,
-			v.descuento,
-			SUM(v.total) AS total,
-			v.margen_ganancia, 
-			v.fecha_venta,
-			v.nro_comprobante,
-			c.nombre as nombre_cli,
-			c.ruc, 
-			c.direccion,
-			c.telefono, 
-			v.id_producto,
-			(SELECT user FROM usuario u WHERE u.id = v.id_vendedor) as vendedor,
-			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
-			FROM devoluciones_ventas v  
-			LEFT JOIN productos p ON v.id_producto = p.id 
-			LEFT JOIN clientes c ON v.id_cliente = c.id WHERE v.id_producto = ? $rango AND v.anulado = 0 GROUP BY v.id_venta");
-			$stm->execute(array($id_producto));
-
-			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ListarId_venta()
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT d.id AS id, id_venta, c.nombre, c.ruc  
 				FROM devoluciones_ventas d
 				LEFT JOIN clientes c ON d.id_cliente = c.id
@@ -126,18 +76,36 @@ class devolucion_ventas
 			$stm->execute(array());
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
+	public function ListarDevolucionesVen($id_producto, $desde, $hasta)
+	{
+		try {
+			$rango = ($desde == 0) ? "" : "AND dv.fecha_venta >= '$desde' AND dv.fecha_venta <= '$hasta'";
+			$stm = $this->pdo->prepare("SELECT	dv.anulado AS anulado,
+												u.user AS nombre_vendedor,
+												dv.motivo AS motivo,
+												DATE_FORMAT(dv.fecha_venta, '%d/%m/%y %H:%i') AS fecha_venta,
+												dv.precio_venta AS precio_venta, 
+												dv.cantidad AS cantidad_ven
+											FROM devoluciones_ventas dv
+											LEFT JOIN usuario u ON dv.id_vendedor = u.id
+											WHERE dv.id_producto = ? $rango");
+			$stm->execute(array($id_producto));
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function AgrupadoProducto($fecha)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT p.producto, SUM(v.cantidad) as cantidad, SUM(v.total) as total, SUM(v.cantidad*v.precio_costo) as costo, v.id_cliente FROM devoluciones_ventas v 
 				LEFT JOIN productos p ON v.id_producto = p.id 
 				LEFT JOIN clientes c ON v.id_cliente = c.id 
@@ -148,21 +116,34 @@ class devolucion_ventas
 			$stm->execute(array($fecha, $fecha));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
-	
-	
+
+	public function ListarProducto($id_producto)
+	{
+		try {
+
+
+			$stm = $this->pdo->prepare("SELECT v.id, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_costo, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario u WHERE u.id = v.id_vendedor) AS vendedor,
+				(SELECT user FROM usuario WHERE id = v.vendedor_salon) AS vendedor_salon 
+				FROM devoluciones_ventas v LEFT JOIN productos p ON v.id_producto = p.id 
+				LEFT JOIN clientes c ON v.id_cliente = c.id 
+				WHERE v.id_producto = ?");
+			$stm->execute(array($id_producto));
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function ListarCliente($id_cliente)
 	{
-		try
-		{
-			
-			
+		try {
+
+
 			$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) AS subtotal, descuento, SUM(total) AS total, 
 				AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante, 
 				c.nombre AS nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
@@ -177,19 +158,16 @@ class devolucion_ventas
 			$stm->execute(array($id_cliente));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarUsuarioMes($id_usuario, $mes)
 	{
-		try
-		{
-			
-			$fecha = $mes."-10";
+		try {
+
+			$fecha = $mes . "-10";
 			$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) AS subtotal, descuento, SUM(total) AS total, 
 				AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante, c.nombre AS nombre_cli,
 				c.ruc, c.direccion, c.telefono, v.id_producto, 
@@ -206,22 +184,19 @@ class devolucion_ventas
 			$stm->execute(array($id_usuario, $fecha, $fecha));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ListarDia($fecha)
 	{
-		try
-		{
-			if(!isset($_SESSION['user_id'])){
-			    session_start();
+		try {
+			if (!isset($_SESSION['user_id'])) {
+				if (!isset($_SESSION)) session_start();
 			}
 			$id_vendedor = $_SESSION['user_id'];
-			$usuario = ($_SESSION['nivel']==1)? "":"AND v.id_vendedor = $id_vendedor";
+			$usuario = ($_SESSION['nivel'] == 1) ? "" : "AND v.id_vendedor = $id_vendedor";
 			$stm = $this->pdo->prepare("SELECT v.metodo, v.contado, v.id_venta, a.nombre AS nombre_cli, v.anulado, c.producto, SUM(subtotal) AS subtotal, v.descuento, SUM(v.total) AS total, 
 				AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante, v.id_producto, 
 				(SELECT user FROM usuario WHERE id = v.id_vendedor) AS vendedor, 
@@ -233,22 +208,19 @@ class devolucion_ventas
 				GROUP BY v.id_venta DESC");
 			$stm->execute(array($fecha));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ListarDiaSesion()
 	{
-		try
-		{
-			if(!isset($_SESSION['user_id'])){
-			    session_start();
+		try {
+			if (!isset($_SESSION['user_id'])) {
+				if (!isset($_SESSION)) session_start();
 			}
 			$id_vendedor = $_SESSION['user_id'];
-			$usuario = ($_SESSION['nivel']==1)? "":"AND v.id_vendedor = $id_vendedor";
+			$usuario = ($_SESSION['nivel'] == 1) ? "" : "AND v.id_vendedor = $id_vendedor";
 			$stm = $this->pdo->prepare("SELECT v.metodo, v.contado, v.id_venta, a.nombre AS nombre_cli, v.anulado, c.producto, SUM(subtotal) as subtotal, v.descuento, SUM(v.total) AS total, 
 				AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, v.id_producto, 
 				(SELECT user FROM usuario WHERE id = v.id_vendedor) AS vendedor, 
@@ -259,18 +231,15 @@ class devolucion_ventas
 				WHERE fecha_venta >= (SELECT fecha_apertura FROM cierres WHERE id_usuario = ? AND fecha_cierre IS NULL) $usuario  GROUP BY v.id_venta DESC");
 			$stm->execute(array($id_vendedor));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarDiaSinAnular($fecha)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT v.metodo, v.contado, v.id_venta, a.nombre AS nombre_cli, v.anulado, c.producto, SUM(subtotal) AS subtotal, v.descuento, SUM(v.precio_costo * v.cantidad) AS costo, SUM(v.total) AS total, AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante,
 			    v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) AS vendedor, 
 			    (SELECT user FROM usuario WHERE id = v.vendedor_salon) AS vendedor_salon 
@@ -281,18 +250,15 @@ class devolucion_ventas
 			    GROUP BY v.id_venta DESC");
 			$stm->execute(array($fecha));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarRango($desde, $hasta)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT v.id_cliente, v.metodo, v.contado, v.id_venta, 
 				a.nombre AS nombre_cli, v.anulado, c.producto, SUM(subtotal) AS subtotal, 
 				v.descuento, SUM(v.precio_costo * v.cantidad) AS costo, SUM(v.total) AS total, 
@@ -307,18 +273,15 @@ class devolucion_ventas
 				GROUP BY v.id_venta DESC");
 			$stm->execute(array($desde, $hasta));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarUsados($desde, $hasta)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT c.producto, v.fecha_venta, v.precio_costo, v.precio_venta, 
 				v.cantidad, (v.precio_venta*v.cantidad) AS total 
 				FROM devoluciones_ventas v 
@@ -328,18 +291,15 @@ class devolucion_ventas
 				ORDER BY v.id DESC");
 			$stm->execute(array($desde, $hasta));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ListarRangoSinAnular($desde, $hasta, $id_vendedor)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT v.metodo, v.contado, v.id_venta, a.nombre AS nombre_cli,
 			 v.anulado, c.producto, SUM(subtotal) AS subtotal, v.descuento, 
 			 SUM(v.precio_costo * v.cantidad) AS costo, SUM(v.total) AS total, 
@@ -353,17 +313,14 @@ class devolucion_ventas
 			 GROUP BY v.id_venta DESC");
 			$stm->execute(array($desde, $hasta, $id_vendedor));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarMesSinAnular($fecha)
 	{
-		try
-		{
+		try {
 			$stm = $this->pdo->prepare("SELECT v.id_cliente, v.metodo, v.contado, v.id_venta, 
 				a.nombre AS nombre_cli, v.anulado, c.producto, SUM(subtotal) AS subtotal,
 				v.descuento, SUM(v.precio_costo * v.cantidad) AS costo, SUM(v.total) AS total, 
@@ -377,18 +334,15 @@ class devolucion_ventas
 				GROUP BY v.id_venta DESC");
 			$stm->execute(array($fecha, $fecha));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarDiaContado($fecha)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT v.metodo, v.contado, v.id_venta, cli.Nombre AS nombre_cli,
 			 c.producto, SUM(subtotal) AS subtotal, v.descuento, SUM(v.total) AS total, 
 			 AVG(margen_ganancia) AS margen_ganancia, fecha_venta, nro_comprobante 
@@ -399,18 +353,15 @@ class devolucion_ventas
 			 GROUP BY v.id_venta DESC");
 			$stm->execute(array($fecha));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
+
 	public function ListarMes($fecha)
 	{
-		try
-		{
-			
+		try {
+
 			$stm = $this->pdo->prepare("SELECT v.id_venta, cli.Nombre AS nombre_cli, v.metodo, c.producto, 
 				SUM(subtotal) AS subtotal, descuento, SUM(total) AS total, AVG(margen_ganancia) AS ganancia, fecha_venta, nro_comprobante 
 				FROM devoluciones_ventas v 
@@ -420,17 +371,14 @@ class devolucion_ventas
 				GROUP BY v.id_venta DESC");
 			$stm->execute(array($fecha, $fecha));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Detalles($id_venta)
 	{
-		try
-		{
+		try {
 			$result = array();
 
 			$stm = $this->pdo->prepare("SELECT c.producto, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante 
@@ -440,9 +388,7 @@ class devolucion_ventas
 			$stm->execute(array($id_venta));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
-		}
-		catch(Exception $e)
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
@@ -450,93 +396,68 @@ class devolucion_ventas
 
 	public function Obtener($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT *, SUM(total) AS monto FROM devoluciones_ventas WHERE id = ?");
-			          
+				->prepare("SELECT * FROM devoluciones_ventas WHERE id = ?");
+
 
 			$stm->execute(array($id));
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
-			die($e->getMessage());
-		}
-	}
-	public function ObtenerId_venta($id)
-	{
-		try 
-		{
-			$stm = $this->pdo
-			          ->prepare("SELECT *, SUM(total) AS monto FROM devoluciones_ventas WHERE id_venta = ?");
-			          
-
-			$stm->execute(array($id));
-			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ObtenerProducto($id_venta, $id_producto)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ? AND id_producto = ?");
-			          
+				->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ? AND id_producto = ?");
+
 
 			$stm->execute(array($id_venta, $id_producto));
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function ObtenerUNO($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ? LIMIT 1");
-			          
+				->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ? LIMIT 1");
+
 
 			$stm->execute(array($id));
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Recibo($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ?");
-			          
+				->prepare("SELECT * FROM devoluciones_ventas WHERE id_venta = ?");
+
 
 			$stm->execute(array($id));
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Ultimo()
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("SELECT MAX(id) as id FROM devoluciones_ventas");
+				->prepare("SELECT MAX(id) as id FROM devoluciones_ventas");
 			$stm->execute();
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
@@ -544,51 +465,45 @@ class devolucion_ventas
 
 	public function Cantidad($id_item, $id_venta, $cantidad)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			          ->prepare("UPDATE devoluciones_ventas SET cantidad = ?, subtotal = precio_venta * ?, 
+				->prepare("UPDATE devoluciones_ventas SET cantidad = ?, subtotal = precio_venta * ?, 
 			          	total = precio_venta * ? WHERE id = ?");
 			$stm->execute(array($cantidad, $cantidad, $cantidad, $id_item));
 			$stm = $this->pdo
-			          ->prepare("SELECT *, (SELECT SUM(total) 
+				->prepare("SELECT *, (SELECT SUM(total) 
 			          	FROM devoluciones_ventas WHERE id_venta = ? 
 			          	GROUP BY id_venta) AS total_venta 
 			          	FROM devoluciones_ventas WHERE id = ?");
 			$stm->execute(array($id_venta, $id_item));
-		
+
 			return $stm->fetch(PDO::FETCH_OBJ);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function CancelarItem($id_item)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("DELETE FROM devoluciones_ventas WHERE id = ?");			          
+				->prepare("DELETE FROM devoluciones_ventas WHERE id = ?");
 
 			$stm->execute(array($id_item));
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
-	
-	
+
+
 	public function Eliminar($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("DELETE FROM devoluciones_ventas WHERE id_venta = ?");			          
+				->prepare("DELETE FROM devoluciones_ventas WHERE id_venta = ?");
 
 			$stm->execute(array($id));
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
@@ -596,14 +511,12 @@ class devolucion_ventas
 
 	public function Anular($id)
 	{
-		try 
-		{
+		try {
 			$stm = $this->pdo
-			            ->prepare("UPDATE devoluciones_ventas SET anulado = 1 WHERE id_venta = ?");			          
+				->prepare("UPDATE devoluciones_ventas SET anulado = 1 WHERE id_venta = ?");
 
 			$stm->execute(array($id));
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
@@ -611,8 +524,7 @@ class devolucion_ventas
 
 	public function Actualizar($data)
 	{
-		try 
-		{
+		try {
 			$sql = "UPDATE devoluciones_ventas SET
 						id_venta     = ?,
 						id_vendedor     = ?,
@@ -625,63 +537,59 @@ class devolucion_ventas
 				    WHERE id = ?";
 
 			$this->pdo->prepare($sql)
-			     ->execute(
-				    array(
-                        $data->id_venta,
-                        $data->id_vendedor, 
-                        $data->id_producto,                 
-                        $data->precio_venta,
-                        $data->cantidad,
-                        $data->margen_ganancia, 
-                        $data->fecha_venta,
-                        $data->id
+				->execute(
+					array(
+						$data->id_venta,
+						$data->id_vendedor,
+						$data->id_producto,
+						$data->precio_venta,
+						$data->cantidad,
+						$data->margen_ganancia,
+						$data->fecha_venta,
+						$data->id
 					)
 				);
-		} catch (Exception $e) 
-		{
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}
 
 	public function Registrar($data)
 	{
-		try 
-		{
+		try {
 
 
 
-		$sql = "INSERT INTO devoluciones_ventas (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado, motivo) 
+			$sql = "INSERT INTO devoluciones_ventas (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado, motivo) 
 		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-		$this->pdo->prepare($sql)
-		     ->execute(
-				array(
-					$data->id_venta,
-                    $data->id_cliente,
-                    $data->id_vendedor,
-                    $data->vendedor_salon,
-                    $data->id_producto,
-                    $data->precio_costo,            
-                    $data->precio_venta,
-                    $data->subtotal,
-                    $data->descuento,
-                    $data->iva,
-                    $data->total,
-                    $data->comprobante,
-                    $data->nro_comprobante,
-                    $data->cantidad,
-                    $data->margen_ganancia, 
-                    $data->fecha_venta,
-                    $data->metodo,
-                    $data->banco,
-                    $data->contado,
-                    $data->motivo 
-                   
-                )
-			);
+			$this->pdo->prepare($sql)
+				->execute(
+					array(
+						$data->id_venta,
+						$data->id_cliente,
+						$data->id_vendedor,
+						$data->vendedor_salon,
+						$data->id_producto,
+						$data->precio_costo,
+						$data->precio_venta,
+						$data->subtotal,
+						$data->descuento,
+						$data->iva,
+						$data->total,
+						$data->comprobante,
+						$data->nro_comprobante,
+						$data->cantidad,
+						$data->margen_ganancia,
+						$data->fecha_venta,
+						$data->metodo,
+						$data->banco,
+						$data->contado,
+						$data->motivo
 
-		} catch (Exception $e) 
-		{
+					)
+				);
+		} catch (Exception $e) {
 			die($e->getMessage());
 		}
 	}

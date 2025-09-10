@@ -1,55 +1,57 @@
-<h1 class="page-header">Lista de Productos</h1>
+<h1 class="page-header">Lista de Productos
+    <!--<a class="btn btn-primary" href="?c=transferencia_producto" class="btn btn-success">Transferencias de Productos</a>-->
+   <?php if ($_SESSION['nivel'] == 1) { ?> <a class="btn btn-default" href="?c=producto&a=stock" class="btn btn-success">Stock a la fecha</a><?php } ?>
+</h1>
+<a style="display: none;" class="btn btn-primary pull-right" href="?c=transferencia" class="btn btn-success">Transferencia</a>
 <a class="btn btn-primary pull-right" href="#productoModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="producto">Agregar</a>
 <br><br><br>
-<div class="container">
-  <div class="row">
-    <div class="col-sm-4">
-    </div>
-    <div class="col-sm-4">
-        <div align="center" id="filtro">
-            <form method="get">
-                <input type="hidden" name="c" value="producto">
-                <div class="form-group">
-                   <div class="form-group">
-                        <label>Marca</label>
-                        <select name="marca" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control" title="-- Seleccione la marca --" autofocus >
-                            <option value="">Todos</option>
-                            <?php foreach ($this->marca->Listar() as $r) : ?>
-                                <option value="<?php echo $r->id; ?>" <?php echo ($r->id == $producto->marca) ? "selected" : ""; ?>><?php echo $r->marca; ?></option>
-            
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+<?php if ($_SESSION['nivel'] == 1) { ?>
+    <div class="container" style="display:none;">
+        <div class="row">
+            <div class="col-sm-4">
+            </div>
+            <div class="col-sm-4">
+                <div align="center" id="filtro">
+                    <form method="get">
+                        <input type="hidden" name="c" value="producto">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label>Sucursal</label>
+                                <select name="sucursal" class="form-control">
+                                    <?php foreach ($this->sucursal->Listar() as $r) : ?>
+                                        <option value="<?php echo $r->id; ?>" <?php if (isset($_GET['sucursal']) && $_GET['sucursal'] == $r->id) {
+                                                                                    echo "selected";
+                                                                                } ?>><?php echo $r->sucursal; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="submit" name="filtro" value="Filtrar" class="btn btn-success">
+                    </form>
                 </div>
-                <input type="submit" name="filtro" value="Filtrar" class="btn btn-success"> 
-            </form>
+            </div>
+            <div class="col-sm-4">
+            </div>
         </div>
     </div>
-    <div class="col-sm-4">
-    </div>
-  </div>
-</div>
+<?php } ?>
 <table id="tabla" class="table responsive display" style="width:100%">
-        <thead>
-            <tr style="background-color: #000; color:#fff">
-                <th>ID</th>
-                <th>Código</th>
-                <th>Marca</th>
-                <th>Categoría</th>
-                <th>Producto</th>
-                <th>Costo</th>
-                <th>MIN</th>
-                <th>INT</th>
-                <th>MAY</th>
-                <th>Especial</th>
-                <th>Stock</th>
-                <th>IVA</th>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php /*$sumaCosto=0;
+    <thead>
+        <tr style="background-color: #000; color:#fff">
+            <th>Id</th>
+            <th>Código</th>
+            <th>Marca</th>
+            <th>Categoría</th>
+            <th>Producto</th>
+            <th>Costo</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>IVA</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php /*$sumaCosto=0;
             $q = (isset($_REQUEST['sucursal']))? $_REQUEST['sucursal']:"";
             foreach($this->model->ListarBuscar($q) as $r): 
             if(true){ ?>
@@ -72,96 +74,83 @@
                 </td>
                 <?php } ?>
             </tr>
-            <?php $sumaCosto+=($r->precio_costo*$r->stock); } endforeach; */?>
-            
-        </tbody>
-        <tfoot>
-            <tr style="background-color: #000; color:#fff">
-                <th>ID</th>
-                <th>Código</th>
-                <th>Marca</th>
-                <th>Categoría</th>
-                <th>Producto</th>
-                <th>Costo</th>
-                <th>MIN</th>
-                <th>INTER</th>
-                <th>MAY</th>
-                <th>Especial</th>
-                <th>Stock</th>
-                <th>IVA</th>
-                <th></th>
-                <th></th>
-            </tr>
-        </tfoot>
-    </table>
+            <?php $sumaCosto+=($r->precio_costo*$r->stock); } endforeach; */ ?>
+
+    </tbody>
+    <tfoot>
+        <tr style="background-color: #000; color:#fff">
+            <th>Id</th>
+            <th>Código</th>
+            <th>Marca</th>
+            <th>Categoría</th>
+            <th>Producto</th>
+            <th>Costo</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>IVA</th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
 </div>
 </div>
 </div>
-<?php include("view/crud-modal.php"); 
-session_start();
+<?php include("view/crud-modal.php");
+if (!isset($_SESSION)) session_start();
 ?>
 
 <script type="text/javascript">
     $(document).ready(function() {
-        
-        $('#tabla tfoot th').each( function () {
-        var title = $(this).text();
-            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-        } );
-     
+
+        $('#tabla tfoot th').each(function() {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
         // DataTable
         let tablaUsuarios = $('#tabla').DataTable({
-            
-             <?php if (isset($_GET['marca'])) { ?> "ajax": {
-                    "url": "?c=producto&a=ListarFiltros&marca=<?php echo $_GET['marca'] ?>",
-                    "dataSrc": ""
+            "ajax": {
+                "url": "?c=producto&a=ListarAJAX",
+                "dataSrc": ""
+            },
+            "columns": [
+                {
+                    "data": "id"
                 },
-            <?php } else { ?>
-
-                "ajax": {
-                    "url": "?c=producto&a=ListarAjax",
-                    "dataSrc": ""
-                },
-            <?php } ?>
-            
-            "columns":[
-                {"data": "id"},
-                {"data": "codigo",
+                {
+                    "data": "codigo",
                     render: function(data, type, row) {
-                        let link = "?c=venta&a=listarproducto&id_producto="+row.id;
+                        let link = "?c=venta&a=listarproducto&id_producto=" + row.id;
                         return '<a href="' + link + '" class="btn btn-default">' + data + '</a>';
                     }
                 },
-                {"data": "marca"},
-                {"data": "categoria"},
-                {"data": "producto"},
-                {"data": "precio_costo",render: $.fn.dataTable.render.number(',', '.', 0)},
-                // {"data": "precio_brasil",render: $.fn.dataTable.render.number('.', ',', 0)},
-                {"data": "precio_minorista", render: $.fn.dataTable.render.number(',', '.', 0)},
-                {"data": "precio_intermedio", render: $.fn.dataTable.render.number(',', ',', 0)},
-                {"data": "precio_mayorista", render: $.fn.dataTable.render.number(',', '.', 0)},
-                {"data": "ultimo_precio", render: $.fn.dataTable.render.number(',', '.', 0)},
-                {"data": "stock_s1"},
-                {"data": "iva"},
-                 
-                {"defaultContent": "",
-                
-                    render: function(data, type, row) {
-                        return "<a href='#crudModal' class='btn btn-warning' data-toggle='modal' data-target='#crudModal' data-c='producto' data-id='"+row.id+"'>Editar</a>";
-                    }
+                {
+                    "data": "marca"
                 },
-                 {"defaultContent": "",
-                
-                    render: function(data, type, row) {
-                        let link = "?c=producto&a=Eliminar&id="+row.id;
-                        return '<a href="' + link + '" class="btn btn-danger">Eliminar</a>';
-                    }
+                {
+                    "data": "sub_categoria"
+                },
+                {
+                    "data": "producto"
+                },
+                {
+                    "data": "precio_costo"
+                },
+                {
+                    "data": "precio_minorista"
+                },
+                {
+                    "data": "stock"
+                },
+                {
+                    "data": "iva"
+                },
+                {
+                    "defaultContent": "<div class='text-center'><div class='btn-group'><button class='btn btn-primary btn-sm btnEditar'>Edit</button><button class='btn btn-success btn-sm btnCodigo'>Código</button><button class='btn btn-danger btn-sm btnBorrar'>Del</button></div></div>"
                 }
-                 
             ],
             "dom": 'Bfrtip',
-            "buttons": [
-                {
+            "buttons": [{
                     extend: 'excelHtml5',
                     exportOptions: {
                         columns: ':visible'
@@ -178,12 +167,12 @@ session_start();
                 'colvis'
             ],
             "stateSave": true,
-        	responsive: {
-            	details: true
-        	},
+            responsive: {
+                details: true
+            },
             "language": {
-                "lengthMenu":"Mostrar _MENU_ registros por página.",
-                "search" : "Buscar en todos",
+                "lengthMenu": "Mostrar _MENU_ registros por página.",
+                "search": "Buscar en todos",
                 "buttons": {
                     "colvis": "Columnas Visibles"
                 },
@@ -195,88 +184,93 @@ session_start();
                 "Processing": "Procesando...",
                 "SearchPlaceholder": "Comience a teclear...",
                 "paginate": {
-         			"previous": "Anterior",
-         			"next": "Siguiente", 
-          	    }
+                    "previous": "Anterior",
+                    "next": "Siguiente",
+                }
             },
-            initComplete: function () {
+            initComplete: function() {
                 // Apply the search
-                this.api().columns().every( function () {
+                this.api().columns().every(function() {
                     var that = this;
-     
-                    $( 'input', this.footer() ).on( 'keyup change clear', function () {
-                        if ( that.search() !== this.value ) {
+
+                    $('input', this.footer()).on('keyup change clear', function() {
+                        if (that.search() !== this.value) {
                             that
-                                .search( this.value )
+                                .search(this.value)
                                 .draw();
                         }
-                    } );
-                } );
+                    });
+                });
             }
         });
-        
-        
-     
-        
-        $("#tabla tbody").on("click", ".btnBorrar", function(){
-        
-            let data = tablaUsuarios.row($(this).parents()).data();        
-            id = data.id;		       
-            var respuesta = confirm("¿Está seguro de borrar "+data.producto+"?");                
-            
-            var url = "?c=producto&a=Eliminar&id="+id;
-            tablaUsuarios.row(0).remove().draw();
-    		$.ajax({
-    
-    			url: url,
-    			method : "POST",
-    			data: id,
-    			cache: false,
-    			contentType: false,
-    			processData: false,
-    			success:function(respuesta){
-    			}
-    
-    		})
+
+
+
+
+        $("#tabla tbody").on("click", ".btnCodigo", function() {
+            let data = tablaUsuarios.row($(this).parents()).data();
+            var id = data.id;
+            var url = "?c=producto&a=VerCodigoBarra&id=" + id;
+            window.open(url, '_blank');
         });
-        
-        $("#tabla tbody").on("click", ".btnEditar", function(){
-        
-            let data = tablaUsuarios.row($(this).parents()).data();        
+
+        $("#tabla tbody").on("click", ".btnBorrar", function() {
+
+            let data = tablaUsuarios.row($(this).parents()).data();
+            id = data.id;
+            var respuesta = confirm("¿Está seguro de borrar " + data.producto + "?");
+
+            var url = "?c=producto&a=Eliminar&id=" + id;
+            tablaUsuarios.row(0).remove().draw();
+            $.ajax({
+
+                url: url,
+                method: "POST",
+                data: id,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(respuesta) {}
+
+            })
+        });
+
+        $("#tabla tbody").on("click", ".btnEditar", function() {
+
+            let data = tablaUsuarios.row($(this).parents()).data();
             var id = data.id;
             //var id = parseInt($(this).closest('tr').find('td:eq(0)').text()) ;	
-            $('#crudModal').modal('show'); 
-            var url = "?c=producto&a=obtener&id="+id;
-    		$.ajax({
-    
-    			url: url,
-    			method : "POST",
-    			data: id,
-    			cache: false,
-    			contentType: false,
-    			processData: false,
-    			success:function(respuesta){
-    				$("#edit_form").html(respuesta);
-    			}
-    
-    		})
-            
+            $('#crudModal').modal('show');
+            var url = "?c=producto&a=obtener&id=" + id;
+            $.ajax({
+
+                url: url,
+                method: "POST",
+                data: id,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(respuesta) {
+                    $("#edit_form").html(respuesta);
+                }
+
+            })
+
         });
-        
-     
-    } );
-    
+
+
+    });
 </script>
 
 <script type="text/javascript">
     $(document).ready(function() {
-    // Setup - add a text input to each footer cell
-        $('#tabla tfoot th').each( function () {
+        // Setup - add a text input to each footer cell
+        $('#tabla tfoot th').each(function() {
             var title = $(this).text();
-            $(this).html( '<input type="text" placeholder="Buscar '+title+'" />' );
-        } );
-     
-    } );
+            $(this).html('<input type="text" placeholder="Buscar ' + title + '" />');
+        });
+
+    });
 </script>
 
 <style type="text/css">
@@ -284,8 +278,7 @@ session_start();
         width: 100%;
         padding: 3px;
         box-sizing: border-box;
-        color :black;
+        color: black;
     }
 </style>
 </script>
-

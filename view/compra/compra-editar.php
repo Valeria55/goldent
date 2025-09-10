@@ -48,7 +48,7 @@
             <th>Producto</th>
             <th>Precio por Unidad</th>
             <th>Cantidad</th>
-            <th>Total (GS)</th>
+            <th>Total (Gs.)</th>
             <th></th>
         </tr>
     </thead>
@@ -74,20 +74,20 @@
             <td></td>
             <td></td>
             <td>Sub total:</td>
-            <td><div id="subtotal" style="font-size: 20px"><?php echo number_format($subtotal,2,",",".") ?></div></td>
+            <td><div id="subtotal" style="font-size: 20px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
             <td></td>
         </tr>
         <tr>
             <td></td>
             <td></td>
-            <td>Descuento:</td>
+            <td>Descuento (%):</td>
             <td><input type="number" min="0" max="70" value="0" id="descuento" name="descuento"></td>
             <td></td>
         </tr>
         
         <tr>
             <td></td>
-            <td>Total Gs: <div id="total" style="font-size: 20px"><?php echo number_format($subtotal,2,",",".") ?></div></td>
+            <td>Total Gs: <div id="total" style="font-size: 20px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
             <td>Total Rs: <input type="number" min="0" name="totalrs" class="totalrs" id="totalrs" value="<?php echo round(($subtotal/$compra_tmp->reales),2) ?>"  readonly></td>
             <td>Total Us: <input type="number" min="0" name="totalus" class="totalus" id="totalus" value="<?php echo round(($subtotal/$compra_tmp->dolares),2) ?>"  readonly></td>
             <td></td>

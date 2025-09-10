@@ -1,6 +1,5 @@
-
-<div id="detallesModal" class="modal fade bd-example-modal-lg">
-	<div class="modal-dialog modal-lg">
+<div id="detallesModal" class="modal fade">
+	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-body" id="modal-detalles">
           	</div>

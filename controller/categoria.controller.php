@@ -57,7 +57,6 @@ class categoriaController{
         $categoria->id = $_REQUEST['id'];
         $categoria->id_padre = $_REQUEST['id_padre'];
         $categoria->categoria = $_REQUEST['categoria'];
-        $categoria->producto = $_REQUEST['producto'];
 
         $categoria->id > 0 
             ? $this->model->Actualizar($categoria)
@@ -68,16 +67,14 @@ class categoriaController{
             : $accion = "Agregado";;
             
         $id= $this->model->Ultimo();
-        var_dump($id->id);
         
-          if($_REQUEST['id_padre'] == 0)  {
+          if($id->id_padre == '0')  {
             
          $this->model->GuardarPadre($id->id);
                    
                
           }
-        
-        header('Location: index.php?success='.$accion.'&c='.$_REQUEST['c']);
+       header('Location:' . getenv('HTTP_REFERER'));
     }
     
     public function Eliminar(){

@@ -1,11 +1,3 @@
-
-<?php 
-$pagos[]="";
-foreach($this->metodo->Listar() as $m) {
-    $pagos[''.$m->metodo.'']=0;
-}
-?>
-
 <h1 class="page-header">Movimientos de la caja en la sesión 
 <a class="btn btn-lg btn-primary " href="#cierreModal" class="btn btn-success" data-toggle="modal" data-target="#cierreModal" data-c="venta">Cierre de caja</a>
 <a href="?c=venta&a=informediario&fecha=<?php echo date("Y-m-d"); ?>" class="btn btn-success" >Informe de ventas del día</a>
@@ -17,14 +9,12 @@ foreach($this->metodo->Listar() as $m) {
 
     <thead>
         <tr style="background-color: black; color:#fff">
-            <th>N°</th>
+            <th>N</th>
         	<th>Fecha</th>
             <th>Categoría</th>
             <th>Concepto</th>
             <th>N° de comprobante</th>
             <th>Monto</th> 
-            <th>Moneda</th> 
-            <th>Cambio</th> 
             <th>Pago en</th>
         </tr>
     </thead>
@@ -38,9 +28,7 @@ foreach($this->metodo->Listar() as $m) {
             <td><?php echo "Apertura"; ?></td>
             <td><?php echo "Apertura de caja del día"; ?></td>
             <td><?php echo ""; ?></td>
-            <td class="monto"><?php echo number_format($cierre->monto_apertura,0,".",",").'(GS)'; ?></td>
-            <td ><?php echo number_format($cierre->apertura_rs,2,".",",").'(RS)'; ?></td>
-            <td ><?php echo number_format($cierre->apertura_usd,2,".",",").'(USD)'; ?></td>
+            <td class="monto"><?php echo number_format($cierre->monto_apertura,0,".",","); ?></td>
             <td><?php echo "Caja chica"; ?></td>
     </tr>
     <?php 
@@ -51,7 +39,7 @@ foreach($this->metodo->Listar() as $m) {
     $sumaTransferencia = 0;
     $sumaGiro = 0;
     $c=1;
-     foreach($this->model->ListarMovimientosSesion($user_id, $_GET['fecha']) as $r):
+    foreach($this->model->ListarMovimientosSesion($user_id, $_GET['fecha']) as $r):
    // if($r->id_caja == 3){
         if(strlen($r->concepto)>=50){$concepto=substr($r->concepto, 0, 50)."...";}else{$concepto=$r->concepto;}?>
         <tr class="click" <?php if($r->anulado){echo "style='color:red'";}elseif($r->descuento>0){echo "style='color:#F39C12'";} ?>>
@@ -61,25 +49,13 @@ foreach($this->metodo->Listar() as $m) {
             <td title="<?php echo $r->concepto; ?>"><?php echo $concepto; ?></td>
             <td><?php echo $r->comprobante; ?></td>
             <td><?php echo number_format($r->monto,0,".",","); ?></td>
-            <td><?php echo $r->moneda; ?></td>
-            <td><?php echo number_format($r->cambio,2,".",","); ?></td>
             <td><?php echo $r->forma_pago; ?></td>
         </tr>
    <?php
     if($r->anulado != 1){
-    $pagos[''.$r->forma_pago.'']+=$r->monto/$r->cambio;
-     $total +=$r->monto/$r->cambio;
-     
-     if($r->moneda=='GS' && $r->forma_pago='Efectivo'){
-          $totalgs +=$r->monto;
-     }elseif($r->moneda=='USD'&& $r->forma_pago='Efectivo'){
-         $totalusd +=$r->monto;
-     }elseif($r->moneda=='RS'&& $r->forma_pago='Efectivo'){
-         $totalrs +=$r->monto;
-     }
-     
+    $pagos[''.$r->forma_pago.'']+=$r->monto;
+     $total +=$r->monto;
     }
-    
    // }
     endforeach; ?>
     </tbody>
@@ -94,8 +70,6 @@ foreach($this->metodo->Listar() as $m) {
                 <th>Total <?php echo $m->metodo; ?> </th>
                 <th class="monto" id="monto_total"><?php echo number_format($pagos[''.$m->metodo.''],0,".",","); ?></th> 
                 <th></th>
-                <th></th>
-                <th></th>
             </tr>
          <?php 
     endforeach; ?>
@@ -107,19 +81,6 @@ foreach($this->metodo->Listar() as $m) {
                 <th></th>
                 <th>TOTAL</th>
                 <th><?php echo number_format($total,0,".",","); ?></th> 
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-            <tr style="background-color: #eeeeee;">
-                <th></th>
-                <th></th>
-                <th></th>
-                <th>Caja Efectivo</th>
-                <th><?php echo 'GS'.': '.number_format($totalgs,0,".",","); ?></th> 
-                <th><?php echo 'RS'.': '.number_format($totalrs,0,".",","); ?></th> 
-                <th><?php echo 'USD'.': '.number_format($totalusd,0,".",","); ?></th> 
-                <th></th>
                 <th></th>
             </tr>
     </tfoot>

@@ -7,13 +7,14 @@ require_once 'model/cliente.php';
 require_once 'model/cierre.php';
 require_once 'model/caja.php';
 require_once 'model/metodo.php';
-require_once 'model/gastos_fijos.php';
 
-class egresoController{
-    
+class egresoController
+{
+
     private $model;
-    
-    public function __CONSTRUCT(){
+
+    public function __CONSTRUCT()
+    {
         $this->model = new egreso();
         $this->acreedor = new acreedor();
         $this->compra = new compra();
@@ -22,150 +23,192 @@ class egresoController{
         $this->cierre = new cierre();
         $this->caja = new caja();
         $this->metodo = new metodo();
-        $this->gastos_fijos = new gastos_fijos();
     }
-    
-    public function Index(){
+
+    public function Index()
+    {
         require_once 'view/header.php';
         require_once 'view/egreso/egreso.php';
         require_once 'view/footer.php';
-       
     }
 
-    public function Balance(){
+    public function Balance()
+    {
         require_once 'view/header.php';
         require_once 'view/informes/balance.php';
         require_once 'view/footer.php';
-       
     }
 
-    public function Listar(){
+    public function Listar()
+    {
         require_once 'view/egreso/egreso.php';
     }
-    
-    public function EgresoRango(){
-        
+
+    public function EgresoRango()
+    {
+
         require_once 'view/informes/egresosrangopdf.php';
-        
-    }
-    
-     public function ReciboEgreso(){
-        
-        require_once 'view/informes/recibo_egreso.php';
-        
     }
 
-    public function Extraccion(){
+    public function ReciboEgreso()
+    {
+
+        require_once 'view/informes/recibo_egreso.php';
+    }
+
+    public function Extraccion()
+    {
         require_once 'view/header.php';
         if ($this->cierre->Consultar($_SESSION['user_id'])) {
             require_once 'view/egreso/extraccion.php';
-        }else{      
+        } else {
             echo "<h1>Debe hacer apertura de caja</h1>";
         }
         require_once 'view/footer.php';
     }
 
-    public function detalles(){
+    public function detalles()
+    {
         require_once 'view/acreedor/pago_detalles.php';
     }
-    
-    public function Crud(){
+
+    public function Crud()
+    {
         $egreso = new egreso();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $egreso = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         require_once 'view/header.php';
         require_once 'view/egreso/egreso-editar.php';
         require_once 'view/footer.php';
     }
-    
-    public function Obtener(){
+
+    public function Obtener()
+    {
         $egreso = new egreso();
-        
-        if(isset($_REQUEST['id'])){
+
+        if (isset($_REQUEST['id'])) {
             $egreso = $this->model->Obtener($_REQUEST['id']);
         }
-        
+
         if (!isset($_SESSION['user_id'])) {
-            session_start();
+            if (!isset($_SESSION)) session_start();
         }
 
-        if ($_SESSION['nivel']>1){
+        if ($_SESSION['nivel'] > 1) {
             require_once 'view/egreso/egreso-editar.php';
-        }else{
+            // require_once 'view/egreso/extraccion-editar.php';
+        } else {
             require_once 'view/egreso/egreso-editar.php';
         }
-        
     }
 
-    
-    public function Guardar(){
+
+    public function Guardar()
+    {
         $egreso = new egreso();
-        
+
         $egreso->id = $_REQUEST['id'];
         $egreso->id_cliente = $_REQUEST['id_cliente'];
-        session_start();
+        if (!isset($_SESSION)) session_start();
         $cierre = $this->cierre->Consultar($_SESSION['user_id']);
+        if ($_REQUEST['forma_pago'] == "Efectivo") {
 
-        $egreso->id_venta = (isset($_REQUEST['id_venta']))? $_REQUEST['id_venta']:0;
+            if ($_SESSION['nivel'] == 4) { // es gerente, ir a tesoreria
+                $egreso->id_caja = 3;    //tesoreria
+            } else {
+                $egreso->id_caja = 1; //caja chica
+            }
+        } else {
+            $egreso->id_caja = 2;
+        }
+        $egreso->id_venta = (isset($_REQUEST['id_venta'])) ? $_REQUEST['id_venta'] : 0;
         $egreso->fecha = $_REQUEST['fecha'];
         $egreso->categoria = $_REQUEST['categoria'];
         $egreso->concepto = $_REQUEST['concepto'];
         $egreso->comprobante = $_REQUEST['comprobante'];
-        $egreso->nro_comprobante = $_REQUEST['nro_comprobante'];
         $egreso->monto = $_REQUEST['monto'];
-        $egreso->forma_pago = $_REQUEST['forma_pago'];   
-        $egreso->sucursal = $_REQUEST['sucursal']; 
-        $egreso->nro_cheque = $_REQUEST['nro_cheque']; 
-        $egreso->plazo = $_REQUEST['plazo'];
-        $egreso->moneda = $_REQUEST['moneda'];
-        $egreso->cambio = $_REQUEST['cambio'];
-        $egreso->id_caja = $_REQUEST['id_caja'];
-        $egreso->tipo_egreso = $_REQUEST['tipo_egreso'];
-        $egreso->id_gasto_fijo = $_REQUEST['gasto_fijo'];
-        $egreso->fecha_gasto_fijo = $_REQUEST['fecha_gasto_fijo'];
-        $egreso->id_usuario = $_SESSION['user_id'];
+        $egreso->forma_pago = $_REQUEST['forma_pago'];
+        $egreso->sucursal = $_REQUEST['sucursal'];
+        $egreso->nro_cheque = $_REQUEST['nro_cheque'];
+        $egreso->plazo = $_REQUEST['plazo'] == '' ? null : $_REQUEST['plazo'];
 
+        // Agregar moneda y cotización
+        $egreso->moneda = isset($_REQUEST['moneda']) ? $_REQUEST['moneda'] : 'GS';
 
-        $egreso->id > 0 
+        // Si no es efectivo, forzar GS
+        if ($_REQUEST['forma_pago'] !== "Efectivo") {
+            $egreso->moneda = 'GS';
+        }
+
+        // Obtener cotización actual si es necesario
+        if ($egreso->moneda !== 'GS') {
+            $cambio_actual = $this->cierre->Ultimo();
+            if ($egreso->moneda == 'USD') {
+                $egreso->cambio = $cambio_actual->cot_dolar;
+            } elseif ($egreso->moneda == 'RS') {
+                $egreso->cambio = $cambio_actual->cot_real;
+            }
+        } else {
+            $egreso->cambio = 1;
+        }
+
+        $egreso->id > 0
             ? $this->model->Actualizar($egreso)
             : $this->model->Registrar($egreso);
 
         if (!isset($_SESSION['user_id'])) {
-            session_start();
-        }    
+            if (!isset($_SESSION)) session_start();
+        }
 
-        if ($_SESSION['nivel']>1){
+        if ($_SESSION['nivel'] > 1) {
             header('Location: index.php?c=egreso&a=extraccion');
-        }else{
+        } else {
             header('Location: index.php?c=egreso');
         }
     }
-    
-    public function Eliminar(){
-        $this->model->Eliminar($_REQUEST['id']);
+
+    public function Eliminar()
+    {
+        $egreso = $this->model->Obtener($_REQUEST['id']);
+        if ($egreso->categoria == 'Transferencia') {
+            $this->model->EliminarTransferencia($egreso->id_transferencia);
+        } else {
+            $this->model->Eliminar($_REQUEST['id']);
+        }
         header('Location: index.php?c=egreso');
     }
 
-    public function Anular(){
-        $this->model->Eliminar($_REQUEST['id']);
+    public function Anular()
+    {
+        $egreso = $this->model->Obtener($_REQUEST['id']);
+        if ($egreso->categoria == 'Transferencia') {
+            $this->model->EliminarTransferencia($egreso->id_transferencia);
+        } else {
+            $this->model->Eliminar($_REQUEST['id']);
+        }
         header('Location: index.php?c=egreso&a=extraccion');
     }
 
-    public function EliminarPago(){
+    public function EliminarPago()
+    {
 
         $egreso = new egreso();
         $egreso = $this->model->Obtener($_REQUEST['id']);
 
+        $montoEgreso = $egreso->monto;
+        $cotizacionEgreso = $egreso->cambio ?? 1; // Si no hay cotización, usar 1 como valor por defecto
+        $montoADevolver = $montoEgreso * $cotizacionEgreso;
+
         $acreedor = new acreedor();
-        $acreedor->id=$egreso->id_acreedor;
-        $acreedor->monto=$egreso->monto;
+        $acreedor->id = $egreso->id_acreedor;
+        //devolvemos en monto en guaranies
+        $acreedor->monto = $montoADevolver;
 
         $this->model->Eliminar($_REQUEST['id']);
         $this->acreedor->SumarSaldo($acreedor);
         header('Location: index.php?c=egreso');
     }
-
 }

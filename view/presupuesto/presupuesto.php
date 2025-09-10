@@ -5,13 +5,32 @@
 <a class="btn btn-primary pull-right" href="?c=presupuesto_tmp" class="btn btn-success">Nuevo presupuesto</a>
 <br><br><br>
 
+<!-- Filtros por estado -->
+<div class="row">
+    <div class="col-sm-12">
+        <h4>Filtrar por estado:</h4>
+        <div class="btn-group" role="group" style="margin-bottom: 15px;">
+            <button type="button" class="btn btn-info active" onclick="filtrarPorEstado('todos')">Todos</button>
+            <button type="button" class="btn btn-warning" onclick="filtrarPorEstado('Pendiente')">Pendiente</button>
+            <button type="button" class="btn btn-success" onclick="filtrarPorEstado('Aprobado')">Aprobado</button>
+            <button type="button" class="btn btn-primary" onclick="filtrarPorEstado('Vendido')">Vendido</button>
+        </div>
+        <div id="filtros-activos" style="margin-top: 10px;">
+            <small class="text-muted">
+                <strong>Filtros activos:</strong> 
+                <span id="estado-activo">Todos los estados</span>
+                <span id="fecha-activa"></span>
+            </small>
+        </div>
+    </div>
+</div>
+
 <h3 id="filtrar" align="center">Filtros <i class="fas fa-angle-right"></i><i class="fas fa-angle-left" style="display: none"></i></h3>
 <div class="row">
     <div class="col-sm-12">
         <div align="center" id="filtro">
-            <form method="get">
+            <form method="post">
                 <input type="hidden" name="c" value="presupuesto">
-                <input type="hidden" name="a" value="index">
 
                 <div class="form-group col-md-2">
                 </div>
@@ -19,10 +38,14 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Desde</label>
-                    <input type="date" name="desde" value="<?php echo (isset($_GET['desde']))? $_GET['desde']:''; 
+                    <input type="date" name="desde" value="<?php echo (isset($_POST['desde'])) ? $_POST['desde'] : '';
                                                             ?>" class="form-control">
                 </div>
-              
+                <div class="form-group col-md-2">
+                    <label>Hasta</label>
+                    <input type="date" name="hasta" value="<?php echo (isset($_POST['hasta'])) ? $_POST['hasta'] : '';
+                                                            ?>" class="form-control">
+                </div>
 
                 <div class="form-group col-md-2">
                     <label></label>
@@ -44,15 +67,13 @@
             <th>Cliente</th>
             <th>Fecha y Hora</th>
             <th>Total</th>
-            <?php if ($_SESSION['nivel']==1 || $_SESSION['nivel']==2 || $_SESSION['nivel']==4 ) { ?>  
-            <th></th>
+            <th>Estado</th>
+            <?php if (!isset($_SESSION)) session_start();
+            if (($_SESSION['nivel'] <> 3)) { ?>
+                <th></th>
             <?php } ?>
             <th></th>
             <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-
 
 
     </thead>
@@ -96,17 +117,52 @@
     </tbody>
 
 </table>
-
 </div>
 </div>
 </div>
-
 <?php include("view/crud-modal.php"); ?>
 <?php include("view/presupuesto/mes-modal.php"); ?>
 <?php include("view/presupuesto/dia-modal.php"); ?>
-<?php include("view/presupuesto/detalles-modal.php"); 
-session_start();
+<?php include("view/presupuesto/detalles-modal.php");
+if (!isset($_SESSION)) session_start();
 ?>
+
+<style>
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 25px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .quantity-control button {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: white;
+        color: var(--primary);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    /* Estilos adicionales para los botones de estado */
+    .btn-group .btn {
+        margin-right: 5px;
+    }
+
+    .btn-group .btn.active {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+</style>
 <script type="text/javascript">
     $(document).ready(function() {
 
@@ -121,7 +177,7 @@ session_start();
             }, {
                 extend: 'pdfHtml5',
                 footer: true,
-                title: "Presupuestos",
+                title: "Gastos",
                 orientation: 'landscape',
                 pageSize: 'LEGAL',
                 exportOptions: {
@@ -133,10 +189,21 @@ session_start();
                 details: true
             },
             "sort": false,
-            "ajax": {
-                    "url": "?c=presupuesto&a=ListarAjax&desde=<?php echo $_GET['desde'] ?>",
-                    "dataSrc": ""
-                },
+            <?php //if (isset($_GET['desde'])) { 
+            ?> "ajax": {
+                "url": "?c=presupuesto&a=ListarFiltros&desde=<?php echo (isset($_POST['desde'])) ? $_POST['desde'] : ''; ?>&hasta=<?php echo (isset($_POST['hasta'])) ? $_POST['hasta'] : '';
+                                                                                                                                ?>",
+                "dataSrc": ""
+            },
+            <?php //} else { 
+            ?>
+
+            // "ajax": {
+            //     "url": "?c=presupuesto&a=ListarAjax",
+            //     "dataSrc": ""
+            // },
+            <?php //} 
+            ?>
 
             "columns": [{
                     "data": "id_presupuesto"
@@ -155,66 +222,46 @@ session_start();
                 },
                 {
                     "data": "total",
-                    render: $.fn.dataTable.render.number(',', '.', 2)
+                    render: $.fn.dataTable.render.number(',', '.', 0)
                 },
-                <?php if ($_SESSION['nivel']==1 || $_SESSION['nivel']==2 || $_SESSION['nivel']==4 ) { ?>   {
+                {
+                    "data": "estado",
+                    render: function(data, type, row) {
+                        if (row.estado == 'Pendiente') {
+                            let aprobarLink = "?c=presupuesto&a=Aprobar&id_presupuesto=" + row.id_presupuesto;
+                            return '<span class="badge badge-warning">Pendiente aprobación</span><br><a href="' + aprobarLink + '" class="btn btn-sm btn-success mt-1">Aprobar</a>';
+                        } else if (row.estado == 'Vendido') {
+                            return '<span class="badge badge-success">Vendido</span>';
+                        } else if (row.estado == 'Aprobado') {
+                            return '<span class="badge badge-primary">Aprobado</span>';
+                        } else {
+                            return '<span class="badge badge-secondary">Sin estado</span>';
+                        }
+                    }
+                },
+                <?php
+                if (($_SESSION['nivel'] <> 3)) { ?> {
                         "defaultContent": "",
                         render: function(data, type, row) {
                             if (row.estado == 'Vendido') {
-                                return 'Finalizado'
-                            } else {
+                                return '<span class="badge badge-success">Finalizado</span>'
+                            } else if (row.estado == 'Pendiente') {
+                                return '<span class="text-muted">Requiere aprobación</span>';
+                            } else if (row.estado == 'Aprobado') {
                                 let link = "?c=presupuesto&a=Venta&id_presupuesto=" + row.id_presupuesto;
                                 return '<a href="' + link + '" class="btn btn-primary">Venta</a>';
-
+                            } else {
+                                return '<span class="text-muted">Sin estado</span>';
                             }
                         }
                     },
-                    <?php } ?>  {
+                <?php } ?> {
                     "defaultContent": "",
                     render: function(data, type, row) {
                         let link = "?c=presupuesto&a=Presupuestopdf&id=" + row.id_presupuesto;
-                        return '<a href="' + link + '" class="btn btn-warning">Ticket</a>';
+                        return '<a href="' + link + '" class="btn btn-warning">Imprimir</a>';
                     }
                 },
-                {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-                        let link = "?c=presupuesto&a=Presupuestopdff&id=" + row.id_presupuesto;
-                         return "<a href='#selectModal' data-toggle='modal' data-target='#selectModal' data-id='" + row.id_presupuesto + "' data-c='presupuesto' data-action='pdf' class='btn btn-warning'>PDF</a>";
-                    }
-                },
-
-                {
-                    "defaultContent": "",
-                    
-                    render: function(data, type, row) {
-                        if ((row.anulado == 1)) {
-                                return 'ANULADO'
-                            } else if (row.estado != 'Vendido') {  
-
-                                let link = "?c=presupuesto&a=Editar&id=" + row.id_presupuesto;
-                                return '<a href="' + link + '" class="btn btn-warning">Editar</a>';
-
-                            }
-                       
-                    }
-                },
-
-                 {
-                        "defaultContent": "",
-                        render: function(data, type, row) {
-                            
-                            if (row.anulado == 1) {
-                                return 'ANULADO'
-                            } else if (row.estado != 'Vendido') {  
-
-                                let link = "?c=presupuesto&a=eliminar&id=" + row.id_presupuesto;
-                                return '<a href="' + link + '" class="btn btn-danger">Anular</a>';
-
-                            }
-
-                        }
-                    },
                 {
                     "defaultContent": "",
                     render: function(data, type, row) {
@@ -228,7 +275,83 @@ session_start();
             ],
 
         });
+        
+        // Inicializar estado actual
+        window.estadoActual = 'todos';
+        
+        // Interceptar el envío del formulario de fechas
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Obtener las fechas del formulario
+            let desde = $('input[name="desde"]').val();
+            let hasta = $('input[name="hasta"]').val();
+            
+            // Construir URL considerando el estado actual
+            let url;
+            if (window.estadoActual === 'todos') {
+                url = "?c=presupuesto&a=ListarFiltros&desde=" + desde + "&hasta=" + hasta;
+            } else {
+                url = "?c=presupuesto&a=ListarPorEstado&estado=" + window.estadoActual + "&desde=" + desde + "&hasta=" + hasta;
+            }
+            
+            // Recargar la tabla con la nueva URL
+            $('#tabla').DataTable().ajax.url(url).load();
+            
+            // Actualizar indicadores de filtros activos
+            actualizarFiltrosActivos();
+        });
+        
+        // Inicializar indicadores al cargar la página
+        actualizarFiltrosActivos();
     });
+
+    // Función para filtrar por estado
+    function filtrarPorEstado(estado) {
+        // Obtener las fechas actuales del formulario
+        let desde = document.querySelector('input[name="desde"]').value;
+        let hasta = document.querySelector('input[name="hasta"]').value;
+        
+        let url;
+        if (estado === 'todos') {
+            url = "?c=presupuesto&a=ListarFiltros&desde=" + desde + "&hasta=" + hasta;
+        } else {
+            url = "?c=presupuesto&a=ListarPorEstado&estado=" + estado + "&desde=" + desde + "&hasta=" + hasta;
+        }
+
+        // Recargar la tabla con la nueva URL
+        $('#tabla').DataTable().ajax.url(url).load();
+
+        // Actualizar el estilo de los botones
+        $('.btn-group button').removeClass('active');
+        $('button[onclick="filtrarPorEstado(\'' + estado + '\')"]').addClass('active');
+        
+        // Guardar el estado actual para uso posterior
+        window.estadoActual = estado;
+        
+        // Actualizar indicadores de filtros activos
+        actualizarFiltrosActivos();
+    }
+    
+    // Función para actualizar la visualización de filtros activos
+    function actualizarFiltrosActivos() {
+        let estadoTexto = window.estadoActual === 'todos' ? 'Todos los estados' : 'Estado: ' + window.estadoActual;
+        document.getElementById('estado-activo').textContent = estadoTexto;
+        
+        let desde = document.querySelector('input[name="desde"]').value;
+        let hasta = document.querySelector('input[name="hasta"]').value;
+        let fechaTexto = '';
+        
+        if (desde && hasta) {
+            fechaTexto = ' | Fechas: ' + desde + ' a ' + hasta;
+        } else if (desde) {
+            fechaTexto = ' | Desde: ' + desde;
+        } else if (hasta) {
+            fechaTexto = ' | Hasta: ' + hasta;
+        }
+        
+        document.getElementById('fecha-activa').textContent = fechaTexto;
+    }
 </script>
 <script type="text/javascript">
     $("#filtrar").click(function() {

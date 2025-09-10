@@ -1,10 +1,10 @@
 <h1 class="page-header">
-    <?php echo $acreedor->id != null ?  date("Y-m-d", strtotime($acreedor->fecha)) : 'Nuevo Registro'; ?>
+    <?php echo $acreedor->id != null ? $acreedor->fecha : 'Nuevo Registro'; ?>
 </h1>
 
 <ol class="breadcrumb">
   <li><a href="?c=acreedor">acreedor</a></li>
-  <li class="active"><?php echo $acreedor->id != null ? 'Editar Registro' : 'Nuevo Registro'; ?></li>
+  <li class="active"><?php echo $acreedor->id != null ? $acreedor->fecha : 'Nuevo Registro'; ?></li>
 </ol>
 
 <form id="crud-frm" method="post" action="?c=acreedor&a=guardar" enctype="multipart/form-data">

@@ -12,22 +12,16 @@
                     <h1>Generar informe mensual</h1>
                     <input type="hidden" name="c" value="venta">
                     <input type="hidden" name="a" value="cierreMes">
-                    <div class="form-group col-md-12">
+                    <div class="form-group">
                         <label>Desde</label>
                         <input type="date" required min="2020-11-01" max="<?php echo date("Y-m-d") ?>" name="desde" class="form-control">
                     </div>
 
-                    <div class="form-group col-md-12">
+                    <div class="form-group">
                         <label>Hasta</label>
                         <input type="date" required min="2020-11-01" max="<?php echo date("Y-m-d") ?>" name="hasta" class="form-control">
                     </div>
-                    <div class="form-group col-md-12">
-                        <label>Balance</label>
-                        <select name="balance" class="form-control">
-                            <option value="informe" >Informe</option>
-                            <option value="extracto" >Extracto</option>
-                        </select>
-                    </div>
+
 
                     <p>
                         <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
@@ -45,6 +39,9 @@
                                     <input class="form-check-input me-1" type="checkbox" name="items_informe[vent_cont]" checked value="true">
                                     Lista de ventas al contado </label>
                                 <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="checkbox" name="items_informe[vent_cred]" checked value="true">
+                                    Lista de ventas a crédito </label>
+                                <label class="list-group-item">
                                     <input class="form-check-input me-1" type="checkbox" name="items_informe[mov_prod]" checked value="true">
                                     Movimientos de cada producto
                                 </label>
@@ -61,8 +58,16 @@
                                     Ventas por vendedores
                                 </label>
                                 <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="checkbox" name="items_informe[cobr_deud]" checked value="true">
+                                    Cobros de deudas
+                                </label>
+                                <label class="list-group-item">
                                     <input class="form-check-input me-1" type="checkbox" name="items_informe[ingr]" checked value="true">
                                     Ingresos
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="checkbox" name="items_informe[egr]" checked value="true">
+                                    Egresos
                                 </label>
                                 <label class="list-group-item">
                                     <input class="form-check-input me-1" type="checkbox" name="items_informe[compr]" checked value="true">
@@ -87,7 +92,6 @@
                             </div>
                         </div>
                     </div>
-                    
 
                     <div class="text-right">
                         <button class="btn btn-primary">Generar</button>

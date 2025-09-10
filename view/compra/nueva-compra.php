@@ -1,65 +1,50 @@
  
 <?php $fecha = date("Y-m-d"); ?>
-<?php $cierre = $this->cierre->ConsultarParaCompra($_SESSION['user_id']); ?>
 <h1 class="page-header">Nueva compra <a class="btn btn-primary" href="#productoModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="producto">Nuevo producto</a> </h1>
-
-
+<div class="container">
     <div class="row">
         <form method="post" action="?c=compra_tmp&a=guardar">
-        <input type="hidden" name="id_presupuesto" value="<?php $id_presupuesto = $_GET['id_presupuesto']; ?>">
-        <div class="col-sm-2">
+
+        
+        <div class="col-sm-4">
             <label>Producto </label>
             <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
                     title="-- Seleccione el producto --" autofocus>
                 <?php foreach($this->producto->Listar() as $producto): ?> 
-                <option data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' '.$producto->precio_minorista.' ( '.$producto->stock_s1.' )'; ?> </option>
+                <option data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' '.$producto->precio_minorista.' ( '.$producto->stock.' )'; ?> </option>
                 <?php endforeach; ?>
         </select>
         </div>
-        <div class="col-sm-1">
+        <div class="col-sm-2">
             <label>Cantidad</label>
-            <input type="number" name="cantidad" class="form-control" id="cantidad" value="" min="1" required step="any" autofocus>   
+            <input type="number" name="cantidad" class="form-control" id="cantidad" value="" min="1" required step="any">   
         </div>
         <div class="col-sm-2">
             <label>Precio de compra</label>
-            <input type="number" step="0.01" value="" name="precio_compra" id="precio_compra" class="form-control" min="1" required >
-            
+            <input type="number" value="0" name="precio_compra" id="precio_compra" class="form-control" min="0">
+            <input type="submit" name="bton" style="display: none">
         </div>
         <div class="col-sm-2">
-            <label>P/Minorista</label>
-            <input type="number" step="0.01" value=""  name="precio_min"  id="precio_min" class="form-control" min="1" required >   
+            <label>Precio de venta</label>
+            <input type="number" value="0" id="precio_min" name="precio_min" class="form-control" min="0">   
         </div>
-        <!-- <div class="col-sm-1">
-            <label>P/brasil</label>
-            <input type="float" step="0.01" value=""  name="precio_brasil" id="precio_brasil" class="form-control" min="1" required >   
-        </div> -->
-        <div class="col-sm-2">
-            <label>P/Intermedio</label>
-            <input type="number" step="0.01" value=""  name="precio_intermedio" id="precio_intermedio" class="form-control" min="1" required >   
-        </div>
-        <div class="col-sm-2">
-            <label>P/Mayorista</label>
-             <input type="number" value="" id="precio_may" name="precio_may" class="form-control"  min="1" required >
-            <!--<input type="hidden" value="" id="precio_may" name="precio_may" class="form-control" required>     --> 
-             <input class="btn btn-primary center-block" style="visibility:hidden;" type="submit" name="bton" value="Confirmar" >
+        <div class="col-sm-2" style="display:none">
+            <label>Mayorista</label>
+            <input type="number" value="0" id="precio_may" name="precio_may" class="form-control" min="0">   
         </div>
     </form>
     </div>
-    
+</div>
 <p> </p>
 <div class="table-responsive">
 
-<table class="table table-striped table-bordered display responsive nowrap " width="100%" id="tabla1">
+<table class="table table-striped table-bordered display responsive nowrap" width="100%" id="tabla1">
 
     <thead>
         <tr style="background-color: #000; color:#fff">
-            <th>Codigo</th>
             <th>Producto</th>
-            <th>P/Minorista</th>
-            <!-- <th>P/Brasil</th> -->
-            <th>P/Intermedio</th>
-            <th>P/Mayorista</th>
-            <th>Costo</th>
+            <th>Precio de venta</th>
+            <th>Precio por Unidad</th>
             <th>Cantidad</th>
             <th>Total (Gs.)</th>
             <th></th>
@@ -68,18 +53,13 @@
     <tbody>
     <?php
      $subtotal=0;
-     $cant=0;
      foreach($this->model->Listar() as $r): 
         $totalItem = $r->precio_compra*$r->cantidad;
-        $subtotal += ($totalItem);
-        $cant += $r->cantidad; ?>
+        $subtotal += ($totalItem);?>
         <tr>
-            <td><?php echo $r->codigo; ?></td>
+            
             <td><?php echo $r->producto; ?></td>
             <td><?php echo number_format($r->precio_min, 0, "," , "."); ?></td>
-            <!-- <td><?php //echo number_format($r->precio_brasil, 0, "," , "."); ?></td> -->
-            <td><?php echo number_format($r->precio_intermedio, 0, "," , "."); ?></td>
-            <td><?php echo number_format($r->precio_may, 0, "," , "."); ?></td>
             <td><?php echo number_format($r->precio_compra, 0, "," , "."); ?></td>
             <td><?php echo $r->cantidad; ?></td>
             <td><div id="precioTotal<?php echo $r->id; ?>" class="total_item">
@@ -95,56 +75,57 @@
             <td></td>
             <td></td>
             <td></td>
+            <td>Total Gs: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
             <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>Cantidad: <div id="total" style="font-size: 30px"><?php echo number_format($cant,0,",",".") ?></div></td>
-            <td>Total: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal,0,",",".") ?></div></td>
         </tr>
     </tbody>
 </table> 
 <?php if($subtotal>0){ ?>
-<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="compra">Finalizar (F4)</a>
-<!-- preguntar -->
-<!-- <a class="btn btn-lg btn-danger delete" href="?c=compra_tmp&a=CancelarCompra">Cancelar Todo</a> -->
-</div>
+<div align="center"><a class="btn btn-lg btn-primary " href="#finalizar-step" class="btn btn-success" data-toggle="modal" data-target="#finalizar-step">Finalizar (F4)</a></div>
 <?php } ?>
-</div>
 </div> 
 </div>
 </div>
 
-<?php include("view/compra/finalizar-modal.php"); ?>
+<?php include("view/compra/step-modal.php"); ?>
 <?php include("view/crud-modal.php"); ?>
 
 <script type="text/javascript">
 
-    $(document).ready(function() {
-            $('input').on('keypress', function(e) {
-                if (e.which == 13) {
-                    switch ($(this).attr('id')) {
-                        case 'cantidad':
-                            $('#precio_compra').select();
-                            e.preventDefault();
-                            break;
-                        case 'precio_compra':
-                            $('#precio_min').select();
-                            e.preventDefault();
-                            break;
-                        case 'precio_min':
-                            $('#precio_intermedio').select();
-                            e.preventDefault();
-                            break;
-                        case 'precio_intermedio':
-                            $('#precio_may').select();
-                            e.preventDefault();
-                            break;
-                    }
-                }
-            });
-    });
+    $('#finalizar-step').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var id = button.data('id');
+		var url = "?c=compra&a=finalizar_compra&id="+id;
+		$.ajax({
+			url: url,
+			method : "POST",
+			data: id,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success:function(respuesta){
+				$("#modal-detalles2").html(respuesta);
+				$('.selectpicker').selectpicker();
+			}
 
+		})
+	});
+		$('#finalizar-step').on('hidden.bs.modal', function (event) {
+
+		var url = "?c=pago_tmp&a=VaciarPago";
+		$.ajax({
+			url: url,
+			method : "POST",
+			success:function(respuesta){
+				console.log(respuesta);
+				console.log('Se vacío el pago');
+				console.log(url);
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log("Error en la solicitud AJAX:", textStatus, errorThrown);
+			}
+		})
+	});
 
     $('#producto').on('change',function(){
         var id = $(this).val();
@@ -162,7 +143,6 @@
                     $("#precio_compra").val(producto.precio_costo);
                     $("#precio_min").val(producto.precio_minorista);
                     $("#precio_may").val(producto.precio_mayorista);
-                    $("#precio_intermedio").val(producto.precio_intermedio);
                     $("#cantidad").focus();
                 }
 
@@ -200,25 +180,6 @@
         $('#totalrs').val(totalrs);
         $('#totalus').val(totalus);
     }
-
-    <?php if(isset($_REQUEST['dupl'])):?>
-        Swal.fire({
-            icon: 'error',
-            customClass: "swal-lg",
-            title: 'Producto duplicado',
-            text: 'Ya fue cargado el producto en esta compra'
-        });
-    <?php endif;?>
-
-    <?php if(isset($_REQUEST['cant'])):?>
-        Swal.fire({
-            icon: 'error',
-            customClass: "swal-lg",
-            title: 'No se guardó el registro',
-            text: 'Ingrese una cantidad válida'
-        });
-    <?php endif;?>
-
 
 
 </script>

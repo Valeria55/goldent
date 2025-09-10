@@ -24,6 +24,7 @@
 
     <thead>
         <tr style="background-color: #000; color:#fff">
+            <th>Id</th>
             <th>Fecha de Apertura</th>
             <th>Fecha de Cierre</th>
             <th>Motivo</th>
@@ -36,6 +37,7 @@
         $lista = $this->model->Listar();
         foreach ($lista as $c) :  ?>
             <tr>
+                <td><?php echo $c->id; ?></td>
                 <td><?php echo date("d/m/Y H:i", strtotime($c->fecha_apertura)); ?></td>
                 <td><?php if ($c->fecha_cierre) echo date("d/m/Y H:i", strtotime($c->fecha_cierre)); ?></td>
                 <td><?php echo $c->motivo; ?></td>
