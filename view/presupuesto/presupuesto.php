@@ -1,9 +1,8 @@
 <h1 class="page-header">Lista de presupuestos &nbsp;
-    <!--<a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
-<a class="btn btn-primary" href="#mesModal" class="btn btn-primary" data-toggle="modal" data-target="#mesModal">Informe Mensual</a>-->
+    <a class="btn btn-primary pull-right" href="?c=presupuesto_tmp" class="btn btn-success">Nuevo presupuesto</a>
 </h1>
-<a class="btn btn-primary pull-right" href="?c=presupuesto_tmp" class="btn btn-success">Nuevo presupuesto</a>
-<br><br><br>
+
+
 
 <!-- Filtros por estado -->
 <div class="row">

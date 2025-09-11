@@ -3,7 +3,7 @@
 <h1 class="page-header">Lista de cajas </h1>
 <?php if($_SESSION['nivel'] == 1):?>
 <a class="btn btn-primary pull-right" style="margin-left: .5em !important;" href="#inversion_modal" class="btn btn-success" data-toggle="modal" data-target="#inversion_modal" data-c="caja">Entrada externa</a>
-<a class="btn btn-primary pull-right" href="#cajaModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="caja">Nueva Caja</a>
+<!-- <a class="btn btn-primary pull-right" href="#cajaModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="caja">Nueva Caja</a> -->
 <?php endif;?>
 <!-- Botón de documentación -->
 <a class="btn btn-warning pull-right" style="margin-right: .5em !important;" target="_blank" href="index.php?c=caja&a=guiaPDF">
