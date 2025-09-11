@@ -213,88 +213,6 @@
     
 </table>
 
-<!--
-  *************************************************************************
-  *                                                                       *
-  *   TRANSFERENCIAS                                                       *
-  *                                                                       *
-  *************************************************************************
--->
-<hr />
-<h3 style="text-align: center">TRANSFERENCIAS:</h3>
-<h4>Transferencias enviadas</h4>
-<table class="table table-striped table-bordered display responsive nowrap" style="font-size:12px;">
-
-    <thead>
-        <tr style="background-color: #212121; color:#fff">  
-            <th>Fecha Enviada</th>
-            <th>Fecha de confirmacion</th>
-            <th>Encargado(N° Trans)</th>
-            <th>Local Receptor</th>
-            <th>Cantidad</th>
-    </thead>
-    <tbody>
-    <?php 
-    $suma = 0; $count = 0; $cantidad = 0; 
-    foreach($this->transferencia_producto->ListarEnviadas($_GET['id_producto'], $desde, $hasta) as $r):
-        if(!$r->anulado and $r->estado == 'finalizado'){?>
-        <tr align="right">
-            <td style="padding:0px" align="left"><?php echo $r->fecha_transferencia; ?></td>
-            <td style="padding:0px" align="left"><?php echo $r->fecha_confirmacion; ?></td>
-            <td style="padding:0px" align="left"><?php echo $r->encargado; ?>(<?php echo $r->id_transf; ?>)</td>
-            <td style="padding:0px" align="right"><?php echo $r->destino; ?></td>
-            <td style="padding:0px" align="right"><?php echo $r->cantidad; ?></td>     
-    <?php 
-    }endforeach; ?>
-    </tbody>
-    <?php ?>
-    <tfoot>
-        <tr style="background-color: #666666; color:#fff" >
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-    </tfoot> <?php  ?>
-    
-</table>
-
-<h4>Transferencias recibidas</h4>
-<table class="table table-striped table-bordered display responsive nowrap" style="font-size:12px;">
-
-    <thead>
-        <tr style="background-color: #212121; color:#fff">  
-            <th>Fecha Enviada</th>
-            <th>Fecha de confirmacion</th>
-            <th>Encargado(N° Trans)</th>
-            <th>Local Receptor</th>
-            <th>Cantidad</th>
-    </thead>
-    <tbody>
-    <?php 
-    $suma = 0; $count = 0; $cantidad = 0; 
-    foreach($this->transferencia_producto->ListarRecibidas($_GET['id_producto'], $desde, $hasta) as $r):
-        if(!$r->anulado){?>
-        <tr align="right">
-            <td style="padding:0px" align="left"><?php echo $r->fecha_transferencia; ?></td>
-            <td style="padding:0px" align="left"><?php echo $r->fecha_confirmacion; ?></td>
-            <td style="padding:0px" align="left"><?php echo $r->recibo_por; ?>(<?php echo $r->id_transf; ?>)</td>
-            <td style="padding:0px" align="right"><?php echo $r->destino; ?></td>
-            <td style="padding:0px" align="right"><?php echo $r->cantidad; ?></td>
-    <?php 
-          $total +=$r->cantidad; } endforeach; ?>
-    </tbody>
-    <?php ?>
-    <tfoot>
-        <tr style="background-color: #666666; color:#fff" >
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><?php echo $total; ?></td>
-    </tfoot> 
-    
-</table>
 
 <!--
   *************************************************************************
@@ -307,45 +225,7 @@
 <hr />
 <h3 style="text-align: center">DEVOLUCIONES:</h3>
 <!--DEVOLUCIONES VENTAS-->
-<h4>Devoluciones Ventas</h4>
-<table class="table table-striped table-bordered display responsive nowrap" style="font-size:12px;">
 
-    <thead>
-        <tr style="background-color: #212121; color:#fff">  
-            <th>Fecha de devolucion</th>
-            <th>Vendedor</th>
-            <th>Cantidad</th>
-            <th>Precio de venta</th>
-            <th>Motivo</th>
-    </thead>
-    <tbody>
-    <?php 
-    $suma = 0; $cantidad_devuelta_ven = 0;
-    foreach($this->devolucion_ventas->ListarDevolucionesVen($_GET['id_producto'], $desde, $hasta) as $r):
-        if(!$r->anulado){?>
-        <tr align="right">
-            <td style="padding:0px" align="left"><?php echo $r->fecha_venta; ?></td>
-            <td style="padding:0px" align="left"><?php echo $r->nombre_vendedor; ?></td>
-            <td style="padding:0px" align="right"><?php echo $r->cantidad_ven*-1; ?></td> 
-            <td style="padding:0px" align="right"><?php echo number_format($r->precio_venta,0,".",","); ?></td>   
-            <td style="padding:0px" align="right"><?php echo $r->motivo; ?></td>
-        </tr>
-    <?php 
-        $suma += $r->precio_venta;
-        $cantidad_devuelta_ven += $r->cantidad_ven;
-    }endforeach; ?>
-    </tbody>
-    <?php ?>
-    <tfoot>
-        <tr style="background-color: #666666; color:#fff" >
-            <td></td>
-            <td></td>
-            <td style="padding-right:0px" align="right">Cantidad devuelta: <?php echo $cantidad_devuelta_ven*-1 ?></td>
-            <td style="padding-right:0px" align="right">Total devuelto: <?php echo number_format(($suma*$cantidad_devuelta_ven*-1),0,".",","); ?></td>
-            <td></td>
-    </tfoot> <?php  ?>
-    
-</table>
 <!--DEVOLUCIONES COMPRAS-->
 <h4>Devoluciones Compras</h4>
 <table class="table table-striped table-bordered display responsive nowrap" style="font-size:12px;">

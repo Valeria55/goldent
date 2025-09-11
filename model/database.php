@@ -1,6 +1,6 @@
 <?php
 define("USER", "u832567584_golden");
-define("PASS", "Trinity..2021");
+define("PASS", "q918K/S8");
 define("DB", "u832567584_golden");
 define("HOST", "localhost");
 

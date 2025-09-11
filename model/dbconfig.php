@@ -2,7 +2,7 @@
 
 	$DB_HOST = 'localhost';
 	$DB_USER = 'u832567584_golden';
-	$DB_PASS = 'Trinity..2021';
+	$DB_PASS = 'q918K/S8';
 	$DB_NAME = 'u832567584_golden';
 
 
