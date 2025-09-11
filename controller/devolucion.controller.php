@@ -19,6 +19,19 @@ class devolucionController
 {
 
     private $model;
+    private $venta;
+    private $usuario;
+    private $compra;
+    private $devolucion_tmp;
+    private $producto;
+    private $ingreso;
+    private $egreso;
+    private $deuda;
+    private $acreedor;
+    private $cierre;
+    private $caja;
+    private $cliente;
+
 
     public function __CONSTRUCT()
     {
@@ -293,22 +306,25 @@ class devolucionController
             $devolucion = new devolucion();
 
             $devolucion->id = 0;
-            $devolucion->id_venta = $ven->id_venta + 1;
+            $devolucion->id_venta = ($ven->id_venta + 1);
+            $devolucion->venta = $_POST['venta'] ;
             $devolucion->id_cliente = 0;
             $devolucion->id_vendedor = $_SESSION['user_id'];
             $devolucion->vendedor_salon = 0;
             $devolucion->id_producto = $v->id_producto;
             $devolucion->precio_costo = $v->precio_costo;
             $devolucion->precio_venta = $v->precio_venta;
-            $devolucion->subtotal = $v->precio_venta * $v->cantidad;
+            $subtotal = $v->precio_venta * $v->cantidad;
+            $devolucion->subtotal = $v->cantidad<0 ? $subtotal * -1 : $subtotal;
             $devolucion->descuento = $v->descuento;
             $devolucion->iva = 0;
             $devolucion->total = $devolucion->subtotal;
-            $devolucion->comprobante = 0;
+            // Guardar la observación en la columna comprobante
+            $devolucion->comprobante = isset($_POST['observacion']) ? $_POST['observacion'] : '';
             $devolucion->nro_comprobante = 0;
             $devolucion->cantidad = $v->cantidad;
             $devolucion->margen_ganancia = 0;
-            $devolucion->fecha_venta = date("Y-m-d H:i"); //date("Y-m-d H:i");
+            $devolucion->fecha_venta = date("Y-m-d H:i");
             $devolucion->metodo = 0;
             $devolucion->contado = $_REQUEST['contado'];
             $devolucion->banco = 0;

@@ -35,7 +35,7 @@ $html1 = <<<EOF
 <br><br>
     <table width ="100%" style="text-align:center; line-height: 12px; font-size:8px">
         <tr>
-            <td style="vertical-align: middle;"><img src="assets/img/SCORECARLOGO.png" width="120"></td>
+            <td style="vertical-align: middle;"><img src="assets/img/LogoTrinity.PNG" width="120"></td>
         </tr>
         <tr>
             <td><b>Ticket N°:</b> $id_venta</td>    

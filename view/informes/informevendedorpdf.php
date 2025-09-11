@@ -70,7 +70,7 @@ $usuario = $this->usuario->Obtener($_SESSION['user_id']);
 // $dolar=number_format($moneda->dolares,0,",",".");
 
 $html1 = <<<EOF
-		<h1 align="center">ScoreCar Pro - Centro de Instalaciones</h1>
+		<h1 align="center">GOLDENT LAB</h1>
 		<h3 align="center">Informe de la fecha $desde hasta $hasta</h3>
 		<p>Fecha de emisión del documento: $fechaHoraHoy</p>
 		<p>Generado por: $usuario->user</p>

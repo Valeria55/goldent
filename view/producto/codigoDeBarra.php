@@ -53,7 +53,7 @@ $style = array(
 );
 
 // Logo, precio, descripción y código de barras para la primera etiqueta
-$pdf->Image('assets/img/SCORECARLOGO.png', 8, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
+$pdf->Image('assets/img/LogoTrinity.PNG', 8, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
 $pdf->SetFont('helvetica', '', 7);
 $pdf->SetXY(6, 6); // Posicionar el precio en la segunda fila
 $pdf->Cell(20, 4, 'Gs. ' . number_format($producto->precio_minorista, 0, ',', '.'), 0, 1, 'C', false, '', 0, false, 'T', 'M');
@@ -63,7 +63,7 @@ $pdf->Cell(30, 4, $descripcion, 0, 1, 'L', false, '', 0, false, 'T', 'M');
 $barcode = $pdf->write1DBarcode($code, 'C128', 3, 11, '', 10, 0.3, $style, 'N');
 
 // Segunda etiqueta
-$pdf->Image('assets/img/SCORECARLOGO.png', 44, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
+$pdf->Image('assets/img/LogoTrinity.PNG', 44, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
 $pdf->SetFont('helvetica', '', 7);
 $pdf->SetXY(42, 6);
 $pdf->Cell(20, 4, 'Gs. ' . number_format($producto->precio_minorista, 0, ',', '.'), 0, 1, 'C', false, '', 0, false, 'T', 'M');
@@ -73,7 +73,7 @@ $pdf->Cell(30, 4, $descripcion, 0, 1, 'L', false, '', 0, false, 'T', 'M');
 $barcode2 = $pdf->write1DBarcode($code, 'C128', 37, 11, '', 10, 0.3, $style, 'N');
 
 // Tercera etiqueta
-$pdf->Image('assets/img/SCORECARLOGO.png', 80, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
+$pdf->Image('assets/img/LogoTrinity.PNG', 80, 1, 20, 0, '', '', '', false, 300, '', false, false, 0, false, false, false);
 $pdf->SetFont('helvetica', '', 7);
 $pdf->SetXY(78, 6);
 $pdf->Cell(20, 4, 'Gs. ' . number_format($producto->precio_minorista, 0, ',', '.'), 0, 1, 'C', false, '', 0, false, 'T', 'M');
@@ -82,6 +82,7 @@ $pdf->SetXY(75, 9);
 $pdf->Cell(30, 4, $descripcion, 0, 1, 'L', false, '', 0, false, 'T', 'M');
 $barcode = $pdf->write1DBarcode($code, 'C128', 72, 11, '', 10, 0.3, $style, 'N');
 
+ob_end_clean();
 $pdf->Output("Informe de compras de la fecha 567.pdf", 'I');
 
 

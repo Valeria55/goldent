@@ -6,15 +6,15 @@
     <div class="row" >
         <form method="post" id="productoNuevo">
         <div class="col-sm-3">
-            <label>Producto</label>
+            <label>Servicios</label>
             <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
                     title="-- Seleccione el producto --" autofocus required>
-                <?php foreach($this->producto->Listar() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
-                <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>" <?php echo ($producto->stock<1)?'disabled':''; ?>><?php echo $producto->producto.' ( '.$producto->stock.' ) - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
+                <?php foreach($this->producto->ListarServicios() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
+                <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>" ><?php echo $producto->producto.' - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
                 <?php endforeach; ?>
         </select>
         </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <label>Cantidad</label>
                 <input type="number" name="cantidad" class="form-control" id="cantidad" value="1" step="any" min="1" max="">   
             </div>
@@ -24,10 +24,12 @@
                     <option id="precio_minorista" value=""> -- Seleccionar --</option>
                 </select>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <label>Descuento (%)</label>
-                <input type="number" name="descuento" class="form-control" id="descuento" max="10" value="0">
-                <input type="submit" name="bton" style="display: none">   
+                <input type="number" name="descuento" class="form-control" id="descuento" max="10" value="0">  
+            </div>
+            <div class="col-sm-2" style="padding-top: 25px">
+                <input type="submit" name="bton" value="Agregar" class="btn btn-primary">   
             </div>
         </form>
     </div>
@@ -173,10 +175,7 @@
                     
                     $("#precio_mayorista").val(producto.precio_mayorista);
                     $("#precio_mayorista").html(producto.precio_mayorista+" (Mayor)");
-                    //$("#descuento").attr("max",producto.descuento_max);
-                    $("#cantidad").attr("max",producto.stock);
                     $("#cantidad").select();
-                    //$('#productoNuevo').submit();
                 }
 
             })
@@ -184,68 +183,8 @@
     
     
 
-    $('#cliente').on('change',function(){
-        var id = $(this).val();
-        var url = "?c=cliente&a=buscar&id="+id;
-        var categoria = "Plata";
-        var descuento = 0;
-            $.ajax({
+    
 
-                url: url,
-                method : "POST",
-                data: id,
-                cache: false,
-                contentType: false,
-                processData: false,
-                success:function(respuesta){
-                    var cliente = JSON.parse(respuesta);
-                    $("#puntos").val(cliente.puntos);
-                    if(cliente.gastado<3000000){
-                        categoria = 'Plata';
-                        descuento = 5;
-                    }else if(cliente.gastado >= 3000000 && cliente.gastado<10000000){
-                        categoria = 'Oro';
-                        descuento = 10;
-                    }else{
-                        categoria = 'Platino';
-                        descuento = 15;
-                    }
-                }
-
-            })
-    });
-
-    function calcular(){
-        var subtotal = $('#subtotal').val();
-        var descuento = $('#descuento').val();
-        var iva = $('#iva').val(); 
-        var reales = $('#reales').val();
-        var dolares = $('#dolares').val();       
-        $('#descuentoval').val(descuento); 
-        $('#ivaval').val(iva);
-        if(descuento==0 && iva==0){
-            var total = subtotal;
-        }
-        if(descuento==0 && iva!=0){
-            var ivac = parseInt(subtotal * (iva/100));
-            var total = parseInt(subtotal) + ivac;
-        }
-        if(descuento!=0 && iva==0){
-            var total = subtotal - (subtotal * (descuento/100));
-        }
-        if(descuento!=0 && iva!=0){
-            var ivac = parseInt(subtotal * (iva/100));
-            var num = parseInt(subtotal) + ivac;
-            var total = num - (subtotal * (descuento/100));
-        }
-        var totalrs = (total/reales).toFixed(2);
-        var totalus = (total/dolares).toFixed(2);
-        var totalc = total.toLocaleString();
-
-        $('.totaldesc').val(totalc);
-        $('#totalrs').val(totalrs);
-        $('#totalus').val(totalus);
-    }
-
+    
 
 </script>

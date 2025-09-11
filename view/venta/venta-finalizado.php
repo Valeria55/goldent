@@ -24,7 +24,6 @@
             if ($_SESSION['nivel'] == 1) { ?>
                 <th></th>
             <?php } ?>
-            <th></th>
     </thead>
     <tbody>
         <?php  ?>
@@ -147,10 +146,10 @@ if (!isset($_SESSION)) session_start();
                             return '';
                         }
                     }
-                },
+                }
 
                 <?php
-                if ($_SESSION['nivel'] == 1) { ?> {
+                if ($_SESSION['nivel'] == 1) { ?>, {
                         "defaultContent": "",
                         render: function(data, type, row) {
                             if (row.anulado == 1) {
@@ -164,15 +163,7 @@ if (!isset($_SESSION)) session_start();
 
                         }
                     },
-                <?php } ?> {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-                        if (row.anulado == 0) {
-                            let link = "?c=devolucion_tmpventas&id_venta=" + row.id_venta;
-                            return '<a href="' + link + '" class="btn btn-warning">Devolución</a>';
-                        }
-                    }
-                }
+                <?php } ?>
 
 
 

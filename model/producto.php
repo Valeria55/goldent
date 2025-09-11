@@ -1,5 +1,6 @@
 <?php
 class producto
+
 {
 	private $pdo;
 
@@ -20,6 +21,7 @@ class producto
 	public $sucursal;
 	public $anulado;
 	public $preciob;
+	public $tipo;
 
 
 	public function __CONSTRUCT()
@@ -50,7 +52,7 @@ class producto
 			      LEFT JOIN categorias c ON p.id_categoria = c.id
 			      LEFT JOIN sucursales s ON p.sucursal = s.id 
 			       LEFT JOIN marcas m ON m.id = p.marca  
-			      WHERE p.anulado IS NULL
+			      WHERE p.anulado IS NULL AND p.tipo = 'producto'
 			      ORDER BY p.id ASC");
 			$stm->execute();
 
@@ -59,6 +61,7 @@ class producto
 			die($e->getMessage());
 		}
 	}
+
 
 	public function ListarCompraProducto($id_venta)
 	{
@@ -77,15 +80,15 @@ class producto
 		}
 	}
 	public function ListarStockTiempo($fecha)
-{
-    try {
+	{
+		try {
 
-        
-        $hoy = date('Y-m-d');
-		$fecha = $fecha!=''?$fecha:$hoy;
 
-        $stm = $this->pdo->prepare(
-            "WITH compras AS (
+			$hoy = date('Y-m-d');
+			$fecha = $fecha != '' ? $fecha : $hoy;
+
+			$stm = $this->pdo->prepare(
+				"WITH compras AS (
                 SELECT id_producto, SUM(cantidad) AS total_comprado
                 FROM compras
                 WHERE CAST(fecha_compra AS date) <= '$fecha' AND anulado = 0
@@ -138,18 +141,16 @@ class producto
 			LEFT JOIN ventas v ON p.id= v.id_producto
             LEFT JOIN compras c ON p.id=c.id_producto 
             WHERE p.anulado IS NULL;"
-             
-        );
-        
-        $stm->execute(array());
 
-        return $stm->fetchAll(PDO::FETCH_OBJ);
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-}
+			);
 
+			$stm->execute(array());
 
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
 	public function ListarAjax()
 	{
 		try {
@@ -160,7 +161,26 @@ class producto
 			LEFT JOIN categorias c ON sub.id_padre = c.id 
 			LEFT JOIN sucursales s ON p.sucursal = s.id 
 			LEFT JOIN marcas m ON m.id = p.marca 
-			WHERE p.anulado IS NULL ORDER BY p.id ASC");
+			WHERE p.anulado IS NULL AND p.tipo = 'producto' ORDER BY p.id ASC");
+			$stm->execute();
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarServicios()
+	{
+		try {
+
+			$stm = $this->pdo->prepare("SELECT *, p.id, s.sucursal, sub.categoria AS sub_categoria, sub.id_padre, m.marca 
+			FROM productos p 
+			LEFT JOIN categorias sub ON p.id_categoria = sub.id 
+			LEFT JOIN categorias c ON sub.id_padre = c.id 
+			LEFT JOIN sucursales s ON p.sucursal = s.id 
+			LEFT JOIN marcas m ON m.id = p.marca 
+			WHERE p.anulado IS NULL AND p.tipo = 'servicio' ORDER BY p.id ASC");
 			$stm->execute();
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -599,7 +619,8 @@ class producto
 						descuento_max       = ?,
 						importado           = ?,
 						iva                 = ?,
-						sucursal            = ?
+						sucursal            = ?,
+						tipo				= ?
 						
 				    WHERE id = ?";
 
@@ -623,6 +644,7 @@ class producto
 						$data->importado,
 						$data->iva,
 						$data->sucursal,
+						$data->tipo,
 						$data->id
 					)
 				);
@@ -635,8 +657,8 @@ class producto
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO productos (codigo, id_categoria, producto, marca, descripcion, precio_costo, precio_minorista, precio_mayorista, precio_promo, desde, hasta, stock, stock_minimo, descuento_max, importado, iva, sucursal, anulado) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO productos (codigo, id_categoria, producto, marca, descripcion, precio_costo, precio_minorista, precio_mayorista, precio_promo, desde, hasta, stock, stock_minimo, descuento_max, importado, iva, sucursal, anulado, tipo) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -658,7 +680,8 @@ class producto
 						$data->importado,
 						$data->iva,
 						$data->sucursal,
-						$data->anulado
+						$data->anulado,
+						$data->tipo
 					)
 				);
 			return "Agregado";

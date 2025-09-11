@@ -14,7 +14,7 @@ if ($_SESSION["sistema"] != $_SERVER['HTTP_HOST'] . "/" . explode("/", $_SERVER[
 <html lang="es">
 
 <head>
-    <title>SCORECAR</title>
+    <title>GOLDENT LAB</title>
 
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

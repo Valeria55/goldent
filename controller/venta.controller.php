@@ -448,7 +448,7 @@ class ventaController
             $venta->id_timbrado = $_REQUEST['id_timbrado'] ?? 1;
             $venta->autoimpresor = $autoimpresor;
             $venta->cantidad = $v->cantidad;
-            $venta->margen_ganancia = ((($venta->precio_venta - ($venta->precio_venta * ($venta->descuento / 100))) - $venta->precio_costo) / ($venta->precio_costo)) * 100;
+            $venta->margen_ganancia = $venta->precio_costo > 0 ? ((($venta->precio_venta - ($venta->precio_venta * ($venta->descuento / 100))) - $venta->precio_costo) / ($venta->precio_costo)) * 100 : 0;
             $venta->fecha_venta = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
             $venta->metodo = $_REQUEST['forma_pago'];
             $venta->contado = $_REQUEST['contado'];
@@ -470,7 +470,7 @@ class ventaController
 
 
             if ($venta->contado == 'Credito') {
-                $venta->estado = 'PENDIENTE';
+                $venta->estado = 'APROBADO';
             } else {
                 $venta->estado = 'APROBADO';
             }
@@ -484,57 +484,58 @@ class ventaController
                 $this->gift_card->Retirado($venta->id_gift);
             }
 
-            //Restar Stock
-            if ($venta->contado != 'Credito') {
-                $this->producto->Restar($venta);
-            }
+            // //Restar Stock
+            // if ($venta->contado != 'Credito') {
+            //     $this->producto->Restar($venta);
+            // }
             $sumaTotal += $venta->total;
         }
         $error = 0;
-        // if ($venta->contado == 'Credito') {
+        if ($venta->contado == 'Credito') {
 
-        //     $deuda = new deuda();
+            $deuda = new deuda();
 
-        //     $deuda->id_cliente =  $venta->id_cliente;
-        //     $deuda->id_venta = $venta->id_venta;
-        //     $deuda->fecha = $_REQUEST["fecha_venta"];
-        //     //$deuda->vencimiento = $_REQUEST['vencimiento'];
-        //     $deuda->concepto = 'Venta a crédito';
-        //     $deuda->monto = $sumaTotal;
-        //     $deuda->saldo = $sumaTotal - $_REQUEST['entrega'];
-        //     $deuda->sucursal = $_SESSION['sucursal'];
+            $deuda->id_cliente =  $venta->id_cliente;
+            $deuda->id_venta = $venta->id_venta;
+            $deuda->fecha = $_REQUEST["fecha_venta"];
+            //$deuda->vencimiento = $_REQUEST['vencimiento'];
+            $deuda->concepto = 'Venta a crédito';
+            $deuda->monto = $sumaTotal;
+            $deuda->saldo = $sumaTotal - $_REQUEST['entrega'];
+            $deuda->sucursal = $_SESSION['sucursal'];
 
-        //     //$this->deuda->Registrar($deuda);
+            $this->deuda->Registrar($deuda);
 
-        //     if ($_REQUEST['entrega'] > 0) {
+            if ($_REQUEST['entrega'] > 0) {
 
-        //         $ingreso = new ingreso();
+                $ingreso = new ingreso();
 
-        //         $ingreso->id_cliente = $venta->id_cliente;
-        //         if (!isset($_SESSION)) session_start();
+                $ingreso->id_cliente = $venta->id_cliente;
+                if (!isset($_SESSION)) session_start();
 
-        //         $de = $this->deuda->Ultimo();
-        //         $cli = $this->cliente->Obtener($venta->id_cliente);
-        //         $cierre = $this->cierre->Consultar($_SESSION['user_id']);
+                $de = $this->deuda->Ultimo();
+                $cli = $this->cliente->Obtener($venta->id_cliente);
+                $cierre = $this->cierre->Consultar($_SESSION['user_id']);
 
-        //         if ($_REQUEST['forma_pago'] == "Efectivo") {
-        //             $ingreso->id_caja = 1; // caja chica
-        //         } else {
-        //             $ingreso->id_caja = 2; // banco
-        //         }
+                if ($_REQUEST['forma_pago'] == "Efectivo") {
+                    $ingreso->id_caja = 1; // caja chica
+                } else {
+                    $ingreso->id_caja = 2; // banco
+                }
 
-        //         $ingreso->id_venta = $venta->id_venta;
-        //         $ingreso->id_deuda = $de->id;
-        //         $ingreso->fecha = $_REQUEST["fecha_venta"];
-        //         $ingreso->categoria = 'Entrega';
-        //         $ingreso->concepto = 'Venta a credito a ' . $cli->nombre;
-        //         $ingreso->comprobante = $_REQUEST['comprobante'];
-        //         $ingreso->monto = $_REQUEST['entrega'];
-        //         $ingreso->forma_pago = $_REQUEST['forma_pago'];
-        //         $ingreso->sucursal = 0;
+                $ingreso->id_venta = $venta->id_venta;
+                $ingreso->id_deuda = $de->id;
+                $ingreso->fecha = $_REQUEST["fecha_venta"];
+                $ingreso->categoria = 'Entrega';
+                $ingreso->concepto = 'Venta a credito a ' . $cli->nombre;
+                $ingreso->comprobante = $_REQUEST['comprobante'];
+                $ingreso->monto = $_REQUEST['entrega'];
+                $ingreso->forma_pago = $_REQUEST['forma_pago'];
+                $ingreso->sucursal = 0;
 
-        //         $this->ingreso->Registrar($ingreso);
-        //     }} 
+                $this->ingreso->Registrar($ingreso);
+            }
+        }
         if ($venta->contado == 'Contado') {
 
             $suma = 0;

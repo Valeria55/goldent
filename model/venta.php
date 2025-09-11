@@ -110,7 +110,25 @@ class venta
 				$fecha_hasta = date('Y-m-d');
 				$fecha_desde = date('Y-m-d', strtotime('-29 days'));
 
-				$stm = $this->pdo->prepare("SELECT v.id_cliente, v.descuento AS descuentov, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta as id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
+				$stm = $this->pdo->prepare("SELECT 
+				v.id_cliente, 
+				v.descuento AS descuentov, 
+				IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo,
+				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0)) AS ganancia,
+				v.id, 
+				v.id_venta as id_venta, 
+				v.comprobante, 
+				v.metodo, 
+				v.anulado, 
+				contado, 
+				p.producto, 
+				SUM(subtotal) as subtotal, 
+				descuento, 
+				SUM(total) as total, 
+				AVG(margen_ganancia) as margen_ganancia, 
+				fecha_venta, 
+				IF(v.autoimpresor > 0 , 
+				CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
                 (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, 
                 (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
                 FROM ventas v 
@@ -163,6 +181,22 @@ class venta
 				$stm->execute(array($id_venta));
 			}
 
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+	//LISTAR PARA AJUSTES DE PRODUCTOS (DEVOLUCIONES)
+	public function ListarVenta()
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT id_venta, c.nombre AS cliente 
+			FROM ventas v
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE anulado = 0
+			GROUP BY id_venta 
+			ORDER BY id_venta DESC");
+			$stm->execute();
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -430,12 +464,19 @@ class venta
 	{
 		try {
 			$stm = $this->pdo->prepare(
-				"SELECT v.fecha_venta,  v.id_venta,
-					p.producto, SUM(v.cantidad) as cantidad, SUM(v.total) as total, 
-					SUM(v.precio_costo * v.cantidad) as costo, v.id_cliente, c.nombre, 
-					cap.categoria as categoria, ca.categoria as sub_categoria,
-					v.contado,  
-					(SELECT user FROM usuario WHERE id = IF(pres.id_vendedor IS NOT NULL, pres.id_vendedor, v.id_vendedor) ) as vendedor
+				"SELECT 
+				v.fecha_venta,  
+				v.id_venta,
+				p.producto, 
+				SUM(v.cantidad) as cantidad, 
+				SUM(v.total) as total, 
+				IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo, 
+				v.id_cliente, 
+				c.nombre, 
+				cap.categoria as categoria, 
+				ca.categoria as sub_categoria,
+				v.contado,  
+				(SELECT user FROM usuario WHERE id = IF(pres.id_vendedor IS NOT NULL, pres.id_vendedor, v.id_vendedor) ) as vendedor
 				FROM ventas v
                 		LEFT JOIN presupuestos pres ON v.id_presupuesto = pres.id
 						LEFT JOIN productos p ON v.id_producto = p.id
@@ -458,7 +499,7 @@ class venta
 			$stm = $this->pdo->prepare(
 				"SELECT v.fecha_venta,  v.id_venta,
 					p.producto, SUM(v.cantidad) as cantidad, SUM(v.total) as total, 
-					SUM(v.precio_costo * v.cantidad) as costo, v.id_cliente, c.nombre, 
+					IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo, v.id_cliente, c.nombre, 
 					cap.categoria as categoria, ca.categoria as sub_categoria,
 					v.contado,  
 					(SELECT user FROM usuario WHERE id = IF(pres.id_vendedor IS NOT NULL, pres.id_vendedor, v.id_vendedor) ) as vendedor
@@ -614,9 +655,15 @@ class venta
 								v.id_cliente, c.nombre as nombre_cliente, c.ruc,
 								c.direccion, c.telefono,
                                 SUM(v.total) as total,
-								SUM(v.precio_costo * v.cantidad) AS costo,
+								IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo,
                                 SUM((v.total - v.precio_costo * v.cantidad)) AS utilidad,
-                                ( ( SUM(v.total) - SUM(v.precio_costo * v.cantidad) ) / SUM(v.total)*100 ) AS margen_ganancia
+								(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0)) AS utilidad,
+                               ROUND(
+									(
+										(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0))
+										/ NULLIF(SUM(v.total), 0)
+									) * 100, 2
+									) AS margen_ganancia
 							FROM ventas v
 								LEFT JOIN clientes c
 									ON v.id_cliente = c.id
@@ -666,7 +713,10 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta,IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
+			$stm = $this->pdo->prepare("SELECT 
+			IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
+				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
+			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta,IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 			FROM ventas v 
@@ -1004,11 +1054,11 @@ class venta
                                         (SELECT user FROM usuario u WHERE u.id = 
                                         (SELECT p.id_vendedor FROM presupuestos p WHERE v.id_presupuesto = p.id_presupuesto LIMIT 1)),
                                         (SELECT user FROM usuario u WHERE u.id = id_vendedor)) AS user,
-                                        SUM(v.precio_costo * v.cantidad) AS costo,
-                                        ((SUM(total) - SUM(v.precio_costo * v.cantidad)) / SUM(total) *100 ) AS margen_ganancia,
+                                        IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo,
+                                        ((SUM(total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0)) / SUM(total) *100 ) AS margen_ganancia,
 										SUM(cantidad) AS items_vendidos,
 										-- SUM(v.precio_venta-v.precio_costo) AS margen_ganancia,
-										SUM(v.total - (v.precio_costo * v.cantidad)) AS utilidad,
+										(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0)) AS utilidad,
 										SUM(v.total) AS total,
 										(SELECT SUM(total) FROM devoluciones_ventas d WHERE d.id_venta = v.id_venta GROUP BY d.id_venta) AS devolucion,
 										(SELECT SUM(precio_costo) FROM devoluciones_ventas dc WHERE dc.id_venta = v.id_venta GROUP BY dc.id_venta) AS devolucion_costo
@@ -1400,7 +1450,7 @@ class venta
 					COALESCE(SUM(CASE WHEN v.contado = 'Contado' THEN (v.precio_venta * v.cantidad) * (1 - v.descuento/100) ELSE 0 END), 0) as ventas_contado,
 					COALESCE(SUM(CASE WHEN v.contado != 'Contado' THEN (v.precio_venta * v.cantidad) * (1 - v.descuento/100) ELSE 0 END), 0) as ventas_credito,
 					COALESCE(SUM((v.precio_venta * v.cantidad) * (1 - v.descuento/100)), 0) as total_ventas,
-					COALESCE(SUM(v.precio_costo * v.cantidad), 0) as costo_productos
+					IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo_productos
 				FROM ventas v 
 				WHERE 
 					CAST(v.fecha_venta AS date) >= ? 

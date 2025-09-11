@@ -45,75 +45,75 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 </style>
+<div class="container">
 
-
-<h1 class="page-header">Lista de ventas &nbsp;
-    <!-- <a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
+    <h3 class="page-header">Lista de ventas &nbsp;
+        <!-- <a class="btn btn-primary" href="#diaModal" class="btn btn-primary" data-toggle="modal" data-target="#diaModal">Informe diario</a>
     <a class="btn btn-primary" href="#mesModal" class="btn btn-primary" data-toggle="modal" data-target="#mesModal">Informe Mensual</a> -->
-    <?php if ($_SESSION['nivel'] <> 2) : ?>
-        <a class="btn btn-primary" href="#mesModalVendedor" class="btn btn-primary" data-toggle="modal" data-target="#mesModalVendedor">Ventas por cada vendedor</a>
-    <?php endif; ?>
-</h1>
+        <?php if ($_SESSION['nivel'] <> 2) : ?>
+            <a class="btn btn-primary" href="#mesModalVendedor" class="btn btn-primary" data-toggle="modal" data-target="#mesModalVendedor">Ventas por cada vendedor</a>
+        <?php endif; ?>
+    </h3>
 
-<h3 id="filtrar" align="center">Filtros <i class="fas fa-angle-right"></i><i class="fas fa-angle-left" style="display: none"></i></h3>
-<div class="row">
-    <div class="col-sm-12">
-        <div align="center" id="filtro">
-            <form method="get">
-                <input type="hidden" name="c" value="venta">
+    <h3 id="filtrar" align="center">Filtros <i class="fas fa-angle-right"></i><i class="fas fa-angle-left" style="display: none"></i></h3>
+    <div class="row">
+        <div class="col-sm-12">
+            <div align="center" id="filtro">
+                <form method="get">
+                    <input type="hidden" name="c" value="venta">
 
-                <div class="form-group col-md-2">
-                </div>
-                <div class="form-group col-md-2">
-                </div>
-                <div class="form-group col-md-2">
-                    <label>Desde</label>
-                    <input type="date" name="desde" value="<?php echo (isset($_GET['desde'])) ? $_GET['desde'] : '';
-                                                            ?>" class="form-control">
-                </div>
-                <div class="form-group col-md-2">
-                    <label>Hasta</label>
-                    <input type="date" name="hasta" value="<?php echo (isset($_GET['hasta'])) ? $_GET['hasta'] : '';
-                                                            ?>" class="form-control">
-                </div>
+                    <div class="form-group col-md-2">
+                    </div>
+                    <div class="form-group col-md-2">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Desde</label>
+                        <input type="date" name="desde" value="<?php echo (isset($_GET['desde'])) ? $_GET['desde'] : '';
+                                                                ?>" class="form-control">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Hasta</label>
+                        <input type="date" name="hasta" value="<?php echo (isset($_GET['hasta'])) ? $_GET['hasta'] : '';
+                                                                ?>" class="form-control">
+                    </div>
 
-                <div class="form-group col-md-2">
-                    <label></label>
-                    <input type="submit" value="Filtrar" class="form-control btn btn-success">
-                </div>
+                    <div class="form-group col-md-2">
+                        <label></label>
+                        <input type="submit" value="Filtrar" class="form-control btn btn-success">
+                    </div>
 
-            </form>
+                </form>
+            </div>
         </div>
     </div>
+
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#tab1" data-toggle="tab">Ventas</a></li>
+        <?php //if (!isset($_SESSION)) session_start();
+        //if ($_SESSION['nivel'] == 1) { ?>
+            <!-- <li><a href="#tab2" data-toggle="tab">A aprobar</a></li> -->
+        <?php //} ?>
+
+        <!-- <li><a href="#tab3" data-toggle="tab">Aprobados</a></li> -->
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="tab1">
+            <br>
+            <?php require_once 'venta-finalizado.php'; ?>
+        </div>
+
+        <!-- <div class="tab-pane" id="tab2">
+            <br>
+            <?php //require_once 'venta-a-aprobar.php'; ?>
+        </div>
+        <div class="tab-pane" id="tab3">
+            <br>
+            <?php //require_once 'venta-aprobado.php'; ?>
+        </div> -->
+    </div>
 </div>
-
-
-<ul class="nav nav-tabs">
-    <li class="active"><a href="#tab1" data-toggle="tab">Ventas Contado</a></li>
-    <?php if (!isset($_SESSION)) session_start();
-    if ($_SESSION['nivel'] == 1) { ?>
-        <li><a href="#tab2" data-toggle="tab">A aprobar</a></li>
-    <?php } ?>
-
-    <li><a href="#tab3" data-toggle="tab">Aprobados</a></li>
-</ul>
-
-<div class="tab-content">
-    <div class="tab-pane active" id="tab1">
-        <br>
-        <?php require_once 'venta-finalizado.php'; ?>
-    </div>
-
-    <div class="tab-pane" id="tab2">
-        <br>
-        <?php require_once 'venta-a-aprobar.php'; ?>
-    </div>
-    <div class="tab-pane" id="tab3">
-        <br>
-        <?php require_once 'venta-aprobado.php'; ?>
-    </div>
-</div>
-
 </div>
 </div>
 </div>

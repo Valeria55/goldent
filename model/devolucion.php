@@ -21,6 +21,9 @@ class devolucion
 	public $fecha_venta;
 	public $metodo;
 	public $contado;
+	public $iva;
+	public $banco;
+	public $venta;
 
 	public function __CONSTRUCT()
 	{
@@ -37,7 +40,20 @@ class devolucion
 
 			if ($id_venta == 0) {
 
-				$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM devoluciones v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id GROUP BY v.id_venta ORDER BY v.id_venta DESC");
+				$stm = $this->pdo->prepare("SELECT 
+				v.venta, 
+				v.id, 
+				v.id_venta, 
+				v.comprobante, 
+				v.anulado,
+				SUM(subtotal) as subtotal, 
+				SUM(total) as total, 
+				fecha_venta,
+				IFNULL((SELECT SUM(ve.total) FROM ventas ve WHERE ve.id_venta = v.venta AND ve.anulado = 0), 0) as monto_venta,
+				(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor
+				FROM devoluciones v 
+				LEFT JOIN clientes c ON v.id_cliente = c.id 
+				GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute();
 			} else {
 				$stm = $this->pdo->prepare("SELECT v.id, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto FROM devoluciones v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE v.id_venta = ?");
@@ -411,8 +427,8 @@ class devolucion
 
 
 
-			$sql = "INSERT INTO devoluciones (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO devoluciones (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado, venta) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -435,7 +451,8 @@ class devolucion
 						$data->fecha_venta,
 						$data->metodo,
 						$data->banco,
-						$data->contado
+						$data->contado,
+						$data->venta
 
 					)
 				);

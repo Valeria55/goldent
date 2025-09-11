@@ -1,7 +1,7 @@
 <nav id="sidebar">
     <div class="sidebar-header" align="center">
 
-        <img src="assets/img/scorecar1.png" width="200" align="center">
+        <img src="assets/img/LogoTrinity.PNG" width="200" align="center">
 
     </div>
     <?php //NIVEL 2 CAJERO 
@@ -84,33 +84,6 @@
                 </li>-->
                 </ul>
             </li>
-            <!-- ================================ 
-                inicio subgrupo transferencia
-            ================================ -->
-            <li>
-                <a href="#transferenciaSubmenu" data-toggle="collapse" aria-expanded="false">Transferencias</a>
-                <ul class="collapse list-unstyled 
-            <?php
-            if (
-                $_GET['c'] == 'transferencia_producto'
-            )
-                echo " in";
-            ?>
-            <?php $c = $_GET['c'] ?? false;
-            $a = $_GET['a'] ?? false; ?>
-            " id="transferenciaSubmenu">
-                    <li <?php if ($c == 'transferencia_producto' && !$a) echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto">Enviar</a>
-                    </li>
-                    <li style="" <?php if ($c == 'transferencia_producto' && $a == 'recibidos') echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto&a=recibidos">Recibir</a>
-                    </li>
-
-                </ul>
-            </li>
-            <!-- ================================ 
-                fin subgrupo transferencia
-            ================================ -->
             <li>
                 <a href="#ventaSubmenu" data-toggle="collapse" aria-expanded="false">Ventas</a>
                 <ul class="collapse list-unstyled
@@ -189,8 +162,8 @@
                     <li <?php if ($_GET['c'] == 'movimientoCaja') echo "class='active'"; ?>>
                         <a href="?c=caja&a=movimientoCaja">Movimientos</a>
                     </li>
-                    <li>
-                        <a href="http://localhost/githubClones/scorecar/tiendaScorecar/index.php?c=egreso&a=extraccion">Extracción</a>
+                    <li <?php if ($_GET['c'] == 'egreso' && $_GET['a'] == 'extraccion') echo "class='active'"; ?>>
+                        <a href="?c=egreso&a=extraccion">Extracción</a>
                     </li>
                 </ul>
             </li>
@@ -202,34 +175,6 @@
                 <a href="?c=cliente">Personas</a>
             </li>
 
-
-            <!-- ================================ 
-                inicio subgrupo transferencia
-            ================================ -->
-            <li>
-                <a href="#transferenciaSubmenu" data-toggle="collapse" aria-expanded="false">Transferencias</a>
-                <ul class="collapse list-unstyled 
-            <?php
-            if (
-                $_GET['c'] == 'transferencia_producto'
-            )
-                echo " in";
-            ?>
-            <?php $c = $_GET['c'] ?? false;
-            $a = $_GET['a'] ?? false; ?>
-            " id="transferenciaSubmenu">
-                    <li <?php if ($c == 'transferencia_producto' && !$a) echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto">Enviar</a>
-                    </li>
-                    <li style="" <?php if ($c == 'transferencia_producto' && $a == 'recibidos') echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto&a=recibidos">Recibir</a>
-                    </li>
-
-                </ul>
-            </li>
-            <!-- ================================ 
-                fin subgrupo transferencia
-            ================================ -->
 
             <li>
                 <a href="#productoSubmenu" data-toggle="collapse" aria-expanded="false">Productos</a>
@@ -248,9 +193,10 @@
                     <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
                         <a href="?c=producto">Productos</a>
                     </li>
+                    <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
+                        <a href="?c=producto&a=servicios">Servicios</a>
+                    </li>
                     <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
-
-
                         <a href="?c=categoria">Categorías</a>
                     </li>
                     <li <?php if ($_GET['c'] == 'marca') echo "class='active'"; ?>>
@@ -424,39 +370,13 @@
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'caja') echo "class='active'"; ?>>
                 <a href="?c=caja">Cajas</a>
             </li>
-            <li>
-                <a href="http://localhost/githubClones/scorecar/tiendaScorecar/index.php?c=egreso&a=extraccion">Extracción</a>
-            </li>
+            <li <?php if ($_GET['c'] == 'egreso' && $_GET['a'] == 'extraccion') echo "class='active'"; ?>>
+                        <a href="?c=egreso&a=extraccion">Extracción</a>
+                    </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
                 <a href="?c=cliente">Personas</a>
             </li>
-            <!-- ================================ 
-                inicio subgrupo transferencia
-            ================================ -->
-            <li>
-                <a href="#transferenciaSubmenu" data-toggle="collapse" aria-expanded="false">Transferencias</a>
-                <ul class="collapse list-unstyled 
-            <?php
-            if (
-                $_GET['c'] == 'transferencia_producto'
-            )
-                echo " in";
-            ?>
-            <?php $c = $_GET['c'] ?? false;
-            $a = $_GET['a'] ?? false; ?>
-            " id="transferenciaSubmenu">
-                    <li <?php if ($c == 'transferencia_producto' && !$a) echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto">Enviar</a>
-                    </li>
-                    <li style="" <?php if ($c == 'transferencia_producto' && $a == 'recibidos') echo "class='active'"; ?>>
-                        <a href="?c=transferencia_producto&a=recibidos">Recibir</a>
-                    </li>
-
-                </ul>
-            </li>
-            <!-- ================================ 
-                fin subgrupo transferencia
-            ================================ -->
+            
             <li>
                 <a href="#productoSubmenu" data-toggle="collapse" aria-expanded="false">Productos</a>
                 <ul class="collapse list-unstyled 
@@ -473,6 +393,9 @@
                         " id="productoSubmenu">
                     <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
                         <a href="?c=producto">Productos</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
+                        <a href="?c=producto&a=servicios">Servicios</a>
                     </li>
                     <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
                         <a href="?c=categoria">Categorías</a>

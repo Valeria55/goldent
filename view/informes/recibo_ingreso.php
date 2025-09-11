@@ -178,7 +178,7 @@ $html1 = <<<EOF
 
    <table  width ="100%"<span style="border: 1px solid #333; text-align:justify; line-height: 15px; font-size:9px ">>
        <tr><br>
-          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/SCORECAR.PNG" width="80"></td>
+          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/LogoTrinity.PNG" width="80"></td>
           <td width="50%" align="left" style=" font-size:12px; line-height: 35px" ><h2>RECIBO</h2></td>
        </tr>
          <tr>
@@ -186,7 +186,7 @@ $html1 = <<<EOF
        </tr>
        <tr>
           <td  width="20%" align="justify" style="border: 1px solid #000000">RECIBIMOS DE: </td>
-          <td width="80%" align="center" style="border: 1px solid #000000;  font-size:9px"> <b> SCORECARPRO</b></td>
+          <td width="80%" align="center" style="border: 1px solid #000000;  font-size:9px"> <b> GOLDENT LAB</b></td>
        </tr>
         <tr>
           <td width="20%" align="justify" style="border: 1px solid #000000">RUC:</td>

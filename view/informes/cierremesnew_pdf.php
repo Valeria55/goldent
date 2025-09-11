@@ -102,7 +102,7 @@ $totalEgresoReal = 0;
 // ********************************
 
 $html1 = <<<EOF
-		<h1 align="center">ScoreCar Pro - Centro de Instalaciones</h1>
+		<h1 align="center">GOLDENT LAB</h1>
 		<h3 align="center">Informe de la fecha $desde hasta $hasta</h3>
 		<p>Generado el $fechaHoraHoy</p>
 	
@@ -323,12 +323,12 @@ if (isset($_REQUEST['items_informe']['vent_cred'])) $pdf->writeHTML($html1, fals
 	COMPRA VENTA POR PRODUCTO
 	MOVIMIENTOS DE PRODUCTOS
 	-------------------------*/
-if (
-	isset($_REQUEST['items_informe']['mov_prod'])
-) {
-	if (!$pag_vacia) $pdf->AddPage();
-	$pag_vacia = false;
-}
+// if (
+// 	isset($_REQUEST['items_informe']['mov_prod'])
+// ) {
+// 	if (!$pag_vacia) $pdf->AddPage();
+// 	$pag_vacia = false;
+// }
 $html1 = <<<EOF
 		<h1 align="center">Movimientos de cada producto</h1>
 
@@ -345,7 +345,7 @@ $html1 = <<<EOF
 		</table>
 EOF;
 
-if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
+//if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
 
 $total_cantidad_compras = 0;
 $total_monto_compras = 0;
@@ -388,7 +388,7 @@ foreach ($this->model->CompraVentaPorProducto($_REQUEST['desde'], $_REQUEST['has
 
 EOF;
 
-	if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
+	//if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
 
 	$indice += 1;
 
@@ -416,7 +416,7 @@ $html1 = <<<EOF
 
 EOF;
 
-if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
+//if (isset($_REQUEST['items_informe']['mov_prod'])) $pdf->writeHTML($html1, false, false, false, false, '');
 
 /* ================================ 
 	fin movimientos por producto
@@ -434,17 +434,14 @@ if (isset($_REQUEST['items_informe']['ven_prod'])) {
 }
 
 $html1 = <<<EOF
-		<h1 align="center">Ventas por producto</h1>
+		<h1 align="center">Ventas por Servicios</h1>
 
 		<table width"100%" style="$header_table_style">
 			<tr align="center">
-			    <th width="7%" style="">Cod.</th>
-                <th width="40%" style="">Producto</th>
-                <th width="5%" style="">Ca</th>
-                <th width="14%" style="">Venta</th>
-             	<th width="14%" style="">Costo</th>
-             	<th width="11%" style="">Utilidad</th>
-             	<th width="9%" style="">%</th>
+			    <th width="10%" style="">Cod.</th>
+                <th width="60%" style="">Servicio</th>
+                <th width="15%" style="">Ca</th>
+                <th width="15%" style="">Venta</th>
 			</tr>
 		</table>
 EOF;
@@ -476,13 +473,10 @@ foreach ($this->model->AgrupadoProductoVenta($_REQUEST['desde'], $_REQUEST['hast
 		
 		<table width"100%" style="$bg $body_table_style">
 			<tr align="center">
-			    <th width="7%" style=" " align="left">$r->codigo</th>
-                <th width="40%" style="" align="left">$r->producto <b>($u)</b></th>
-                <th width="5%" style="" align="right">$cantidad</th>
-                <th width="14%" style="" align="right">$total</th>
-             	<th width="14%" style="" align="right">$costo</th>
-             	<th width="11%" style="" align="right">$ganancia</th>
-             	<th width="9%" style=" " align="left">$porcentaje %</th>
+			    <th width="10%" style=" " align="left">$r->codigo</th>
+                <th width="60%" style="" align="left">$r->producto <b>($u)</b></th>
+                <th width="15%" style="" align="right">$cantidad</th>
+                <th width="15%" style="" align="right">$total</th>
 			</tr>
 		</table>
 
@@ -513,11 +507,8 @@ $html1 = <<<EOF
 		
 	<table width"100%" style="$header_table_style">
 			<tr align="center" style="padding:10px">
-                <th width="52%" style=" " align="left";><b>RESULTADOS (+)</b></th>
-                <th width="14%" style="" align="right"><b>$totalVentaV</b></th>
-             	<th width="14%" style="" align="right"><b>$totalCostoV</b></th>
-             	<th width="11%" style="" align="right"><b>$totalGananciaV</b></th>
-             	<th width="9%" style=" " align="left"><b>$porcentaje %</b></th>
+                <th width="85%" style=" " align="left";><b>RESULTADOS (+)</b></th>
+                <th width="15%" style="" align="right"><b>$totalVentaV</b></th>
 			</tr>
 		</table>
 

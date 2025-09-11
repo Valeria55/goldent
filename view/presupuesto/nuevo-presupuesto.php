@@ -7,11 +7,11 @@
     <div class="row" >
         <form method="post" id="productoNuevo">
             <div class="col-sm-3">
-            <label>Producto</label>
+            <label>Servicios</label>
             <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
-                    title="-- Seleccione el producto --" autofocus required>
-                <?php foreach($this->producto->Listar() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
-                <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>" <?php echo ($producto->stock<1)? 'disabled':''; ?>><?php echo $producto->producto.' ( '.$producto->stock.' ) - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
+                    title="-- Seleccione el servicio --" autofocus required>
+                <?php foreach($this->producto->ListarServicios() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
+                <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto.' - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
                 <?php endforeach; ?>
         </select>
         </div>
@@ -166,7 +166,7 @@
                     $("#precio_mayorista").val(producto.precio_mayorista);
                     $("#precio_mayorista").html(producto.precio_mayorista+" (Mayor)");
                     //$("#descuento").attr("max",producto.descuento_max);
-                    $("#cantidad").attr("max",producto.stock);
+                    // $("#cantidad").attr("max",producto.stock);
                     $("#cantidad").select();
                     //$('#productoNuevo').submit();
                 }

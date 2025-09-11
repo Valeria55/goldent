@@ -178,7 +178,7 @@ $html1 = <<<EOF
 
    <table  width ="100%"<span style="border: 1px solid #333; text-align:justify; line-height: 15px; font-size:9px ">>
        <tr><br>
-          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/SCORECARLOGO.png" width="200"></td>
+          <td width="50%" align="center" style=" font-size:12px" ><img src="assets/img/LogoTrinity.PNG" width="200"></td>
           <td width="50%" align="left" style=" font-size:12px; line-height: 35px" ><h2>RECIBO</h2></td>
        </tr>
          <tr>

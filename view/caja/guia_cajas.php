@@ -4,7 +4,7 @@ require_once('plugins/tcpdf2/tcpdf.php');
 // Crear nuevo PDF
 $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->SetCreator(PDF_CREATOR);
-$pdf->SetAuthor('Scorecar');
+$pdf->SetAuthor('GOLDENT LAB');
 $pdf->SetTitle('Guía de Cajas');
 $pdf->SetMargins(15, 15, 15);
 $pdf->AddPage();

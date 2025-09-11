@@ -104,7 +104,7 @@ if ($saldo < 0.5) {
                 </div>
 
                 <div class="form-group col-sm-2" style="display: flex; align-items: end;">
-                    <input class="btn btn-primary btn-block" type="submit" value="Agregar">
+                    <input class="btn btn-primary btn-block" type="submit" value="Agregar" style="margin-top: 25px;">
                 </div>
 
                 <input type="hidden" id="monto_saldo" value="<?php echo $saldo; ?>">

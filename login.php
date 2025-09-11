@@ -74,7 +74,7 @@ if (isset($_GET['logout'])) {
 				<form class="login100-form validate-form p-b-33 p-t-5" method="post">
 					<br>
 					<div align="center">
-						<img src="assets/img/SCORECARLOGO.png" width="350">
+						<img src="assets/img/LogoSinFondo.png" width="200">
 					</div>
 					<div class="wrap-input100 validate-input" data-validate="Debe ingresar usuario">
 						<input class="input100" type="text" autofocus name="user" placeholder="Usuario">

@@ -213,7 +213,7 @@
 			contentType: false,
 			processData: false,
 			success:function(respuesta){
-				$("#modal-detalles").html(respuesta);
+				$("#ajuste-detalles").html(respuesta);
 				$('.selectpicker').selectpicker();
 			}
 

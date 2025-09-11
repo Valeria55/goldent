@@ -18,7 +18,7 @@ $html1 = <<<EOF
 
     <table width="100%" style="font-size:12px;">
        <tr >
-          <td width="30%" align="left"><img src="assets/img/SCORECARLOGO.png"></td>  
+          <td width="30%" align="left"><img src="assets/img/LogoTrinity.PNG"></td>  
           <td width="60%" align="left" style="font-size:15px;line-height: 95px;" ><b>PRESUPUESTO DE SERVICIO</b></td> 
           <td width="10%" align="left" style="font-size:15px; line-height: 1.2; white-space: nowrap;"><b>N°:</b> $id->id_presupuesto</td>  
         </tr>

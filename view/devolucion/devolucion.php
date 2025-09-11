@@ -8,8 +8,12 @@
     <thead>
         <tr style="background-color: black; color:#fff">
             <th>ID</th>
+            <th>Venta</th>
             <th>Usuario</th>
-            <th>Total</th>
+            <th>Observación</th>
+            <th>Monto Venta</th>
+            <th>Costo</th>
+            <th>Diferencia</th>
             <th>Fecha y Hora</th>
             <?php if (!isset($_GET['id_venta'])): ?>        
             <th></th>
@@ -24,12 +28,16 @@
     foreach($this->model->Listar($id_venta) as $r): ?>
         <tr class="click" <?php if($r->anulado){echo "style='color:gray'";} ?>>
             <td><?php echo $r->id_venta; ?></td>
+            <td><a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-id="<?php echo $r->venta;?>"><?php echo $r->venta; ?></a></td>
             <td><?php echo $r->vendedor; ?></td>
+            <td><?php echo $r->comprobante; ?></td>
+            <td><?php echo number_format($r->monto_venta,0,".",","); ?></td>
             <td><?php echo number_format($r->total,0,".",","); ?></td>
+            <td><?php echo number_format($r->monto_venta - $r->total,0,".",","); ?></td>
             <td><?php echo date("d/m/Y H:i", strtotime($r->fecha_venta)); ?></td>
             <?php if (!isset($_GET['id_venta'])): ?>
             <td>
-                <a href="#detallesModal" class="btn btn-success" data-toggle="modal" data-target="#devolucionModal" data-id="<?php echo $r->id_venta;?>">Ver</a>
+                <a href="#devolucionModal" class="btn btn-success" data-toggle="modal" data-target="#devolucionModal" data-id="<?php echo $r->id_venta;?>">Ver</a>
                 <!--<a  class="btn btn-primary edit" href="?c=venta_tmp&a=editar&id=<?php //echo $r->id_venta ?>" class="btn btn-success" >Editar</a>-->
                 <?php if ($r->anulado): ?>
                 ANULADO    
@@ -52,4 +60,5 @@
 <?php include("view/venta/mes-modal.php"); ?>
 <?php include("view/venta/dia-modal.php"); ?>
 <?php include("view/devolucion/detalles-modal.php"); ?>
+<?php include("view/venta/detalles-modal.php"); ?>
 

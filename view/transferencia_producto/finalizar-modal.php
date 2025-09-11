@@ -12,7 +12,7 @@
                     <div class="form-group col-sm-12">
                         <label>Destino de transferencia </label>
                         <select name="destino_transferencia" id="cliente" class="form-control selectpickerr" data-show-subtext="true" data-live-search="true" data-style="form-control" title="-- Seleccione el cliente --" autofocus require>
-                            <option value="cent_inst_1" selected>Centro de Instalac. ScoreCar PRO</option>
+                            <option value="cent_inst_1" selected>GOLDENT</option>
                         </select>
                     </div>
 

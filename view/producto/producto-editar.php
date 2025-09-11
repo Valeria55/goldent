@@ -151,45 +151,6 @@
         var precio_minorista = $("#precio_minorista").val();
         var precio_mayorista = $("#precio_mayorista").val();
 
-
-
-        if ((precio_costo * 1.05) >= precio_minorista) {
-            e.preventDefault();
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-right',
-                iconColor: 'red',
-
-                customClass: 'swal-wide',
-                showConfirmButton: false,
-                timer: 6000,
-                timerProgressBar: true
-            });
-            Toast.fire({
-                icon: 'error',
-                title: `La ganancia no puede ser menor al 5%`
-            });
-            $("#precio_minorista").select();
-        }
-        // if ((precio_costo * 1.05) >= precio_mayorista) {
-        //     e.preventDefault();
-        //     const Toast = Swal.mixin({
-        //         toast: true,
-        //         position: 'top-right',
-        //         iconColor: 'red',
-
-        //         customClass: 'swal-wide',
-        //         showConfirmButton: false,
-        //         timer: 6000,
-        //         timerProgressBar: true
-        //     });
-        //     Toast.fire({
-        //         icon: 'error',
-        //         title: `La ganancia no puede ser menor al 5%`
-        //     });
-        //     $("#precio_mayorista").select();
-        // }
-
     });
     $("#porcentaje_minorista").keyup(function() {
 

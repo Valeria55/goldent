@@ -1,7 +1,7 @@
 <div id="devolucionModal" class="modal fade">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<div class="modal-body" id="modal-detalles">
+			<div class="modal-body" id="ajuste-detalles">
           	</div>
       	</div>
 	</div>

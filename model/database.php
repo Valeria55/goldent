@@ -1,13 +1,13 @@
 <?php
-define("USER", "u832567584_tienda");
+define("USER", "u832567584_golden");
 define("PASS", "Trinity..2021");
-define("DB", "u832567584_tienda");
+define("DB", "u832567584_golden");
 define("HOST", "localhost");
 
-define("USER_TALLER", "u832567584_tallerscorecar");
-define("PASS_TALLER", "Trinity..2021");
-define("DB_TALLER", "u832567584_tallerscorecar");
-define("HOST_TALLER", "localhost");
+// define("USER_TALLER", "u832567584_tallerscorecar");
+// define("PASS_TALLER", "Trinity..2021");
+// define("DB_TALLER", "u832567584_tallerscorecar");
+// define("HOST_TALLER", "localhost");
 
 class Database
 {

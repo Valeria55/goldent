@@ -40,7 +40,7 @@ $html = <<<HTML
 <table>
     <tr>
         <td class="center" colspan="2" style="margin-bottom:2px;">
-            <img src="assets/img/SCORECARLOGO.png" width="150" style="margin-bottom:2px;">
+            <img src="assets/img/LogoTrinity.PNG" width="150" style="margin-bottom:2px;">
         </td>
     </tr>
     <tr>
@@ -50,10 +50,10 @@ $html = <<<HTML
         <td class="center tight" colspan="2"></td>
     </tr>
     <tr>
-        <td class="center tight" colspan="2" style="font-size:6px;">de EIRL, BAEZ ENCISO EDISON MANUEL</td>
+        <td class="center tight" colspan="2" style="font-size:6px;">de ***</td>
     </tr>
     <tr>
-        <td class="center tight" colspan="2">RUC: 80098689-0</td>
+        <td class="center tight" colspan="2">RUC: ***-0</td>
     </tr>
     <tr>
         <td class="center tight" colspan="2">Timbrado: {$timbrado}</td>

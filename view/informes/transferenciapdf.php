@@ -21,7 +21,7 @@ $html1 = <<<EOF
           <td width="30%" align="left"></td>  
         </tr>
        <tr>
-          <td width="30%" align="left"><img src="assets/img/SCORECARLOGO.png" width="200"></td>  
+          <td width="30%" align="left"><img src="assets/img/LogoTrinity.PNG" width="200"></td>  
           <td width="50%" align="left" style="font-size:15px;line-height: 95px;"><b>TRANSFERENCIA DE PRODUCTOS</b></td> 
           <td width="10%" align="left" style="font-size:15px; line-height: 95px;"><b>N°:</b> $id_transferencia</td>  
         </tr>
