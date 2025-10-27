@@ -62,7 +62,9 @@
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta') echo "class='active'"; ?>>
                 <a href="?c=venta">Ventas</a>
             </li>
-
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cierre') echo "class='active'"; ?>>
+                <a href="?c=cierre">cierres</a>
+            </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp') echo "class='active'"; ?>>
                 <a href="?c=venta_tmp">
                     <?php if ($cierre = $this->cierre->Consultar($_SESSION['user_id'])) : ?>

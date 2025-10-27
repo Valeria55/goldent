@@ -47,7 +47,7 @@
             <th>Usuario</th>
             <th>Apertura</th>
             <th>Cierre</th>
-            <th>Monto apertura efectivo</th>
+            <th>Monto apertura</th>
             <th>Monto ingreso</th>
             <th>Monto egreso</th>
             <!--Monto del sistema -->
@@ -81,7 +81,10 @@
                 <td><?php echo number_format(($r->cierre_total_convertido - (($r->monto_sistema + $r->apertura_total_convertido) - $r->monto_egreso)), 0, ".", ","); ?></td>
                 <td>
                     <a href="?c=cierre&a=detalles&id=<?php echo $r->id; ?>" class="btn btn-warning">Ver detalles</a>
-                    <a href="?c=cierre&a=cierrepdf&id_cierre=<?php echo $r->id; ?>" class="btn btn-info">Informe</a>
+                    <a href="?c=cierre&a=cierrepdf&id_cierre=<?php echo $r->id; ?>" class="btn btn-info" target="_blank" onclick="abrirPDFFlotante(this.href); return false;" title="Abrir informe en ventana flotante">
+                        <i class="fas fa-file-pdf"></i> Informe
+                    </a>
+                    <?php if($_SESSION['nivel'] == 1): ?>
                     <button type="button" class="btn btn-success btn-sm" 
                             onclick="abrirModalEditarCierre(
                                 '<?php echo $r->id; ?>',
@@ -99,6 +102,7 @@
                             )">
                         <i class="fas fa-edit"></i> Editar
                     </button>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php
@@ -138,4 +142,40 @@
         $("#filtro").toggle("slow");
         $("i").toggle();
     });
+
+    // Función para abrir PDF en ventana flotante
+    function abrirPDFFlotante(url) {
+        // Configuración de la ventana flotante optimizada
+        const ancho = Math.min(1200, window.screen.availWidth - 100);
+        const alto = Math.min(800, window.screen.availHeight - 100);
+        const left = (window.screen.availWidth - ancho) / 2;
+        const top = (window.screen.availHeight - alto) / 2;
+        
+        const configuracion = `
+            width=${ancho},
+            height=${alto},
+            left=${left},
+            top=${top},
+            scrollbars=yes,
+            resizable=yes,
+            menubar=no,
+            toolbar=yes,
+            location=no,
+            status=yes,
+            titlebar=yes
+        `;
+        
+        // Abrir ventana flotante con título descriptivo
+        const ventanaPDF = window.open(url, 'InformeCierrePDF', configuracion);
+        
+        // Dar foco a la ventana flotante
+        if (ventanaPDF) {
+            ventanaPDF.focus();
+        } else {
+            // Fallback si el popup fue bloqueado
+            alert('El navegador bloqueó la ventana emergente. Por favor, permite las ventanas emergentes para este sitio.');
+        }
+        
+        return false;
+    }
 </script>
