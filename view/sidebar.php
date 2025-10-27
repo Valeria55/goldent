@@ -35,27 +35,30 @@
         <?php endif; ?>
 
         <?php if ($_SESSION['nivel'] == 2) { ?>
-            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'caja') echo "class='active'"; ?>>
+            <!-- <li <?php //if (isset($_GET['c']) && $_GET['c'] == 'caja') echo "class='active'"; 
+                        ?>>
                 <a href="?c=caja">Cajas</a>
-            </li>
-             <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
-                        <a href="?c=producto&a=servicios">Servicios</a>
-                    </li>
-            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'egreso' && isset($_GET['a']) && $_GET['a'] == 'extraccion') echo "class='active'"; ?>>
-                <a href="?c=egreso&a=extraccion">Egresos</a>
+            </li> -->
+            <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
+                <a href="?c=producto&a=servicios">Servicios</a>
             </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
                 <a href="?c=cliente">Personas</a>
             </li>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'egreso' && isset($_GET['a']) && $_GET['a'] == 'extraccion') echo "class='active'"; ?>>
+                <a href="?c=egreso&a=extraccion">Egresos</a>
+            </li>
+            <li <?php if ($_GET['c'] == 'deuda') echo "class='active'"; ?>>
+                <a href="?c=deuda">Deudores</a>
+            </li>
+
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto') echo "class='active'"; ?>>
                 <a href="?c=presupuesto">Presupuesto</a>
             </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto_tmp') echo "class='active'"; ?>>
                 <a href="?c=presupuesto_tmp">+ Nuevo presupuesto</a>
             </li>
-            <li <?php if ($_GET['c'] == 'deuda') echo "class='active'"; ?>>
-                <a href="?c=deuda">Deudores</a>
-            </li>
+
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta') echo "class='active'"; ?>>
                 <a href="?c=venta">Ventas</a>
             </li>
