@@ -120,66 +120,59 @@ class presupuesto_tmpController
         $presupuesto_tmp->id_presupuesto = 1;
         $presupuesto_tmp->id_vendedor = $_SESSION['user_id'];
         $presupuesto_tmp->id_producto = $_REQUEST['id_producto'];
-        
-        if($pro->precio_promo>0 && ($pro->desde>=date('Y-m-d') && $pro->hasta<=date('Y-m-d'))){
-
-            $presupuesto_tmp->precio_venta = $pro->precio_promo;
-        }else{
-            $presupuesto_tmp->precio_venta = $pro->precio_minorista;
-        }
-         if($_REQUEST['precio_venta'] == 0){
-            require_once "view/presupuesto/tabla_presupuesto.php";
-            echo "<script>
-                    Swal.fire({
-                        icon: 'error',
-                        customClass: 'swal-lg',
-                        title: 'No se cargó el registro',
-                        text: 'El precio es menor a lo permitido'
-                    }).then((result) => {
-                         if (result.value) {
+        $presupuesto_tmp->precio_venta = $_REQUEST['precio_venta'];
+        $presupuesto_tmp->paciente = $_REQUEST['paciente'];
+        //  if($_REQUEST['precio_venta'] == 0){
+        //     require_once "view/presupuesto/tabla_presupuesto.php";
+        //     echo "<script>
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 customClass: 'swal-lg',
+        //                 title: 'No se cargó el registro',
+        //                 text: 'El precio es menor a lo permitido'
+        //             }).then((result) => {
+        //                  if (result.value) {
                     
                   
                     
-                    }
-                    });
-                </script>";
-            die;
-        }
-
-        
+        //             }
+        //             });
+        //         </script>";
+        //     die;
+        // }
         $presupuesto_tmp->cantidad = $_REQUEST['cantidad'];
         $presupuesto_tmp->descuento = $_REQUEST['descuento'];
         $presupuesto_tmp->fecha_presupuesto = date("Y-m-d H:i");
 
-        if(($this->model->ObtenerPorProductoUsuario($presupuesto_tmp))!=''){
-            require_once "view/presupuesto/tabla_presupuesto.php";
-                echo
-                "<script>
-                Swal.fire({
-                    title: 'HUBO UN ERROR ',
-                    text: 'PRODUCTO DUPLICADO',
-                    icon: 'error',
-                    showCancelButton: false,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'OK!'
-                }).then((result) => {
-                    if (result.value) {
+        // if(($this->model->ObtenerPorProductoUsuario($presupuesto_tmp))!=''){
+        //     require_once "view/presupuesto/tabla_presupuesto.php";
+        //         echo
+        //         "<script>
+        //         Swal.fire({
+        //             title: 'HUBO UN ERROR ',
+        //             text: 'PRODUCTO DUPLICADO',
+        //             icon: 'error',
+        //             showCancelButton: false,
+        //             confirmButtonColor: '#3085d6',
+        //             cancelButtonColor: '#d33',
+        //             confirmButtonText: 'OK!'
+        //         }).then((result) => {
+        //             if (result.value) {
                     
                   
                     
-                    }
-                });
-                </script>";
+        //             }
+        //         });
+        //         </script>";
             
-        }else{
+        // }else{
             
         $presupuesto_tmp->id > 0
             ? $this->model->Actualizar($presupuesto_tmp)
             : $this->model->Registrar($presupuesto_tmp);
 
             require_once "view/presupuesto/tabla_presupuesto.php";
-        }
+        //}
 
        //header('Location: index.php?c=presupuesto_tmp');
        

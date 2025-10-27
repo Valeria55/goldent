@@ -20,6 +20,7 @@
             <th></th>
             <th></th>
             <th></th>
+            <th></th>
             <?php if (!isset($_SESSION)) session_start();
             if ($_SESSION['nivel'] == 1) { ?>
                 <th></th>
@@ -128,12 +129,17 @@ if (!isset($_SESSION)) session_start();
                 {
                     "defaultContent": "",
                     render: function(data, type, row) {
-
-                        if (row.comprobante == 'Ticket') {
-                            return "<a href='#editarVentaModal' class='btn btn-primary' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "'data-n='" + row.nro_comprobante + "'data-co='" + row.comprobante + "'data-cli='" + row.id_cliente + "'>Ticket</a>";
+                        if (row.contado == 'Credito') {
+                            return "<a href='javascript:void(0)' class='btn btn-success' onclick='abrirVentanaFlotante(\"?c=venta&a=Pagare&id=" + row.id_venta + "\", \"Pagaré\")'>Pagare</a>";
                         } else {
-                            return '';
+                            return "";
                         }
+                    }
+                },
+                {
+                    "defaultContent": "",
+                    render: function(data, type, row) {
+                        return "<a href='javascript:void(0)' class='btn btn-success' onclick='abrirVentanaFlotante(\"?c=venta&a=OrdenDelivery&id=" + row.id_venta + "\", \"Orden de Entrega\")'>Orden Delivery</a>";
                     }
                 },
                 {
@@ -142,6 +148,8 @@ if (!isset($_SESSION)) session_start();
 
                         if (row.comprobante == 'Factura') {
                             return "<a href='#editarVentaModal' class='btn btn-primary' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "'data-n='" + row.nro_comprobante + "'data-co='" + row.comprobante + "'data-cli='" + row.id_cliente + "'>Factura</a>";
+                        } else if (row.comprobante == 'Ticket') {
+                            return "<a href='#editarVentaModal' class='btn btn-primary' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "'data-n='" + row.nro_comprobante + "'data-co='" + row.comprobante + "'data-cli='" + row.id_cliente + "'>Ticket</a>";
                         } else {
                             return '';
                         }
@@ -194,4 +202,38 @@ if (!isset($_SESSION)) session_start();
     //     $('.selectpicker').selectpicker('refresh');
 
     // })
+</script>
+
+<script type="text/javascript">
+function abrirVentanaFlotante(url, titulo) {
+    // Configuración de la ventana flotante
+    var width = 900;
+    var height = 700;
+    
+    // Calcular posición centrada en la pantalla
+    var left = (screen.width / 2) - (width / 2);
+    var top = (screen.height / 2) - (height / 2);
+    
+    // Características de la ventana
+    var features = 'width=' + width + 
+                   ',height=' + height + 
+                   ',left=' + left + 
+                   ',top=' + top + 
+                   ',scrollbars=yes' +
+                   ',resizable=yes' +
+                   ',toolbar=no' +
+                   ',menubar=no' +
+                   ',location=no' +
+                   ',status=no';
+    
+    // Abrir la ventana flotante
+    var ventanaFlotante = window.open(url, titulo.replace(/\s+/g, '_'), features);
+    
+    // Enfocar la ventana si no está bloqueada
+    if (ventanaFlotante) {
+        ventanaFlotante.focus();
+    } else {
+        alert('Por favor, permite las ventanas emergentes para ver el documento PDF.');
+    }
+}
 </script>

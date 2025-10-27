@@ -63,10 +63,21 @@ class presupuestoController
         require_once 'view/presupuesto/presupuesto_pendientes.php';
         require_once 'view/footer.php';
     }
+    public function OrdenDelivery()
+    {
+        $id_venta = $_GET['id'];
+        $items = $this->model->ListarDetalle($id_venta);
+
+        require_once 'view/informes/orden_entrega_tcpdf.php';
+    }
 
     public function Presupuestopdf()
     {
         require_once 'view/informes/presupuestopdf.php';
+    }
+    public function ordenEntregaPdf()
+    {
+        require_once 'view/informes/orden_entrega_tcpdf.php';
     }
 
     public function EstadoResultado()
@@ -305,7 +316,7 @@ class presupuestoController
     public function Guardar()
     {
 
-        $ven = new presupuesto();
+        $presupuesto_tmp = new presupuesto();
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
         
@@ -339,6 +350,7 @@ class presupuestoController
             $presupuesto->precio_venta = $v->precio_venta;
             $presupuesto->descuento = $descuento_aplicar; // Usar descuento calculado
             $presupuesto->cantidad = $v->cantidad;
+            $presupuesto->paciente = $v->paciente;
             $presupuesto->fecha_presupuesto = $_REQUEST["fecha_presupuesto"]; //date("Y-m-d H:i");
             $presupuesto->aprobado = $aprobado; // Nuevo campo para aprobación
             $presupuesto->estado = $estado; // Establecer estado
@@ -360,8 +372,8 @@ class presupuestoController
             $_SESSION['mensaje'] = "Presupuesto guardado. Requiere aprobación debido al descuento aplicado ({$descuento_mostrar}% > 10%).";
         }
 
-        header('Location: index.php?c=presupuesto_tmp');
-        //header("refresh:0;index.php?c=venta&a=factura&id=$id");
+        // header('Location: index.php?c=presupuesto_tmp');
+        header("refresh:0;index.php?c=presupuesto&a=OrdenDelivery&id=$id");
 
         //header('Location: index.php?c=venta&a=sesion');
     }
@@ -384,6 +396,7 @@ class presupuestoController
             $venta_tmp->cantidad = $p->cantidad;
             $venta_tmp->descuento = $p->descuento;
             $venta_tmp->fecha_venta = date("Y-m-d H:i");
+            $venta_tmp->paciente = $p->paciente;
 
             $this->venta_tmp->Registrar($venta_tmp);
         }

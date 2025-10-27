@@ -1,6 +1,6 @@
 <h1 class="page-header">Lista de extracciones</h1>
 <a class="btn btn-primary pull-right" href="#egresoModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="egreso">Agregar</a>
-<a class="btn btn-primary pull-right" href="#transferenciaModal" class="btn btn-success" data-toggle="modal" data-target="#transferenciaModal">Transferir</a>
+<!-- <a class="btn btn-primary pull-right" href="#transferenciaModal" class="btn btn-success" data-toggle="modal" data-target="#transferenciaModal">Transferir</a> -->
 <br><br><br>
 
 <p> </p>

@@ -89,7 +89,7 @@ function movimientos($movimientos_data, $metodo, $apertura = 0)
     }
 
     // Para efectivo, usar el saldo total convertido que viene en los datos
-    if (strtolower($metodo) === 'efectivo' && !empty($movimientos_data)) {
+    if (strtolower($metodo) === 'Efectivo' && !empty($movimientos_data)) {
         $primer_movimiento = $movimientos_data[0];
         $saldo = isset($primer_movimiento->monto_apertura) ? $primer_movimiento->monto_apertura : $apertura;
     } else {
@@ -105,7 +105,7 @@ function movimientos($movimientos_data, $metodo, $apertura = 0)
     $desdeHora = isset($primer_movimiento->fecha_apertura) ? date('H:i', strtotime($primer_movimiento->fecha_apertura)) : '';
 
     // Determinar el texto de apertura según el método
-    $texto_apertura = (strtolower($metodo) === 'efectivo') ? 'Apertura Total (Convertido a Gs.)' : 'Apertura';
+    $texto_apertura = (strtolower($metodo) === 'Efectivo') ? 'Apertura Total (Convertido a Gs.)' : 'Apertura';
 
     $aperturaHtml = ($saldo > 0) ? <<<EOF
         <tr>
@@ -146,7 +146,7 @@ function movimientos($movimientos_data, $metodo, $apertura = 0)
         </style>
     EOF;
 
-    $titulo_metodo = (strtolower($metodo) === 'efectivo') ? 'Movimientos de Efectivo (Convertido a Guaraníes)' : "Movimientos de $metodo";
+    $titulo_metodo = (strtolower($metodo) === 'Efectivo') ? 'Movimientos de Efectivo (Convertido a Guaraníes)' : "Movimientos de $metodo";
 
     $html = <<<EOF
     $estilos
@@ -173,7 +173,7 @@ function movimientos($movimientos_data, $metodo, $apertura = 0)
         $nombre_caja = htmlspecialchars($mov->nombre_caja);
 
         // Agregar información de moneda original si es efectivo convertido
-        if (strtolower($metodo) === 'efectivo' && isset($mov->moneda) && !empty($mov->moneda) && $mov->moneda !== 'GS' && $mov->moneda !== 'Guaranies') {
+        if (strtolower($metodo) === 'Efectivo' && isset($mov->moneda) && !empty($mov->moneda) && $mov->moneda !== 'GS' && $mov->moneda !== 'Guaranies') {
             $concepto .= " (" . $mov->moneda . ")";
         }
 
@@ -672,11 +672,11 @@ try {
         // Agregar salto de página y título antes de la sección de todas las cajas
         $pdf->AddPage('P', 'A4');
         $titulo_movimientos = '<h1 align="center">Movimientos del Usuario</h1>';
-        $pdf->writeHTML($titulo_movimientos, false, false, false, false, '');
-        $pdf->writeHTML($espacio, false, false, false, false, '');
+       // $pdf->writeHTML($titulo_movimientos, false, false, false, false, '');
+        //$pdf->writeHTML($espacio, false, false, false, false, '');
 
-        $pdf->writeHTML($efectivo, false, false, false, false, '');
-        $pdf->writeHTML($espacio, false, false, false, false, '');
+       // $pdf->writeHTML($efectivo, false, false, false, false, '');
+       // $pdf->writeHTML($espacio, false, false, false, false, '');
         error_log("HTML de efectivo generado exitosamente");
     } else {
         error_log("No hay movimientos de efectivo para mostrar");
@@ -849,7 +849,7 @@ EOF;
         if (($r->contado ?? '') == 'Contado') {
             // Para ventas al contado, todo se considera cobrado
             $totalContado += ($r->total ?? 0);
-            if (($r->metodo ?? '') == "efectivo") {
+            if (($r->metodo ?? '') == "Efectivo") {
                 $totalContadoEfec += ($r->total ?? 0);
             }
         } else {
@@ -858,7 +858,7 @@ EOF;
             $monto_total = ($r->total ?? 0);
 
             $totalContado += $monto_cobrado;
-            if (($r->metodo ?? '') == "efectivo") {
+            if (($r->metodo ?? '') == "Efectivo") {
                 $totalContadoEfec += $monto_cobrado;
             }
 
@@ -908,7 +908,221 @@ EOF;
 EOF;
 }
 
-$pdf->writeHTML($html1, false, false, false, false, '');
+//$pdf->writeHTML($html1, false, false, false, false, '');
+
+/*==============================================================
+		ANÁLISIS DE INGRESOS POR TIPO
+================================================================*/
+
+$html_ingresos = <<<EOF
+    $estilos
+    $espacio
+    <h1 align="center">Análisis de Ingresos por Tipo</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="10%">Hora</th>
+                <th width="12%">Forma Pago</th>
+                <th width="10%">Moneda</th>
+                <th width="38%">Concepto</th>
+                <th width="15%">Monto Original</th>
+                <th width="15%">Monto (Gs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+
+EOF;
+
+$totalCobrosDeuda = 0;
+$totalPagosContado = 0;
+$totalCobrosDeudaGs = 0;
+$totalPagosContadoGs = 0;
+
+// Separar en dos secciones: Cobros de Deuda y Pagos al Contado
+try {
+    error_log("=== DEBUG ANÁLISIS DE INGRESOS ===");
+    error_log("Consultando ingresos del cierre $id_cierre");
+    
+    // Obtener todos los ingresos del período del cierre
+    $ingresos = $this->model->ListarIngresosPorTipo($id_usuario, $desde, $hasta);
+    error_log("Ingresos encontrados: " . count($ingresos));
+
+    if (!empty($ingresos)) {
+        // Sección 1: Cobros de Deudas
+        $html_ingresos .= <<<EOF
+            <tr style="background-color: #e8f5e8;">
+                <td colspan="6" align="center"><strong>COBROS DE DEUDAS</strong></td>
+            </tr>
+EOF;
+
+        $hayCobroDeuda = false;
+        foreach ($ingresos as $ingreso) {
+            if (!empty($ingreso->pago_deuda)) {
+                $hayCobroDeuda = true;
+                $hora = date("H:i", strtotime($ingreso->fecha));
+                $concepto = htmlspecialchars($ingreso->concepto);
+                $forma_pago = htmlspecialchars($ingreso->forma_pago);
+                $moneda = $ingreso->moneda ?? 'GS';
+                $monto_original = number_format($ingreso->monto, ($moneda == 'GS' ? 0 : 2), ",", ".");
+                $monto_gs = number_format($ingreso->monto * $ingreso->cambio, 0, ",", ".");
+                
+                $totalCobrosDeuda += $ingreso->monto;
+                $totalCobrosDeudaGs += ($ingreso->monto * $ingreso->cambio);
+
+                $html_ingresos .= <<<EOF
+                    <tr>
+                        <td width="10%">$hora</td>
+                        <td width="12%">$forma_pago</td>
+                        <td width="10%">$moneda</td>
+                        <td width="38%">$concepto</td>
+                        <td width="15%" align="right">$monto_original</td>
+                        <td width="15%" align="right">$monto_gs</td>
+                    </tr>
+EOF;
+            }
+        }
+
+        if (!$hayCobroDeuda) {
+            $html_ingresos .= <<<EOF
+                <tr>
+                    <td colspan="6" align="center" style="color: #666; font-style: italic;">
+                        No se registraron cobros de deudas en este período
+                    </td>
+                </tr>
+EOF;
+        }
+
+        // Subtotal Cobros de Deudas
+        $totalCobrosDeudaGsV = number_format($totalCobrosDeudaGs, 0, ",", ".");
+        $html_ingresos .= <<<EOF
+            <tr style="background-color: #d4edda;">
+                <td colspan="5" align="right"><strong>Subtotal Cobros de Deudas:</strong></td>
+                <td align="right"><strong>$totalCobrosDeudaGsV</strong></td>
+            </tr>
+EOF;
+
+        // Sección 2: Pagos al Contado
+        $html_ingresos .= <<<EOF
+            <tr style="background-color: #fff3cd;">
+                <td colspan="6" align="center"><strong>PAGOS AL CONTADO (Ventas y Otros)</strong></td>
+            </tr>
+EOF;
+
+        $hayPagoContado = false;
+        foreach ($ingresos as $ingreso) {
+            if (empty($ingreso->pago_deuda)) {
+                $hayPagoContado = true;
+                $hora = date("H:i", strtotime($ingreso->fecha));
+                $concepto = htmlspecialchars($ingreso->concepto);
+                $forma_pago = htmlspecialchars($ingreso->forma_pago);
+                $moneda = $ingreso->moneda ?? 'GS';
+                $monto_original = number_format($ingreso->monto, ($moneda == 'GS' ? 0 : 2), ",", ".");
+                $monto_gs = number_format($ingreso->monto * $ingreso->cambio, 0, ",", ".");
+                
+                $totalPagosContado += $ingreso->monto;
+                $totalPagosContadoGs += ($ingreso->monto * $ingreso->cambio);
+
+                $html_ingresos .= <<<EOF
+                    <tr>
+                        <td width="10%">$hora</td>
+                        <td width="12%">$forma_pago</td>
+                        <td width="10%">$moneda</td>
+                        <td width="38%">$concepto</td>
+                        <td width="15%" align="right">$monto_original</td>
+                        <td width="15%" align="right">$monto_gs</td>
+                    </tr>
+EOF;
+            }
+        }
+
+        if (!$hayPagoContado) {
+            $html_ingresos .= <<<EOF
+                <tr>
+                    <td colspan="6" align="center" style="color: #666; font-style: italic;">
+                        No se registraron pagos al contado en este período
+                    </td>
+                </tr>
+EOF;
+        }
+
+        // Subtotal Pagos al Contado
+        $totalPagosContadoGsV = number_format($totalPagosContadoGs, 0, ",", ".");
+        $html_ingresos .= <<<EOF
+            <tr style="background-color: #fff3cd;">
+                <td colspan="5" align="right"><strong>Subtotal Pagos al Contado:</strong></td>
+                <td align="right"><strong>$totalPagosContadoGsV</strong></td>
+            </tr>
+EOF;
+
+        // Total General
+        $totalGeneralIngresos = $totalCobrosDeudaGs + $totalPagosContadoGs;
+        $totalGeneralIngresosV = number_format($totalGeneralIngresos, 0, ",", ".");
+        $html_ingresos .= <<<EOF
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="5" align="right"><strong>TOTAL GENERAL INGRESOS:</strong></td>
+                <td align="right"><strong>$totalGeneralIngresosV</strong></td>
+            </tr>
+EOF;
+
+    } else {
+        $html_ingresos .= <<<EOF
+            <tr>
+                <td colspan="6" align="center" style="color: #666; font-style: italic;">
+                    No se encontraron ingresos para este período
+                </td>
+            </tr>
+EOF;
+    }
+
+} catch (Exception $e) {
+    error_log("Error en análisis de ingresos: " . $e->getMessage());
+    
+    $html_ingresos .= <<<EOF
+            <tr>
+                <td colspan="6" align="center" style="color: #cc0000; font-weight: bold;">
+                    Error al procesar los ingresos: {$e->getMessage()}
+                </td>
+            </tr>
+EOF;
+}
+
+$html_ingresos .= <<<EOF
+        </tbody>
+    </table>
+    
+    $espacio
+    
+    <h3>Resumen del Análisis de Ingresos</h3>
+    <table>
+        <thead>
+            <tr>
+                <th width="60%">Tipo de Ingreso</th>
+                <th width="20%">Cantidad</th>
+                <th width="20%">Total (Gs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="60%">Cobros de Deudas</td>
+                <td width="20%" align="center">-</td>
+                <td width="20%" align="right">$totalCobrosDeudaGsV</td>
+            </tr>
+            <tr>
+                <td width="60%">Pagos al Contado (Ventas y Otros)</td>
+                <td width="20%" align="center">-</td>
+                <td width="20%" align="right">$totalPagosContadoGsV</td>
+            </tr>
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td width="60%">TOTAL INGRESOS</td>
+                <td width="20%" align="center">-</td>
+                <td width="20%" align="right">$totalGeneralIngresosV</td>
+            </tr>
+        </tbody>
+    </table>
+EOF;
+
+$pdf->writeHTML($html_ingresos, false, false, false, false, '');
 
 // Agregar página explicativa al final
 $pdf->AddPage('P', 'A4');
@@ -1016,7 +1230,36 @@ $explicacion = <<<EOF
     </div>
     
     <div class="seccion-explicacion">
-        <div class="seccion-titulo">5. REGISTRO DE VENTAS</div>
+        <div class="seccion-titulo">5. ANÁLISIS DE INGRESOS POR TIPO</div>
+        <div class="seccion-texto">
+            <strong>NUEVA SECCIÓN:</strong> Clasifica todos los ingresos en dos categorías principales:
+            <div class="lista">
+                • <strong>Cobros de Deudas:</strong> Ingresos generados por el cobro de deudas pendientes de clientes.
+                  Estos registros tienen el campo 'pago_deuda' completado, indicando que provienen del módulo de cobranzas.<br>
+                • <strong>Pagos al Contado:</strong> Ingresos por ventas directas, servicios u otros conceptos que no están 
+                  relacionados con el cobro de deudas preexistentes.
+            </div>
+            <br>
+            <strong>Información mostrada por cada ingreso:</strong>
+            <div class="lista">
+                • <strong>Hora:</strong> Momento exacto del ingreso<br>
+                • <strong>Forma de Pago:</strong> Efectivo, transferencia, tarjeta, etc.<br>
+                • <strong>Moneda:</strong> GS (Guaraníes), USD (Dólares), RS (Reales)<br>
+                • <strong>Concepto:</strong> Descripción detallada del ingreso<br>
+                • <strong>Monto Original:</strong> Valor en la moneda original<br>
+                • <strong>Monto (Gs.):</strong> Valor convertido a guaraníes según la cotización del cierre
+            </div>
+            <br>
+            <div class="importante">
+                <strong>UTILIDAD:</strong> Esta clasificación permite identificar qué proporción de los ingresos 
+                proviene de cobranzas versus ventas nuevas, facilitando el análisis de flujo de efectivo y 
+                el seguimiento de la gestión de cobranzas.
+            </div>
+        </div>
+    </div>
+
+    <div class="seccion-explicacion">
+        <div class="seccion-titulo">6. REGISTRO DE VENTAS</div>
         <div class="seccion-texto">
             Lista detallada de todas las ventas realizadas durante el turno, mostrando:
             <div class="lista">

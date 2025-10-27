@@ -15,6 +15,7 @@ class presupuesto
 	public $descuento;
 	public $estado;
 	public $aprobado;
+	public $paciente;
 
 	public function __CONSTRUCT()
 	{
@@ -154,6 +155,25 @@ class presupuesto
 			LEFT JOIN clientes c ON v.id_cliente = c.id
 			WHERE 1=1 $vendedor GROUP BY v.id_presupuesto ORDER BY v.id DESC");
 			$stm->execute(array());
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+	public function ListarOrden($id_presupuesto)
+	{
+		try {
+
+			$result = array();
+
+			$stm = $this->pdo->prepare("SELECT v.*, c.nombre, c.ruc AS ruc, p.producto
+			FROM presupuestos v 
+			LEFT JOIN productos p ON v.id_producto = p.id
+			LEFT JOIN usuario u ON v.id_vendedor = u.id
+			LEFT JOIN clientes c ON v.id_cliente = c.id
+			WHERE id_presupuesto = ? ORDER BY v.id DESC");
+			$stm->execute(array($id_presupuesto));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
@@ -354,8 +374,8 @@ class presupuesto
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado, paciente) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -369,7 +389,8 @@ class presupuesto
 						$data->fecha_presupuesto,
 						$data->descuento,
 						$data->aprobado,
-						$data->estado
+						$data->estado,
+						$data->paciente
 
 					)
 				);

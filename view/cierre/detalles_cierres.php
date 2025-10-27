@@ -5,7 +5,7 @@ foreach ($this->metodo->Listar() as $m) {
     $pagos[$m->metodo] = 0;
 }
 ?>
-<h1 class="page-header">Movimientos de la caja en la sesión (Convertido a Guaraníes)</h1>
+<h1 class="page-header">Movimientos de la caja en la sesión (Convertido a Guaraníes).</h1>
 <br><br><br>
 
 <p> </p>

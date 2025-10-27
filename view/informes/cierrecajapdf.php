@@ -117,7 +117,7 @@ $subtotalVenta += $r->subtotal;
 
 if($r->contado=='Contado'){
     $totalContado += $r->total;
-    if($r->metodo = "efectivo"){
+    if($r->metodo == "Efectivo"){
 		$totalContadoEfec += $r->total;
 	}
 }else{

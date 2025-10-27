@@ -64,24 +64,12 @@
                     <li <?php if ($_GET['c'] == 'ingreso' && !isset($_GET['a'])) echo "class='active'"; ?>>
                         <a href="?c=ingreso">Ingresos</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'egreso') echo "class='active'"; ?>>
-                        <a href="?c=egreso">Egresos</a>
-                    </li>
                     <li <?php if ($_GET['c'] == 'deuda') echo "class='active'"; ?>>
                         <a href="?c=deuda">Deudores</a>
                     </li>
                     <li <?php if ($_GET['c'] == 'acreedor') echo "class='active'"; ?>>
                         <a href="?c=acreedor">Acreedores</a>
                     </li>
-
-                    <!--<li <?php //if ($_GET['c'] == 'metodo') echo "class='active'"; 
-                            ?>>-->
-                    <!--    <a href="?c=metodo">Metodos de pago</a>-->
-                    <!--</li>-->
-                    <!-- <li <?php //if(isset($_GET['a']) && $_GET['a']=='EstadoResultado') echo "class='active'"; 
-                                ?>>
-                    <a href="?c=venta&a=EstadoResultado">Estado de Resultado</a>
-                </li>-->
                 </ul>
             </li>
             <li>
@@ -99,9 +87,7 @@
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta') echo "class='active'"; ?>>
                         <a href="?c=venta">Ventas</a>
                     </li>
-                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'devolucion_ventas') echo "class='active'"; ?>>
-                        <a href="?c=devolucion_ventas">Devoluciones</a>
-                    </li>
+                    
                     <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
                         <a href="?c=venta&a=listardia">Ventas del día</a>
                     </li>
@@ -111,13 +97,11 @@
 
                 </ul>
             </li>
-            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'gift_card') echo "class='active'"; ?>>
-                <a href="?c=gift_card">Gift Card</a>
-            </li>
+           
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp') echo "class='active'"; ?>>
                 <a href="?c=venta_tmp">
                     <?php if ($cierre = $this->cierre->Consultar($_SESSION['user_id'])) : ?>
-                        + Nueva venta (F2)
+                        + Nuevo Presupuesto (F2)
                     <?php else : ?>
                         Apertura de Caja
                     <?php endif ?>

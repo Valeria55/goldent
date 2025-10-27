@@ -89,7 +89,7 @@
 
 
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#tab1" data-toggle="tab">Ventas</a></li>
+        <li class="active"><a href="#tab1" data-toggle="tab">Ventas Contado</a></li>
         <?php //if (!isset($_SESSION)) session_start();
         //if ($_SESSION['nivel'] == 1) { ?>
             <!-- <li><a href="#tab2" data-toggle="tab">A aprobar</a></li> -->

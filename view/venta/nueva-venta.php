@@ -2,16 +2,16 @@
 <?php $fecha = date("Y-m-d"); ?>
 <h1 class="page-header">Nueva venta <a class="btn btn-info " href="#clienteModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="cliente">+Cliente</a>
 <a class="btn btn-lg btn-primary pull-right" href="#cierreModal" class="btn btn-success" data-toggle="modal" data-target="#cierreModal" data-c="venta">Cierre de caja</a></h1>
-<div class="container">
+<!-- <div class="container">
     <div class="row" >
         <form method="post" id="productoNuevo">
         <div class="col-sm-3">
             <label>Servicios</label>
             <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
                     title="-- Seleccione el producto --" autofocus required>
-                <?php foreach($this->producto->ListarServicios() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
-                <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>" ><?php echo $producto->producto.' - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
-                <?php endforeach; ?>
+                <?php //foreach($this->producto->ListarServicios() as $producto): $promo = ($producto->precio_promo > 0)? " promo = ".number_format($producto->precio_promo,0,".","."):""; ?> 
+                <option style="font-size: 18px" data-subtext="<?php //echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>" ><?php echo $producto->producto.' - '.number_format($producto->precio_minorista,0,".",".").$promo; ?> </option>
+                <?php //endforeach; ?>
         </select>
         </div>
             <div class="col-sm-2">
@@ -33,7 +33,7 @@
             </div>
         </form>
     </div>
-</div>
+</div> -->
 <p> </p>
 
 <?php include("view/crud-modal.php"); ?>
@@ -45,6 +45,7 @@
         <tr style="background-color: #000; color:#fff">
             <th>Codigo</th>
             <th>Producto</th>
+            <th>Paciente</th>
             <th>Precio por Unidad</th>
             <th>Cantidad</th>
             <th>Descuento (%)</th>
@@ -67,6 +68,7 @@
         <tr>
             <td><?php echo $r->codigo; ?></td>
             <td><?php echo $r->producto; ?></td>
+            <td><?php echo $r->paciente; ?></td>
             <td><?php echo number_format($r->precio_venta, 0, "," , "."); ?></td>
             <td><?php echo $r->cantidad; ?></td>
             <td><?php echo $r->descuento; ?></td>
@@ -81,6 +83,7 @@
         
         
         <tr>
+            <td></td>
             <td></td>
             <td></td>
             <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i><?php echo number_format($subtotal,0,",",".") ?></div></td>

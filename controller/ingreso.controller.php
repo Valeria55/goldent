@@ -231,20 +231,57 @@ class ingresoController
 
     public function EliminarPago()
     {
+        try {
+            $ingreso = new ingreso();
+            $ingreso = $this->model->Obtener($_REQUEST['id']);
 
-        $ingreso = new ingreso();
-        $ingreso = $this->model->Obtener($_REQUEST['id']);
+            if (!$ingreso || !$ingreso->id_deuda) {
+                header('Location: index.php?c=ingreso&error=ingreso_no_encontrado');
+                return;
+            }
 
-        $montoIngreso = $ingreso->monto;
-        $cotizacionIngreso = $ingreso->cambio ?? 1; // Si no hay cotización, usar 1 como valor por defecto
-        $montoADevolver = $montoIngreso * $cotizacionIngreso;
+            // Calcular el monto en guaraníes que se debe restaurar
+            $montoIngreso = $ingreso->monto;
+            $cotizacionIngreso = $ingreso->cambio ?? 1;
+            $montoARestaurar = $montoIngreso * $cotizacionIngreso;
 
-        $deuda = new deuda();
-        $deuda->id = $ingreso->id_deuda;
-        $deuda->monto = $montoADevolver;
+            // Obtener información de la deuda para conseguir el cliente
+            $deudaOriginal = $this->deuda->Obtener($ingreso->id_deuda);
+            
+            if (!$deudaOriginal) {
+                header('Location: index.php?c=ingreso&error=deuda_no_encontrada');
+                return;
+            }
 
-        $this->model->Eliminar($_REQUEST['id']);
-        $this->deuda->SumarSaldo($deuda);
-        header('Location: index.php?c=ingreso');
+            // Obtener todas las deudas del cliente ordenadas desde la más nueva a la más vieja
+            $deudasCliente = $this->deuda->obtenerDeudasClienteOrdenadas($deudaOriginal->id_cliente);
+
+            // Eliminar el ingreso primero
+            $this->model->Eliminar($_REQUEST['id']);
+
+            // Distribuir el monto desde la deuda más nueva a la más vieja
+            $montoRestante = $montoARestaurar;
+            
+            foreach ($deudasCliente as $deuda) {
+                if ($montoRestante <= 0) {
+                    break;
+                }
+
+                // Calcular cuánto se puede restaurar en esta deuda sin exceder su monto original
+                $espacioDisponible = $deuda->monto - $deuda->saldo;
+                $montoARestaurarEstaDeuda = min($montoRestante, $espacioDisponible);
+
+                if ($montoARestaurarEstaDeuda > 0) {
+                    // Restaurar saldo en esta deuda
+                    $this->deuda->restaurarSaldoEspecifico($deuda->id, $montoARestaurarEstaDeuda);
+                    $montoRestante -= $montoARestaurarEstaDeuda;
+                }
+            }
+
+            header('Location: index.php?c=ingreso&success=pago_eliminado');
+            
+        } catch (Exception $e) {
+            header('Location: index.php?c=ingreso&error=error_eliminar_pago');
+        }
     }
 }

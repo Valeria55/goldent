@@ -38,9 +38,10 @@ class ingreso
 		try {
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, i.id as id 
+			$stm = $this->pdo->prepare("SELECT *, i.id as id, c.nombre as cliente_nombre, u.user as usuario_nombre
 				FROM ingresos i 
 				LEFT JOIN clientes c ON i.id_cliente = c.id 
+				LEFT JOIN usuario u ON i.id_usuario = u.id
 				WHERE i.categoria <> 'Transferencia' AND cast(i.fecha as date) = ? ORDER BY i.fecha DESC");
 			$stm->execute(array($fecha));
 
@@ -254,8 +255,10 @@ class ingreso
 		try {
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, i.id as id FROM ingresos i 
+			$stm = $this->pdo->prepare("SELECT *, i.id as id, c.nombre as cliente_nombre, u.user as usuario_nombre
+				FROM ingresos i 
 				LEFT JOIN clientes c ON i.id_cliente = c.id 
+				LEFT JOIN usuario u ON i.id_usuario = u.id
 				WHERE i.categoria <> 'Transferencia' AND cast(fecha as date) >= ? AND cast(fecha as date) <= ? ORDER BY i.id DESC");
 			$stm->execute(array($desde, $hasta));
 

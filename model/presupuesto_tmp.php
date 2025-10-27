@@ -11,6 +11,7 @@ class presupuesto_tmp
 	public $cantidad;
 	public $descuento;
 	public $fecha_presupuesto;
+	public $paciente;
 
 	public function __CONSTRUCT()
 	{
@@ -30,7 +31,7 @@ class presupuesto_tmp
 			$userId = $_SESSION['user_id'];
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT v.id, v.id_producto,v.descuento, p.codigo, v.id_vendedor, v.precio_venta, p.producto, p.precio_costo, v.cantidad, v.id_presupuesto
+			$stm = $this->pdo->prepare("SELECT v.id, v.id_producto,v.descuento, p.codigo, v.id_vendedor, v.precio_venta, p.producto, p.precio_costo, v.cantidad, v.id_presupuesto, v.paciente
 			FROM presupuestos_tmp v 
 			LEFT JOIN productos p ON v.id_producto = p.id
 			WHERE id_vendedor = ? ORDER BY v.id DESC");
@@ -183,8 +184,8 @@ class presupuesto_tmp
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO presupuestos_tmp (id_presupuesto, id_vendedor, id_producto, precio_venta, cantidad, descuento, fecha_presupuesto) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO presupuestos_tmp (id_presupuesto, id_vendedor, id_producto, precio_venta, cantidad, descuento, fecha_presupuesto, paciente) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -195,7 +196,8 @@ class presupuesto_tmp
 						$data->precio_venta,
 						$data->cantidad,
 						$data->descuento,
-						$data->fecha_presupuesto
+						$data->fecha_presupuesto,
+						$data->paciente
 
 					)
 				);

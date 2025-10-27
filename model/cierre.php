@@ -143,10 +143,32 @@ class cierre
 	{
 		try {
 			$result = array();
-			$stm = $this->pdo->prepare("SELECT *, (monto * cambio) as monto_convertido FROM ingresos WHERE fecha >= ? AND fecha <= ? AND id_usuario = ? AND anulado IS NULL
-        UNION ALL
-        SELECT *, -(monto * cambio) as monto_convertido FROM egresos WHERE fecha >= ? AND fecha <= ? AND id_usuario = ? AND anulado IS NULL
-        ORDER BY fecha ASC");
+			$stm = $this->pdo->prepare("
+				SELECT 
+					fecha, 
+					categoria, 
+					concepto, 
+					comprobante, 
+					monto, 
+					forma_pago, 
+					cambio,
+					(monto * cambio) as monto_convertido 
+				FROM ingresos 
+				WHERE fecha >= ? AND fecha <= ? AND id_usuario = ? AND anulado IS NULL
+				UNION ALL
+				SELECT 
+					fecha, 
+					categoria, 
+					concepto, 
+					comprobante, 
+					monto, 
+					forma_pago, 
+					cambio,
+					-(monto * cambio) as monto_convertido 
+				FROM egresos 
+				WHERE fecha >= ? AND fecha <= ? AND id_usuario = ? AND anulado IS NULL
+				ORDER BY fecha ASC
+			");
 			$stm->execute(array($apertura, $cierre, $id_usuario, $apertura, $cierre, $id_usuario));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -536,7 +558,7 @@ class cierre
             FROM ingresos i
             WHERE 
                 i.anulado IS NULL 
-                AND i.forma_pago = 'efectivo'
+                AND i.forma_pago = 'Efectivo'
                 AND i.id_caja = 1
                 AND i.fecha >= ?
                 AND i.fecha <= ?
@@ -564,7 +586,7 @@ class cierre
             FROM egresos e
             WHERE 
                 e.anulado IS NULL 
-                AND e.forma_pago = 'efectivo'
+                AND e.forma_pago = 'Efectivo'
                 AND e.id_caja = 1
                 AND e.fecha >= ?
                 AND e.fecha <= ?
@@ -618,7 +640,7 @@ class cierre
 			$movimientos = [];
 
 			// Si es efectivo, necesitamos convertir todos los montos a guaraníes
-			if (strtolower($metodo) === 'efectivo') {
+			if (strtolower($metodo) === 'Efectivo') {
 				// Consulta para ingresos de efectivo con conversión
 				$query_ingresos = "
 					SELECT 
@@ -770,7 +792,7 @@ class cierre
 
 			// Agregar datos del cierre a cada movimiento
 			foreach ($todos_movimientos as $mov) {
-				if (strtolower($metodo) === 'efectivo') {
+				if (strtolower($metodo) === 'Efectivo') {
 					$mov->monto_apertura = $apertura_total;
 					$mov->monto_cierre = $cierre_total;
 				} else {
@@ -821,7 +843,7 @@ class cierre
             FROM ingresos i
             WHERE 
                 i.anulado IS NULL 
-                AND i.forma_pago = 'efectivo'
+                AND i.forma_pago = 'Efectivo'
                 AND i.id_caja = 1
                 AND (
                     i.moneda = ? 
@@ -862,7 +884,7 @@ class cierre
             FROM egresos e
             WHERE 
                 e.anulado IS NULL 
-                AND e.forma_pago = 'efectivo'
+                AND e.forma_pago = 'Efectivo'
                 AND e.id_caja = 1
                 AND (
                     e.moneda = ? 
@@ -996,6 +1018,36 @@ class cierre
 					)
 				);
 			return true;
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarIngresosPorTipo($id_usuario, $desde, $hasta)
+	{
+		try {
+			$stm = $this->pdo->prepare("
+				SELECT 
+					i.*,
+					i.pago_deuda,
+					CASE 
+						WHEN i.pago_deuda IS NOT NULL AND i.pago_deuda != '' THEN 'Cobro de Deuda'
+						ELSE 'Pago al Contado'
+					END as tipo_ingreso
+				FROM ingresos i 
+				WHERE i.fecha >= ? 
+				AND i.fecha <= ? 
+				AND i.id_usuario = ? 
+				AND i.anulado IS NULL
+				ORDER BY 
+					CASE 
+						WHEN i.pago_deuda IS NOT NULL AND i.pago_deuda != '' THEN 1
+						ELSE 2
+					END,
+					i.fecha ASC
+			");
+			$stm->execute(array($desde, $hasta, $id_usuario));
+			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
 			die($e->getMessage());
 		}

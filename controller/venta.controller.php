@@ -286,6 +286,18 @@ class ventaController
 
         require_once 'view/informes/ventadiapdf.php';
     }
+    public function Pagare()
+    {
+
+        require_once 'view/informes/pagare_tcpdf.php';
+    }
+    public function OrdenDelivery()
+    {
+        $id_venta = $_GET['id'];
+        $items = $this->model->Listar($id_venta);
+
+        require_once 'view/informes/orden_entrega_tcpdf.php';
+    }
 
     public function InformeRango()
     {
@@ -314,8 +326,8 @@ class ventaController
     public function Factura()
     {
 
-        require_once 'view/venta/informes/facturapdf.php';
-        // require_once 'view/informes/facturapdf.php';
+        // require_once 'view/venta/informes/facturapdf.php';
+           require_once 'view/informes/facturapdf.php';
         // require_once 'view/informes/facturapdf_dani_8-3-23.php';
     }
 
@@ -417,7 +429,7 @@ class ventaController
         $ven = new venta();
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
-        $autoimpresor = ($_REQUEST['comprobante'] == "Factura") ? $this->model->UltimoAutoimpresor()->autoimpresor + 1 : 0;
+        // $autoimpresor = ($_REQUEST['comprobante'] == "Factura") ? $this->model->UltimoAutoimpresor()->autoimpresor + 1 : 0;
 
         // Obtener las cotizaciones del cierre actual
         if (!isset($_SESSION)) session_start();
@@ -432,7 +444,8 @@ class ventaController
             $venta->id = 0;
             $venta->id_venta = $ven->id_venta + 1;
             //guardar cliente, sino guardar id 81 que es el ocasional
-            $venta->id_cliente = $_REQUEST['id_cliente'] ? $_REQUEST['id_cliente'] : 85;
+            $venta->id_cliente = $_REQUEST['id_cliente'] ? $_REQUEST['id_cliente'] : '';
+            $venta->paciente = $v->paciente ?? '';
             $venta->id_vendedor = $v->id_vendedor;
             $venta->id_presupuesto = $v->id_presupuesto;
             $venta->vendedor_salon = 0;
@@ -446,7 +459,7 @@ class ventaController
             $venta->comprobante = $_REQUEST['comprobante'];
             $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
             $venta->id_timbrado = $_REQUEST['id_timbrado'] ?? 1;
-            $venta->autoimpresor = $autoimpresor;
+            // $venta->autoimpresor = $autoimpresor;
             $venta->cantidad = $v->cantidad;
             $venta->margen_ganancia = $venta->precio_costo > 0 ? ((($venta->precio_venta - ($venta->precio_venta * ($venta->descuento / 100))) - $venta->precio_costo) / ($venta->precio_costo)) * 100 : 0;
             $venta->fecha_venta = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
@@ -454,6 +467,8 @@ class ventaController
             $venta->contado = $_REQUEST['contado'];
             $venta->banco = $_REQUEST['banco'];
             $venta->id_devolucion = $_REQUEST['id_devolucion'] ?? 0;
+            $venta->sucursal = 1;
+            $venta->id_sucursal = 1;
 
             // Guardar las cotizaciones del cierre actual
             $venta->cot_usd = $cot_dolar;
@@ -502,7 +517,7 @@ class ventaController
             $deuda->concepto = 'Venta a crédito';
             $deuda->monto = $sumaTotal;
             $deuda->saldo = $sumaTotal - $_REQUEST['entrega'];
-            $deuda->sucursal = $_SESSION['sucursal'];
+            $deuda->sucursal = 1;
 
             $this->deuda->Registrar($deuda);
 
@@ -531,7 +546,7 @@ class ventaController
                 $ingreso->comprobante = $_REQUEST['comprobante'];
                 $ingreso->monto = $_REQUEST['entrega'];
                 $ingreso->forma_pago = $_REQUEST['forma_pago'];
-                $ingreso->sucursal = 0;
+                $ingreso->sucursal = 1;
 
                 $this->ingreso->Registrar($ingreso);
             }
@@ -561,7 +576,7 @@ class ventaController
                 $ingreso->monto = $r->monto;
                 $ingreso->moneda = $r->moneda;
                 $ingreso->cambio = $r->cambio;
-                $ingreso->sucursal = 0;
+                $ingreso->sucursal = 1;
 
                 $this->ingreso->Registrar($ingreso);
             }
@@ -570,7 +585,8 @@ class ventaController
         $this->pago_tmp->Vaciar();
         $this->venta_tmp->Vaciar();
         if ($_REQUEST['comprobante'] == "Ticket") {
-            header("Location: index.php?c=venta&a=ticket&id=$idd");
+            // header("Location: index.php?c=venta&a=OrdenDelivery&id=$idd");
+            header('Location: index.php?c=venta_tmp'); 
         } elseif ($_REQUEST['comprobante'] == "Factura") {
             header("Location: index.php?c=venta&a=factura&id=$idd");
         } else {

@@ -5,6 +5,7 @@
         <tr style="background-color: #000; color:#fff">
             <th>Código</th>
             <th>Producto</th>
+            <th>Paciente</th>
             <th>Precio por Unidad</th>
             <th>Cantidad</th>
             <th>Descuento (%)</th>
@@ -22,6 +23,7 @@
         <tr>
             <td><?php echo $r->codigo; ?></td>
             <td><?php echo $r->producto; ?></td>
+            <td><?php echo $r->paciente; ?></td>
             <td><?php echo number_format($r->precio_venta, 0, "," , "."); ?></td>
             <td><?php echo $r->cantidad; ?></td>
             <td><?php echo $r->descuento; ?></td>
@@ -36,6 +38,7 @@
         
         
         <tr>
+            <td></td>
             <td></td>
             <td></td>
             <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i><?php echo number_format($subtotal,0,",",".") ?></div></td>
