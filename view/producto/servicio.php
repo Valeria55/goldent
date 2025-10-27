@@ -43,6 +43,18 @@ if (!isset($_SESSION)) session_start();
     $(document).ready(function() {
         // Mostrar modal al hacer clic en el botón Registrar Servicio
         $('#btnRegistrarServicio').on('click', function() {
+            // Cargar el próximo código de servicio automáticamente
+            $.ajax({
+                url: '?c=producto&a=ObtenerProximoCodigoServicio',
+                method: 'GET',
+                success: function(respuesta) {
+                    var data = JSON.parse(respuesta);
+                    $('#codigo').val(data.proximo_codigo);
+                },
+                error: function() {
+                    console.log('Error al obtener el próximo código');
+                }
+            });
             $('#modalRegistrarServicio').modal('show');
         });
 
@@ -192,6 +204,7 @@ if (!isset($_SESSION)) session_start();
             let data = tablaUsuarios.row($(this).parents('tr')).data();
             // Rellenar el modal con los datos del servicio
             $('#modalRegistrarServicioLabel').text('Editar Servicio');
+            $('#codigo').prop('readonly', false); // Permitir editar el código
             $('#codigo').val(data.codigo);
             $('#servicio').val(data.producto);
             $('#precio').val(data.precio_minorista);
@@ -216,6 +229,7 @@ if (!isset($_SESSION)) session_start();
                     $('#formRegistrarServicio')[0].reset();
                     $('#formRegistrarServicio').removeData('id');
                     $('#modalRegistrarServicioLabel').text('Registrar Servicio');
+                    $('#codigo').prop('readonly', true); // Volver a solo lectura para nuevos registros
                     $('#tabla').DataTable().ajax.reload();
                     alert(id ? 'Servicio editado correctamente' : 'Servicio registrado correctamente');
                 },
@@ -223,6 +237,14 @@ if (!isset($_SESSION)) session_start();
                     alert('Error al guardar el servicio');
                 }
             });
+        });
+
+        // Evento cuando el modal se cierre completamente
+        $('#modalRegistrarServicio').on('hidden.bs.modal', function () {
+            $('#formRegistrarServicio')[0].reset();
+            $('#formRegistrarServicio').removeData('id');
+            $('#modalRegistrarServicioLabel').text('Registrar Servicio');
+            $('#codigo').prop('readonly', true); // Asegurar que esté en solo lectura
         });
 
 

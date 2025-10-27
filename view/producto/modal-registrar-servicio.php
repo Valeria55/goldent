@@ -12,7 +12,7 @@
         <form id="formRegistrarServicio">
           <div class="form-group">
             <label for="codigo">Código</label>
-            <input type="text" class="form-control" id="codigo" name="codigo" required>
+            <input type="text" class="form-control" id="codigo" name="codigo" readonly required>
           </div>
           <div class="form-group">
             <label for="servicio">Servicio</label>

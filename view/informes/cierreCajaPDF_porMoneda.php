@@ -1124,6 +1124,244 @@ EOF;
 
 $pdf->writeHTML($html_ingresos, false, false, false, false, '');
 
+/*==============================================================
+		ANÁLISIS DE VENTAS POR TIPO DE PAGO
+================================================================*/
+
+$html_ventas_tipo = <<<EOF
+    $estilos
+    $espacio
+    <h1 align="center">Análisis de Ventas por Tipo de Pago</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="6%">Hora</th>
+                <th width="6%">ID</th>
+                <th width="8%">Nro. Fact.</th>
+                <th width="25%">Cliente</th>
+                <th width="12%">Vendedor</th>
+                <th width="12%">Tipo Pago</th>
+                <th width="15%">Total</th>
+                <th width="16%">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+
+EOF;
+
+$totalVentasContado = 0;
+$totalVentasCredito = 0;
+$contadorVentasContado = 0;
+$contadorVentasCredito = 0;
+
+// Separar en dos secciones: Ventas al Contado y Ventas a Crédito
+try {
+    error_log("=== DEBUG ANÁLISIS DE VENTAS POR TIPO ===");
+    error_log("Consultando ventas del cierre $id_cierre");
+    
+    // Reutilizar las ventas ya obtenidas anteriormente
+    if (!empty($ventas)) {
+        // Sección 1: Ventas al Contado
+        $html_ventas_tipo .= <<<EOF
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="8" align="center"><strong>CONTADO</strong></td>
+            </tr>
+EOF;
+
+        $hayVentaContado = false;
+        foreach ($ventas as $venta) {
+            if (($venta->contado ?? '') == 'Contado') {
+                $hayVentaContado = true;
+                $hora = date("H:i", strtotime($venta->fecha_venta));
+                $nombre_cliente = isset($venta->nombre_cli) && !empty($venta->nombre_cli) ? htmlspecialchars($venta->nombre_cli) : 'Cliente no especificado';
+                $vendedor = isset($venta->vendedor) && !empty($venta->vendedor) ? htmlspecialchars($venta->vendedor) : 'N/A';
+                $metodo = isset($venta->metodo) && !empty($venta->metodo) ? htmlspecialchars($venta->metodo) : 'No especificado';
+                $nro_comprobante = isset($venta->nro_comprobante) && !empty($venta->nro_comprobante) ? htmlspecialchars($venta->nro_comprobante) : '-';
+                $total = number_format($venta->total, 0, ",", ".");
+                
+                $totalVentasContado += $venta->total;
+                $contadorVentasContado++;
+
+                $html_ventas_tipo .= <<<EOF
+                    <tr>
+                        <td width="6%">$hora</td>
+                        <td width="6%">{$venta->id_venta}</td>
+                        <td width="8%">$nro_comprobante</td>
+                        <td width="25%">$nombre_cliente</td>
+                        <td width="12%">$vendedor</td>
+                        <td width="12%">$metodo</td>
+                        <td width="15%" align="right">$total</td>
+                        <td width="16%" align="center">Pagado</td>
+                    </tr>
+EOF;
+            }
+        }
+
+        if (!$hayVentaContado) {
+            $html_ventas_tipo .= <<<EOF
+                <tr>
+                    <td colspan="8" align="center" style="color: #666; font-style: italic;">
+                        No se registraron ventas al contado en este período
+                    </td>
+                </tr>
+EOF;
+        }
+
+        // Subtotal Ventas al Contado
+        $totalVentasContadoV = number_format($totalVentasContado, 0, ",", ".");
+        $html_ventas_tipo .= <<<EOF
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="6" align="right"><strong>Subtotal Contado ($contadorVentasContado):</strong></td>
+                <td align="right"><strong>$totalVentasContadoV</strong></td>
+                <td align="center"><strong>-</strong></td>
+            </tr>
+            <tr>
+                <td colspan="8" style="height: 15px; background-color: white; border: none;"></td>
+            </tr>
+EOF;
+
+        // Sección 2: Ventas a Crédito
+        $html_ventas_tipo .= <<<EOF
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="8" align="center"><strong>CRÉDITO</strong></td>
+            </tr>
+EOF;
+
+        $hayVentaCredito = false;
+        foreach ($ventas as $venta) {
+            if (($venta->contado ?? '') != 'Contado') {
+                $hayVentaCredito = true;
+                $hora = date("H:i", strtotime($venta->fecha_venta));
+                $nombre_cliente = isset($venta->nombre_cli) && !empty($venta->nombre_cli) ? htmlspecialchars($venta->nombre_cli) : 'Cliente no especificado';
+                $vendedor = isset($venta->vendedor) && !empty($venta->vendedor) ? htmlspecialchars($venta->vendedor) : 'N/A';
+                $metodo = isset($venta->metodo) && !empty($venta->metodo) ? htmlspecialchars($venta->metodo) : 'Crédito';
+                $nro_comprobante = isset($venta->nro_comprobante) && !empty($venta->nro_comprobante) ? htmlspecialchars($venta->nro_comprobante) : '-';
+                $total = number_format($venta->total, 0, ",", ".");
+                
+                // Determinar el estado basado en el monto cobrado
+                $monto_cobrado = $venta->cobrado ?? 0;
+                $estado = '';
+                if ($monto_cobrado >= $venta->total) {
+                    $estado = 'Cobrado';
+                } elseif ($monto_cobrado > 0) {
+                    $estado = 'Parcial';
+                } else {
+                    $estado = 'Pendiente';
+                }
+                
+                $totalVentasCredito += $venta->total;
+                $contadorVentasCredito++;
+
+                $html_ventas_tipo .= <<<EOF
+                    <tr>
+                        <td width="6%">$hora</td>
+                        <td width="6%">{$venta->id_venta}</td>
+                        <td width="8%">$nro_comprobante</td>
+                        <td width="25%">$nombre_cliente</td>
+                        <td width="12%">$vendedor</td>
+                        <td width="12%">$metodo</td>
+                        <td width="15%" align="right">$total</td>
+                        <td width="16%" align="center">$estado</td>
+                    </tr>
+EOF;
+            }
+        }
+
+        if (!$hayVentaCredito) {
+            $html_ventas_tipo .= <<<EOF
+                <tr>
+                    <td colspan="8" align="center" style="color: #666; font-style: italic;">
+                        No se registraron ventas a crédito en este período
+                    </td>
+                </tr>
+EOF;
+        }
+
+        // Subtotal Ventas a Crédito
+        $totalVentasCreditoV = number_format($totalVentasCredito, 0, ",", ".");
+        $html_ventas_tipo .= <<<EOF
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="6" align="right"><strong>Subtotal Crédito ($contadorVentasCredito):</strong></td>
+                <td align="right"><strong>$totalVentasCreditoV</strong></td>
+                <td align="center"><strong>-</strong></td>
+            </tr>
+            <tr>
+                <td colspan="8" style="height: 15px; background-color: white; border: none;"></td>
+            </tr>
+EOF;
+
+        // Total General de Ventas
+        $totalGeneralVentas = $totalVentasContado + $totalVentasCredito;
+        $totalGeneralVentasV = number_format($totalGeneralVentas, 0, ",", ".");
+        $totalCantidadVentas = $contadorVentasContado + $contadorVentasCredito;
+        $html_ventas_tipo .= <<<EOF
+            <tr style="background-color: #e9ecef; font-weight: bold; font-size: 12px;">
+                <td colspan="6" align="right"><strong>TOTAL ($totalCantidadVentas):</strong></td>
+                <td align="right"><strong>$totalGeneralVentasV</strong></td>
+                <td align="center"><strong>-</strong></td>
+            </tr>
+EOF;
+
+    } else {
+        $html_ventas_tipo .= <<<EOF
+            <tr>
+                <td colspan="8" align="center" style="color: #666; font-style: italic;">
+                    No se encontraron ventas para este período
+                </td>
+            </tr>
+EOF;
+    }
+
+} catch (Exception $e) {
+    error_log("Error en análisis de ventas por tipo: " . $e->getMessage());
+    
+    $html_ventas_tipo .= <<<EOF
+            <tr>
+                <td colspan="8" align="center" style="color: #cc0000; font-weight: bold;">
+                    Error al procesar las ventas: {$e->getMessage()}
+                </td>
+            </tr>
+EOF;
+}
+
+$html_ventas_tipo .= <<<EOF
+        </tbody>
+    </table>
+    
+    $espacio
+    
+    <h3>Resumen de Ventas por Tipo de Pago</h3>
+    <table>
+        <thead>
+            <tr>
+                <th width="50%">Tipo de Venta</th>
+                <th width="20%">Cantidad</th>
+                <th width="30%">Total (Gs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="50%">Contado</td>
+                <td width="20%" align="center">$contadorVentasContado</td>
+                <td width="30%" align="right">$totalVentasContadoV</td>
+            </tr>
+            <tr>
+                <td width="50%">Crédito</td>
+                <td width="20%" align="center">$contadorVentasCredito</td>
+                <td width="30%" align="right">$totalVentasCreditoV</td>
+            </tr>
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td width="50%">TOTAL</td>
+                <td width="20%" align="center">$totalCantidadVentas</td>
+                <td width="30%" align="right">$totalGeneralVentasV</td>
+            </tr>
+        </tbody>
+    </table>
+EOF;
+
+$pdf->writeHTML($html_ventas_tipo, false, false, false, false, '');
+
 // Agregar página explicativa al final
 $pdf->AddPage('P', 'A4');
 
@@ -1259,7 +1497,45 @@ $explicacion = <<<EOF
     </div>
 
     <div class="seccion-explicacion">
-        <div class="seccion-titulo">6. REGISTRO DE VENTAS</div>
+        <div class="seccion-titulo">6. ANÁLISIS DE VENTAS POR TIPO DE PAGO</div>
+        <div class="seccion-texto">
+            <strong>NUEVA SECCIÓN:</strong> Clasifica todas las ventas según su modalidad de pago:
+            <div class="lista">
+                • <strong>Ventas al Contado:</strong> Transacciones pagadas completamente al momento de la venta.
+                  Incluye todos los métodos de pago inmediato (efectivo, tarjeta, transferencia, etc.)<br>
+                • <strong>Ventas a Crédito:</strong> Transacciones donde el cliente queda con deuda pendiente.
+                  Pueden tener pagos parciales o estar completamente pendientes.
+            </div>
+            <br>
+            <strong>Información mostrada por cada venta:</strong>
+            <div class="lista">
+                • <strong>Hora:</strong> Momento exacto de la venta<br>
+                • <strong>ID:</strong> Número único de identificación de la venta<br>
+                • <strong>Nro. Fact.:</strong> Número de factura o comprobante<br>
+                • <strong>Cliente:</strong> Nombre del cliente (si se registró)<br>
+                • <strong>Vendedor:</strong> Usuario que realizó la venta<br>
+                • <strong>Tipo Pago:</strong> Método utilizado o "Crédito" para ventas a plazo<br>
+                • <strong>Total:</strong> Valor total de la venta<br>
+                • <strong>Estado:</strong> Para créditos: Pendiente, Parcial o Cobrado
+            </div>
+            <br>
+            <strong>Resumen incluye:</strong>
+            <div class="lista">
+                • <strong>Cantidad de ventas:</strong> Número total de transacciones por tipo<br>
+                • <strong>Totales en Guaraníes:</strong> Suma de los valores de cada categoría<br>
+                • <strong>Comparación:</strong> Permite analizar la proporción entre ventas al contado vs crédito
+            </div>
+            <br>
+            <div class="importante">
+                <strong>UTILIDAD:</strong> Esta clasificación permite evaluar la política de créditos, 
+                identificar patrones de venta y analizar el flujo de efectivo inmediato versus diferido.
+                Las secciones están claramente separadas para facilitar el análisis de cada tipo de venta.
+            </div>
+        </div>
+    </div>
+
+    <div class="seccion-explicacion">
+        <div class="seccion-titulo">7. REGISTRO DE VENTAS</div>
         <div class="seccion-texto">
             Lista detallada de todas las ventas realizadas durante el turno, mostrando:
             <div class="lista">

@@ -236,6 +236,16 @@ class productoController
         echo json_encode(["success" => true]);
         exit;
     }
+
+    // Obtener el próximo código de servicio
+    public function ObtenerProximoCodigoServicio()
+    {
+        $ultimoCodigo = $this->model->ObtenerUltimoCodigoServicio();
+        $proximoCodigo = $ultimoCodigo + 1;
+        echo json_encode(["proximo_codigo" => $proximoCodigo]);
+        exit;
+    }
+
         // Editar servicio desde el modal
     public function EditarServicio()
     {

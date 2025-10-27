@@ -689,4 +689,16 @@ class producto
 			die($e->getMessage());
 		}
 	}
+
+	public function ObtenerUltimoCodigoServicio()
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT MAX(CAST(codigo AS UNSIGNED)) as ultimo_codigo FROM productos WHERE tipo = 'servicio' AND codigo REGEXP '^[0-9]+$'");
+			$stm->execute();
+			$result = $stm->fetch(PDO::FETCH_OBJ);
+			return $result ? $result->ultimo_codigo : 0;
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
 }
