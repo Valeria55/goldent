@@ -38,6 +38,9 @@
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'caja') echo "class='active'"; ?>>
                 <a href="?c=caja">Cajas</a>
             </li>
+             <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
+                        <a href="?c=producto&a=servicios">Servicios</a>
+                    </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'egreso' && isset($_GET['a']) && $_GET['a'] == 'extraccion') echo "class='active'"; ?>>
                 <a href="?c=egreso&a=extraccion">Egresos</a>
             </li>
