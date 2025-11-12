@@ -39,7 +39,7 @@
     <div class="form-group">
         <label>Correo</label>
         <input type="email" name="correo" value="<?php echo $cliente->correo; 
-                                                ?>" class="form-control" placeholder="Ingrese correo" required>
+                                                ?>" class="form-control" placeholder="Ingrese correo" >
     </div>
     <div class="form-group">
         <label>Fecha de nacimiento</label>
