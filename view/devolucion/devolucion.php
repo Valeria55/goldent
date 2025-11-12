@@ -10,6 +10,7 @@
             <th>ID</th>
             <th>Venta</th>
             <th>Usuario</th>
+            <th>Funcionario</th>
             <th>Observación</th>
             <th>Monto Venta</th>
             <th>Costo</th>
@@ -30,6 +31,7 @@
             <td><?php echo $r->id_venta; ?></td>
             <td><a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-id="<?php echo $r->venta;?>"><?php echo $r->venta; ?></a></td>
             <td><?php echo $r->vendedor; ?></td>
+            <td><?php echo isset($r->user) && $r->user ? $r->user : '-'; ?></td>
             <td><?php echo $r->comprobante; ?></td>
             <td><?php echo number_format($r->monto_venta,0,".",","); ?></td>
             <td><?php echo number_format($r->total,0,".",","); ?></td>

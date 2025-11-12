@@ -120,6 +120,18 @@ $fecha = date("Y-m-d");
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="id_user">Seleccionar Funcionario</label>
+                                <select class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
+                                    title="-- Seleccione una venta --" autofocus required id="id_user" name="id_user">
+                                    <option value="" disabled selected>--Seleccionar funcionario--</option>
+                                    <?php foreach ($this->usuario->Listar() as $u): ?>
+                                        <option value="<?php echo $u->id; ?>">
+                                            <?php echo $u->user; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <input type="hidden" name="subtotal" value="<?php echo $subtotal ?>">
                             <input type="hidden" name="total" class="totaldesc" id="totaldesc" value="<?php echo $subtotal ?>">
                             <input type="hidden" name="descuentoval" id="descuentoval" value="0">
