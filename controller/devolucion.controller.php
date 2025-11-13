@@ -301,6 +301,9 @@ class devolucionController
         $sumaTotal = 0;
         if (!isset($_SESSION)) session_start();
 
+        // Obtener el id_user del formulario modal
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+
         foreach ($this->devolucion_tmp->Listar() as $v) {
 
             $devolucion = new devolucion();
@@ -328,6 +331,7 @@ class devolucionController
             $devolucion->metodo = 0;
             $devolucion->contado = $_REQUEST['contado'];
             $devolucion->banco = 0;
+            $devolucion->id_user = $id_user;
 
             //Registrar venta
             $this->model->Registrar($devolucion);

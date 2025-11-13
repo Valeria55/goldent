@@ -1,0 +1,1 @@
+ALTER TABLE devoluciones ADD COLUMN id_user INT NULL;

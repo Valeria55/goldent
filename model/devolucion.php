@@ -24,6 +24,7 @@ class devolucion
 	public $iva;
 	public $banco;
 	public $venta;
+	public $id_user;
 
 	public function __CONSTRUCT()
 	{
@@ -42,6 +43,7 @@ class devolucion
 
 				$stm = $this->pdo->prepare("SELECT 
 				v.venta, 
+				u.user,
 				v.id, 
 				v.id_venta, 
 				v.comprobante, 
@@ -53,6 +55,7 @@ class devolucion
 				(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor
 				FROM devoluciones v 
 				LEFT JOIN clientes c ON v.id_cliente = c.id 
+				LEFT JOIN usuario u ON u.id = v.id_user
 				GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute();
 			} else {
@@ -427,8 +430,8 @@ class devolucion
 
 
 
-			$sql = "INSERT INTO devoluciones (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado, venta) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO devoluciones (id_venta, id_cliente, id_vendedor, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, cantidad, margen_ganancia, fecha_venta, metodo, banco, contado, venta, id_user) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -452,7 +455,8 @@ class devolucion
 						$data->metodo,
 						$data->banco,
 						$data->contado,
-						$data->venta
+						$data->venta,
+						$data->id_user
 
 					)
 				);
