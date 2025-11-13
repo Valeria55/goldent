@@ -59,7 +59,11 @@ class devolucion
 				GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute();
 			} else {
-				$stm = $this->pdo->prepare("SELECT v.id, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto FROM devoluciones v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE v.id_venta = ?");
+				$stm = $this->pdo->prepare("SELECT v.id, u.user, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto FROM devoluciones v 
+				LEFT JOIN productos p ON v.id_producto = p.id 
+				LEFT JOIN clientes c ON v.id_cliente = c.id 
+				LEFT JOIN usuario u ON u.id = v.id_user
+				WHERE v.id_venta = ?");
 				$stm->execute(array($id_venta));
 			}
 

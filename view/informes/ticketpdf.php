@@ -174,7 +174,7 @@ $pdf->SetAutoPageBreak(TRUE, 0);
 $pdf->AddPage();
 
 $id_venta = $_GET['id'];
-foreach($this->venta->Listar($id_venta) as $r){
+foreach($this->devoluciones->Listar($id_venta) as $r){
     $cliente = $r->nombre_cli;
     $ruc = $r->ruc;
     $fecha = date("d/m/Y", strtotime($r->fecha_venta));

@@ -227,7 +227,7 @@ class devolucionController
     public function Ticket()
     {
 
-        require_once 'view/informes/ticketpdf.php';
+        require_once 'view/informes/ticketpdf_ajuste.php';
     }
 
     public function Obtener()
@@ -378,12 +378,12 @@ class devolucionController
 
         $this->devolucion_tmp->Vaciar();
 
-        if (false) {
-            header('refresh:0;index.php?c=venta&a=ticket&id=$id');
-        } else {
+       // if (false) {
+            header('refresh:0;index.php?c=devolucion&a=ticket&id=$id');
+        //} else {
             //header('Location: index.php?c=venta&a=sesion');
-            header('Location:' . getenv('HTTP_REFERER'));
-        }
+            //header('Location:' . getenv('HTTP_REFERER'));
+       // }
         //header('Location: index.php?c=venta&a=sesion');
     }
 

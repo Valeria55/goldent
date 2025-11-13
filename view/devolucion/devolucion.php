@@ -40,7 +40,7 @@
             <?php if (!isset($_GET['id_venta'])): ?>
             <td>
                 <a href="#devolucionModal" class="btn btn-success" data-toggle="modal" data-target="#devolucionModal" data-id="<?php echo $r->id_venta;?>">Ver</a>
-                <!--<a  class="btn btn-primary edit" href="?c=venta_tmp&a=editar&id=<?php //echo $r->id_venta ?>" class="btn btn-success" >Editar</a>-->
+                <a  class="btn btn-primary" href="?c=devolucion&a=Ticket&id=<?php echo $r->id_venta ?>" >Ticket</a>
                 <?php if ($r->anulado): ?>
                 ANULADO    
                 <?php else: ?>
