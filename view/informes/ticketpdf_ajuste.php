@@ -193,7 +193,7 @@ $html1 = <<<EOF
 	<table width ="100%" style="text-align:center; line-height: 15px; font-size:10px">
 	    <p></p>
 		<tr>
-			<td style="vertical-align: middle;"><img src="assets/img/LogoTrinity.PNG" width="120"></td>
+			<td style="vertical-align: middle;"><img src="assets/img/LogoSinFondo.png" width="120"></td>
 		</tr>
 	<tr>
 	    <td><b>Ticket N°:</b> $id_venta </td>    

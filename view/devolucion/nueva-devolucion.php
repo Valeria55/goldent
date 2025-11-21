@@ -54,9 +54,12 @@ $fecha = date("Y-m-d");
         <tbody>
             <?php
             $subtotal = 0;
+            $Item = 0;
             foreach ($this->model->Listar() as $r):
                 $totalItem = $r->precio_venta * $r->cantidad;
-                $subtotal += ($totalItem); ?>
+                $subtotal += ($totalItem); 
+                $Item++;
+                ?>
                 <tr>
 
                     <td><?php echo $r->producto; ?></td>
@@ -86,7 +89,7 @@ $fecha = date("Y-m-d");
             </tr>
         </tbody>
     </table>
-    <?php if ($subtotal != 0) { ?>
+    <?php if ($Item > 0) { ?>
         <!-- Botón para abrir el modal -->
         <div align="center">
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAjuste">Finalizar ajuste</button>
@@ -111,7 +114,7 @@ $fecha = date("Y-m-d");
                             <div class="form-group">
                                 <label for="venta">Seleccionar venta</label>
                                 <select class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
-                                    title="-- Seleccione una venta --" autofocus required id="venta" name="venta">
+                                    title="-- Seleccione una venta --" autofocus  id="venta" name="venta">
                                     <option value="" disabled selected>--Seleccionar venta--</option>
                                     <?php foreach ($this->venta->ListarVenta() as $venta): ?>
                                         <option value="<?php echo $venta->id_venta; ?>">

@@ -379,7 +379,7 @@ class devolucionController
         $this->devolucion_tmp->Vaciar();
 
        // if (false) {
-            header('refresh:0;index.php?c=devolucion&a=ticket&id=$id');
+            header('refresh:0;index.php?c=devolucion&a=ticket&id=' . $devolucion->id_venta);
         //} else {
             //header('Location: index.php?c=venta&a=sesion');
             //header('Location:' . getenv('HTTP_REFERER'));
