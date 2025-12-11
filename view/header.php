@@ -86,9 +86,9 @@ if ($_SESSION["sistema"] != $_SERVER['HTTP_HOST'] . "/" . explode("/", $_SERVER[
     ?>
 
     <div class="wrapper">
-        <?php if ($_SESSION['nivel'] <= 4) {
+        <?php //if ($_SESSION['nivel'] <= 4) {
             include "sidebar.php";
-        } ?>
+        //} ?>
         <div style="width:100%;">
             <?php include "nav.php"; ?>
             <div id="content" style="background-color: white">

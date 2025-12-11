@@ -156,9 +156,7 @@
                     <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
                         <a href="?c=devolucion">Ajustes de stock</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'inventario') echo "class='active'"; ?>>
-                        <a href="?c=cierre_inventario&a=Cierreinventario">Inventario</a>
-                    </li>
+                   
                 </ul>
             </li>
             <li>
@@ -481,6 +479,33 @@
                     <?php endif ?>
                 </a>
             </li>
+
+        <?php } ?>
+         <?php //NIVEL 5 SALA DE INSUMOS  
+        ?>
+        <?php if ($_SESSION['nivel'] == 5) { ?>
+            <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
+                <a href="?c=producto">Productos</a>
+            </li>
+            <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
+                <a href="?c=categoria">Categoria</a>
+            </li>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
+                <a href="?c=cliente">Personas</a>
+            </li>
+            <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'compra') echo "class='active'"; ?>>
+                        <a href="?c=compra">Compras</a>
+                    </li>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'devolucion') echo "class='active'"; ?>>
+                <a href="?c=devolucion">Ajustes</a>
+            </li>
+
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'devolucion_tmp' && !isset($_GET['a'])) echo "class='active'"; ?>>
+                <a href="?c=devolucion_tmp">+ Nuevo Ajuste</a>
+            </li>
+
+
+
 
         <?php } ?>
 

@@ -39,10 +39,11 @@ $fecha = date("Y-m-d");
 <p> </p>
 <div class="table-responsive">
 
-    <table class="table table-striped table-bordered display responsive nowrap" width="100%" id="tabla1">
+    <table class="table table-striped table-bordered display responsive nowrap datatable" width="100%" id="tabla1">
 
         <thead>
             <tr style="background-color: #000; color:#fff">
+                <th>Cod.</th>
                 <th>Producto</th>
                 <th>Costo por Unidad</th>
                 <th>Cantidad</th>
@@ -61,7 +62,7 @@ $fecha = date("Y-m-d");
                 $Item++;
                 ?>
                 <tr>
-
+<td><?php echo $r->codigo; ?></td>
                     <td><?php echo $r->producto; ?></td>
                     <td><?php echo number_format($r->precio_venta, 0, ",", "."); ?></td>
                     <td><?php echo $r->cantidad; ?></td>
@@ -80,6 +81,7 @@ $fecha = date("Y-m-d");
 
             <tr>
                 <td></td>
+                 <td></td>
                 <td>Total Gs: <div id="total" style="font-size: 30px"><?php echo number_format($subtotal, 0, ",", ".") ?></div>
                 </td>
                 <td></td>
@@ -130,7 +132,7 @@ $fecha = date("Y-m-d");
                                     <option value="" disabled selected>--Seleccionar funcionario--</option>
                                     <?php foreach ($this->usuario->Listar() as $u): ?>
                                         <option value="<?php echo $u->id; ?>">
-                                            <?php echo $u->user; ?>
+                                            <?php echo $u->user.' ('.$u->grupo.')'; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -179,7 +181,7 @@ $fecha = date("Y-m-d");
     $("#formAjuste").on("submit", function(e) {
         var obs = $("#observacion").val().trim();
         var venta = $("#venta").val();
-        if (obs === "" || venta === null) {
+        if (obs === "") {
             alert("La observación es obligatoria y debe seleccionar una venta.");
             e.preventDefault();
         }

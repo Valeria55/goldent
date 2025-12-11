@@ -27,7 +27,11 @@ class usuario
 		{
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, u.id, s.sucursal FROM usuario u LEFT JOIN sucursales s ON u.sucursal = s.id ORDER BY u.id DESC");
+			$stm = $this->pdo->prepare("SELECT *, u.id, s.sucursal 
+			FROM usuario u 
+			LEFT JOIN sucursales s ON u.sucursal = s.id 
+			WHERE u.grupo <>'NO'
+			ORDER BY u.id DESC");
 			$stm->execute();
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
