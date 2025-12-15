@@ -617,15 +617,15 @@ class FacturaGenerator
         // ► xContado: posición de la X de Contado
         // ► Crédito está 10mm (1cm) a la derecha de Contado
         $xContado = $marginLeft + 150;  // Ajustar para mover Contado
-        $espacioContadoCredito = 10;     // 10mm = 1cm de separación
+        $espacioContadoCredito = -3.5;     // 10mm = 1cm de separación
         
         $this->pdf->SetXY($xContado, $yHeader);
         $this->pdf->Cell(10, $lh, $d['contado'], 0, 0, 'C');
         $this->pdf->SetXY($xContado + $espacioContadoCredito + 20, $yHeader); // +20mm extra a la derecha
         $this->pdf->Cell(10, $lh, $d['credito'], 0, 0, 'C');
 
-        // Línea 2: Nombre/Razón Social
-        $this->pdf->SetXY($marginLeft + 35, $yHeader + $lh);
+        // Línea 2: Nombre/Razón Social (Mivido 1mm hacia arriba)
+        $this->pdf->SetXY($marginLeft + 35, $yHeader + $lh - 1);
         $this->pdf->Cell($pageWidth - 40, $lh, $d['cliente'], 0, 0, 'L');
 
         // Línea 3: RUC (más cerca del nombre)
@@ -633,12 +633,6 @@ class FacturaGenerator
         // ► Si querés menos espacio → REDUCIR el multiplicador (ej: 1.4, 1.2)
         $this->pdf->SetXY($marginLeft + 18, $yHeader + ($lh * 1.6));
         $this->pdf->Cell($pageWidth - 20, $lh, $d['ruc'], 0, 0, 'L');
-
-        // Línea 4: Teléfono (si aplica)
-        if (!empty($d['telefono'])) {
-            $this->pdf->SetXY($marginLeft + 150, $yHeader + ($lh * 2));
-            $this->pdf->Cell(40, $lh, $d['telefono'], 0, 0, 'L');
-        }
     }
 
     /**
