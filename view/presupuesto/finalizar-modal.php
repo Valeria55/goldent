@@ -11,10 +11,10 @@
 				        <input type="datetime-local" name="fecha_presupuesto" class="form-control" value="<?php echo date("Y-m-d") ?>T<?php echo date("H:i") ?>">
 				    </div>
 				    <div class="form-group col-sm-12">
-						<label>Cliente </label>
+						<label>Cliente</label>
                         <select name="id_cliente" id="cliente" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
                                 title="-- Seleccione el cliente --" autofocus require>
-                            <option value="0" selected>CLiente ocasional</option>
+                            <option value="0" selected>Cliente ocasional</option>
                             <?php foreach($this->cliente->Listar() as $cliente): ?> 
                             <option data-subtext="<?php echo $cliente->ruc; ?>" value="<?php echo $cliente->id; ?>"><?php echo $cliente->nombre.' '.$cliente->ruc; ?> </option>
                             <?php endforeach; ?>

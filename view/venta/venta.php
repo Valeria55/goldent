@@ -35,14 +35,37 @@
         transition: all 0.2s;
     }
 
-    /* Estilos adicionales para los botones de estado */
-    .btn-group .btn {
-        margin-right: 5px;
-    }
-
     .btn-group .btn.active {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Grid de Acciones */
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        width: 100%;
+        min-width: 120px;
+    }
+    
+    .action-btn {
+        padding: 8px 12px !important; /* Más grandes */
+        font-size: 13px; /* Texto más legible */
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+        border-radius: 4px;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px; /* Espacio entre icono y texto */
+    }
+    
+    .action-btn i {
+        margin-right: 0;
+        font-size: 14px; /* Iconos un poco más grandes */
     }
 </style>
 <div class="container">
@@ -165,11 +188,28 @@
         var n = button.data('n');
         var co = button.data('co');
         var cli = button.data('cli');
+        var pagare = button.data('pagare');
+        var contado = button.data('contado'); // Get payment method
+        
         $('#tipo').val(id);
         $('#n').val(n);
         $('#co').val(co);
         //$('#cli').val(cli);
         $('#cli option[value="' + cli + '"]').prop("selected", true);
+        
+        // Show/Hide Pagare field based on Payment Method
+        if (contado == 'Credito') {
+            $('#div_pagare_edit').show();
+            if(pagare == 1 ){
+                $('#pagare-edit').val(1);
+            }else{
+                $('#pagare-edit').val(0);
+            }
+        } else {
+            $('#div_pagare_edit').hide();
+            $('#pagare-edit').val(0); // Reset to No
+        }
+        
         $('.selectpicker').selectpicker('refresh');
         $('.selectpicker').selectpicker('refresh');
 

@@ -26,6 +26,7 @@ class venta
 	public $id_devolucion;
 	public $estado;
 	public $paciente;
+	public $pagare;
 
 	public $cot_usd;  // Nuevo campo
 	public $cot_real; // Nuevo campo
@@ -55,6 +56,7 @@ class venta
 				v.comprobante, 
 				v.metodo, 
 				v.anulado, 
+				v.pagare,
 				contado, 
 				p.producto, 
 				SUM(subtotal) as subtotal, 
@@ -86,6 +88,7 @@ class venta
 				, p.producto,v.comprobante
 				, v.metodo
 				, v.anulado
+				, v.pagare
 				, contado, 
 				p.codigo,p.iva
 				,v.cantidad
@@ -145,6 +148,7 @@ class venta
 				v.comprobante, 
 				v.metodo, 
 				v.anulado, 
+				v.pagare,
 				contado, 
 				p.producto, 
 				SUM(subtotal) as subtotal, 
@@ -172,6 +176,7 @@ class venta
                 , p.producto,v.comprobante
                 , v.metodo
                 , v.anulado
+                , v.pagare
                 , contado, 
                 p.codigo,p.iva
                 ,v.cantidad
@@ -741,7 +746,7 @@ class venta
 			$stm = $this->pdo->prepare("SELECT 
 			IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
 				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
-			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta,IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
+			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta,IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 			FROM ventas v 
@@ -1275,7 +1280,8 @@ class venta
 						
                         id_cliente        = ?, 
 						comprobante       = ?,
-						nro_comprobante   = ?
+						nro_comprobante   = ?,
+						pagare            = ?
 						
 				    WHERE id_venta = ?";
 
@@ -1286,6 +1292,7 @@ class venta
 						$data->id_cliente,
 						$data->comprobante,
 						$data->nro_comprobante,
+						$data->pagare,
 						$data->id_venta
 					)
 				);
@@ -1305,7 +1312,9 @@ class venta
 						margen_ganancia = ?,
 						fecha_venta     = ?,
 						id_gift         = ?,
-						id_presupuesto         = ?
+						id_gift         = ?,
+						id_presupuesto  = ?,
+						pagare          = ?
 						
 				    WHERE id = ?";
 
@@ -1320,7 +1329,9 @@ class venta
 						$data->margen_ganancia,
 						$data->fecha_venta,
 						$data->id_gift,
+						$data->id_gift,
 						$data->id_presupuesto,
+						$data->pagare,
 						$data->id
 					)
 				);
@@ -1332,8 +1343,8 @@ class venta
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente, pagare) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -1366,7 +1377,8 @@ class venta
 						$data->cot_usd,
 						$data->cot_rs,
 						$data->moneda,
-						$data->paciente
+						$data->paciente,
+						$data->pagare
 					)
 				);
 		} catch (Exception $e) {

@@ -367,16 +367,19 @@ class ventaController
         $venta->id_cliente = $_REQUEST['id_cliente'];
         $venta->comprobante = $_REQUEST['comprobante'];
         $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
+        $venta->pagare = (isset($_REQUEST['pagare']) && $_REQUEST['pagare'] != '') ? $_REQUEST['pagare'] : null;
 
         $id = $_REQUEST['id_venta'];
         $this->model->Editar($venta);
 
-        if ($_REQUEST['comprobante'] == "Ticket") {
-            header("Location: index.php?c=venta&a=ticket&id=$id");
+        if (isset($_REQUEST['solo_guardar']) && $_REQUEST['solo_guardar'] == 1) {
+             header('Location: index.php?c=venta');
+        } elseif ($_REQUEST['comprobante'] == "Ticket") {
+             header("Location: index.php?c=venta&a=ticket&id=$id");
         } elseif ($_REQUEST['comprobante'] == "Factura") {
-            header("Location: index.php?c=venta&a=factura&id=$id");
+             header("Location: index.php?c=venta&a=factura&id=$id");
         } else {
-            header('Location: index.php?c=venta_tmp');
+             header('Location: index.php?c=venta_tmp');
         }
     }
     public function GuardarUno()
@@ -467,6 +470,7 @@ class ventaController
             $venta->contado = $_REQUEST['contado'];
             $venta->banco = $_REQUEST['banco'];
             $venta->id_devolucion = $_REQUEST['id_devolucion'] ?? 0;
+            $venta->pagare = (isset($_REQUEST['pagare']) && $_REQUEST['pagare'] != '') ? $_REQUEST['pagare'] : null;
             $venta->sucursal = 1;
             $venta->id_sucursal = 1;
 
