@@ -76,9 +76,19 @@
                         </select>
                     </div>
 
-                    <div class="text-right">
-                        <button class="btn btn-primary">Generar</button>
+                    <div class="form-group col-sm-6" id="div_pagare_edit">
+                        <label>Generar Pagaré?</label>
+                        <select name="pagare" id="pagare-edit" class="form-control">
+                            <option value="0">No</option>
+                            <option value="1">Si</option>
+                        </select>
                     </div>
+
+                    <div class="text-right">
+                        <!-- Campo oculto para indicar que solo se guarda sin imprimir -->
+                        <input type="hidden" name="solo_guardar" value="1">
+                        <button class="btn btn-success">Guardar</button>
+                    </div>  
                                     
 
                 </form>

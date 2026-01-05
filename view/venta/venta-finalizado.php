@@ -17,13 +17,10 @@
             if ($_SESSION['nivel'] == 1) { ?>
                 <th>Ganancia</th>
             <?php } ?>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
+            <th>Acciones</th>
             <?php if (!isset($_SESSION)) session_start();
             if ($_SESSION['nivel'] == 1) { ?>
-                <th></th>
+                <!-- Columna extra eliminada, ahora todo esta en Acciones -->
             <?php } ?>
     </thead>
     <tbody>
@@ -117,61 +114,57 @@ if (!isset($_SESSION)) session_start();
                         "data": "ganancia",
                         render: $.fn.dataTable.render.number(',', '.', 0)
                     },
-                <?php } ?> {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-
-                        return "<a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-c='venta' data-id='" + row.id_venta + "'>Ver</a>";
-
-                    }
-                },
-
+                <?php } ?> 
                 {
-                    "defaultContent": "",
+                    "data": null,
+                    "orderable": false,
+                    "width": "160px", 
                     render: function(data, type, row) {
-                        if (row.contado == 'Credito') {
-                            return "<a href='javascript:void(0)' class='btn btn-success' onclick='abrirVentanaFlotante(\"?c=venta&a=Pagare&id=" + row.id_venta + "\", \"Pagaré\")'>Pagare</a>";
-                        } else {
-                            return "";
-                        }
-                    }
-                },
-                {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
-                        return "<a href='javascript:void(0)' class='btn btn-success' onclick='abrirVentanaFlotante(\"?c=venta&a=OrdenDelivery&id=" + row.id_venta + "\", \"Orden de Entrega\")'>Orden Delivery</a>";
-                    }
-                },
-                {
-                    "defaultContent": "",
-                    render: function(data, type, row) {
+                        let botones = '<div class="action-grid">';
 
+                        // 1. Ver Detalles
+                        botones += "<a href='#detallesModal' class='btn btn-info action-btn' data-toggle='modal' data-target='#detallesModal' data-c='venta' data-id='" + row.id_venta + "' title='Ver Detalles'><i class='fas fa-eye'></i> Ver</a>";
+
+                        // 2. Editar (Solo Guardar Datos)
+                        botones += "<a href='#editarVentaModal' class='btn btn-warning action-btn' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "' data-pagare='" + row.pagare + "' data-n='" + row.nro_comprobante + "' data-co='" + row.comprobante + "' data-contado='" + row.contado + "' data-cli='" + row.id_cliente + "' title='Editar'><i class='fas fa-edit'></i> Editar</a>";
+
+                        // 3. Imprimir (Factura o Ticket)
                         if (row.comprobante == 'Factura') {
-                            return "<a href='#editarVentaModal' class='btn btn-primary' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "'data-n='" + row.nro_comprobante + "'data-co='" + row.comprobante + "'data-cli='" + row.id_cliente + "'>Factura</a>";
+                             botones += "<a href='?c=venta&a=factura&id=" + row.id_venta + "' target='_blank' class='btn btn-primary action-btn' title='Imprimir Factura'><i class='fas fa-print'></i> Factura</a>";
                         } else if (row.comprobante == 'Ticket') {
-                            return "<a href='#editarVentaModal' class='btn btn-primary' data-toggle='modal' data-target='#editarVentaModal' data-id='" + row.id_venta + "'data-n='" + row.nro_comprobante + "'data-co='" + row.comprobante + "'data-cli='" + row.id_cliente + "'>Ticket</a>";
+                             botones += "<a href='?c=venta&a=ticket&id=" + row.id_venta + "' target='_blank' class='btn btn-primary action-btn' title='Imprimir Ticket'><i class='fas fa-receipt'></i> Ticket</a>";
                         } else {
-                            return '';
+                            // Espacio vacío si no hay comprobante imprimible
+                             botones += "<div></div>"; 
                         }
-                    }
-                }
 
-                <?php
-                if ($_SESSION['nivel'] == 1) { ?>, {
-                        "defaultContent": "",
-                        render: function(data, type, row) {
+                        // 4. Pagaré (Si corresponde y es Crédito)
+                        if (row.pagare == 1 && row.contado == 'Credito') {
+                            botones += "<a href='javascript:void(0)' class='btn btn-success action-btn' onclick='abrirVentanaFlotante(\"?c=venta&a=Pagare&id=" + row.id_venta + "\", \"Pagaré\")' title='Ver Pagaré'><i class='fas fa-file-contract'></i> Pagaré</a>";
+                        } else {
+                             botones += "<div></div>";
+                        }
+
+                        // 5. Orden Delivery
+                        botones += "<a href='javascript:void(0)' class='btn btn-dark action-btn' onclick='abrirVentanaFlotante(\"?c=venta&a=OrdenDelivery&id=" + row.id_venta + "\", \"Orden de Entrega\")' title='Orden Delivery'><i class='fas fa-truck'></i> Delivery</a>";
+                        
+                        <?php if ($_SESSION['nivel'] == 1) { ?>
+                        // 6. Eliminar (Admin)
                             if (row.anulado == 1) {
-                                return 'ANULADO'
+                                botones += "<span class='badge badge-danger action-btn'>Anulado</span>";
                             } else {
-
                                 let link = "?c=venta&a=anular&id=" + row.id_venta;
-                                return '<a href="' + link + '" class="btn btn-danger" onclick="return confirm(\'¿Seguro de eliminar este registro?\');">Eliminar</a>';
-
+                                botones += '<a href="' + link + '" class="btn btn-danger action-btn" onclick="return confirm(\'¿Seguro de eliminar este registro?\');" title="Eliminar"><i class="fas fa-trash"></i> Eliminar</a>';
                             }
+                        <?php } else { ?>
+                             botones += "<div></div>";
+                        <?php } ?>
 
-                        }
-                    },
-                <?php } ?>
+                        botones += '</div>'; // Cierra grid
+                        return botones;
+                    }
+                },
+
 
 
 

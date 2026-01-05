@@ -59,6 +59,13 @@
 							<option value="Credito">Credito</option>
 						</select>
 					</div>
+					<div class="form-group col-sm-4" id="div_pagare" style="display: none;">
+						<label>Generar Pagaré?</label>
+						<select name="pagare" id="pagare" class="form-control">
+							<option value="">No</option>
+							<option value="1">Si</option>
+						</select>
+					</div>
 					<div class="form-group col-sm-12" id="banco" style="display: none;">
 						<label>Entidad</label>
 						<input type="text" name="banco" class="form-control" placeholder="Ingrese nombre de la entidad">
@@ -180,12 +187,17 @@
 			$("#fin").show();
 			$("#entrega").show();
 			$("#forma_pago").show();
+            // Mostrar opción de Pagaré solo en Crédito
+            $("#div_pagare").show();
 
 		} else {
 			$("#creditos").show();
 			$("#fin").hide();
 			$("#entrega").hide();
 			$("#forma_pago").hide();
+            // Ocultar y resetear Pagaré
+            $("#div_pagare").hide();
+            $("#pagare").val(""); 
 		}
 	});
 </script>
