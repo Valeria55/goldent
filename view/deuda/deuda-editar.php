@@ -22,7 +22,7 @@
     </div>
     <div class="form-group col-sm-12">
         <label>Cliente</label>
-        <select name="id_cliente" id="id_cliente" class="form-control" data-show-subtext="true" data-live-search="true">
+        <select name="id_cliente" id="id_cliente" class="form-control selectpicker" data-show-subtext="true" data-live-search="true">
             <option value="2">Cliente casual (XXX)</option>
             <?php foreach($this->cliente->Listar() as $clie): ?> 
             <option value="<?php echo $clie->id; ?>" <?php echo ($clie->id == $deuda->id_cliente)? "selected":""; ?>><?php echo $clie->nombre." ( ".$clie->ruc." )"; ?> </option>

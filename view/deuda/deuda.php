@@ -1,4 +1,7 @@
-<h1 class="page-header">Lista de deudas </h1>
+<h1 class="page-header">Lista de deudas
+    <a class="btn btn-primary" href="#clienteModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="cliente">+ Cliente</a>
+    <a class="btn btn-primary pull-right" href="#deudaModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="deuda">Agregar</a>
+</h1>
 <ul id="tab-list" class="nav nav-tabs">
     <!-- <li id="deudores-tab" class=""><a href="#">Deudores</a></li> -->
     <li id="agrupados-tab" class="active"><a href="#">Por Cliente</a></li>
@@ -14,73 +17,76 @@
   *                                                                       *
   *************************************************************************
 -->
-<div id="deudores-content" style="display: none;"> 
-<table  id="deudores-table" class="table table-striped table-bordered display responsive nowrap datatable">
-    <a class="btn btn-primary pull-right" href="#deudaModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="deuda">Agregar</a>
-    <br><br><br>
+<div id="deudores-content" style="display: none;">
+    <table id="deudores-table" class="table table-striped table-bordered display responsive nowrap datatable">
+        <a class="btn btn-primary pull-right" href="#deudaModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-c="deuda">Agregar</a>
+        <br><br><br>
 
-    <thead>
-        <tr style="background-color: black; color:#fff">
-            <th></th>
-            <th>Cliente</th>
-            <th>Concepto</th>
-            <th>Comprobante</th>
-            <th>Monto</th>
-            <th>Saldo</th>
-            <th>Fecha</th>
-            <th>Vencimiento</th>
-            <th></th>
-        </tr>
-    </thead>
-
-    <!-- tbody para Deudores -->
-    <tbody>
-        <?php 
-            $suma = 0; $saldo = 0;
-        foreach ($this->model->Listar() as $r) : ?>
-            <tr class="click">
-                <td>
-                    <div align="center"><a class="btn btn-primary " href="#cobrarModal" class="btn btn-success" data-toggle="modal" data-target="#cobrarModal" data-id="<?php echo $r->id; ?>">Cobrar</a></div>
-                </td>
-                <!-- ... resto de las columnas de la tabla para Deudores ... -->
-                <td><a class="btn btn-default" href="#rangoModal" class="btn btn-success" data-toggle="modal" data-target="#rangoModal" data-id="<?php echo $r->id_cliente; ?>"><?php echo $r->nombre; ?></a>
-                </td>
-                <td><?php echo $r->concepto; ?></td>
-                <td><?php echo $r->nro_comprobante ? $r->nro_comprobante : '-'; ?></td>
-                <td style="padding-right:2px" align="right"><?php echo number_format($r->monto, 0, ",", ","); ?></td>
-                <td style="padding-right:2px" align="right"><?php echo number_format($r->saldo, 0, ",", ","); ?></td>
-                <td><?php echo date("d/m/Y H:i", strtotime($r->fecha)); ?></td>
-                <td><?php echo (date("Y", strtotime($r->vencimiento)) > 2000) ? date("d/m/Y", strtotime($r->vencimiento)) : ""; ?></td>
-                <?php if ($r->id_venta) : ?>
-                    <td>
-                        <a href="#cobrosModal" class="btn btn-success" data-toggle="modal" data-target="#cobrosModal" data-id="<?php echo $r->id; ?>">Cobros</a>
-                        <a href="#detallesModal" class="btn btn-default" data-toggle="modal" data-target="#detallesModal" data-id="<?php echo $r->id_venta; ?>">Venta</a>
-                    </td>
-                <?php else : ?>
-                    <td>
-                        <a href="#cobrosModal" class="btn btn-success" data-toggle="modal" data-target="#cobrosModal" data-id="<?php echo $r->id; ?>">Cobros</a>
-                        <a class="btn btn-warning edit" href="#crudModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-id="<?php echo $r->id; ?>" data-c="deuda">Editar</a>
-                        <!-- <a class="btn btn-danger" onclick="javascript:return confirm('¿Seguro de eliminar este registro?');" href="?c=deuda&a=Eliminar&id=<?php //echo $r->id; ?>">Eliminar</a> -->
-                    </td>
-                <?php endif ?>
+        <thead>
+            <tr style="background-color: black; color:#fff">
+                <th></th>
+                <th>Cliente</th>
+                <th>Concepto</th>
+                <th>Comprobante</th>
+                <th>Monto</th>
+                <th>Saldo</th>
+                <th>Fecha</th>
+                <th>Vencimiento</th>
+                <th></th>
             </tr>
-        <?php 
-            $suma += $r->monto; $saldo += $r->saldo;
-        endforeach; ?>
-    </tbody>
-    <tfoot>
-        <tr style="background-color: #666666; color:#fff" >
-            <td></td>
-            <td></td>
-            <td></td>
-            <td style="padding-right:2px" align="right">TOTAL: </td>
-            <td style="padding-right:2px" align="right"><?php echo number_format($suma,0,".",","); ?></td>
-            <td  style="padding-right:2px" align="right"><?php echo number_format($saldo,0,".",","); ?></td>
-            <td></td>
-            <td></td>
-            <td></td>
-    </tfoot>
-</table>
+        </thead>
+
+        <!-- tbody para Deudores -->
+        <tbody>
+            <?php
+            $suma = 0;
+            $saldo = 0;
+            foreach ($this->model->Listar() as $r) : ?>
+                <tr class="click">
+                    <td>
+                        <div align="center"><a class="btn btn-primary " href="#cobrarModal" class="btn btn-success" data-toggle="modal" data-target="#cobrarModal" data-id="<?php echo $r->id; ?>">Cobrar</a></div>
+                    </td>
+                    <!-- ... resto de las columnas de la tabla para Deudores ... -->
+                    <td><a class="btn btn-default" href="#rangoModal" class="btn btn-success" data-toggle="modal" data-target="#rangoModal" data-id="<?php echo $r->id_cliente; ?>"><?php echo $r->nombre; ?></a>
+                    </td>
+                    <td><?php echo $r->concepto; ?></td>
+                    <td><?php echo $r->nro_comprobante ? $r->nro_comprobante : '-'; ?></td>
+                    <td style="padding-right:2px" align="right"><?php echo number_format($r->monto, 0, ",", ","); ?></td>
+                    <td style="padding-right:2px" align="right"><?php echo number_format($r->saldo, 0, ",", ","); ?></td>
+                    <td><?php echo date("d/m/Y H:i", strtotime($r->fecha)); ?></td>
+                    <td><?php echo (date("Y", strtotime($r->vencimiento)) > 2000) ? date("d/m/Y", strtotime($r->vencimiento)) : ""; ?></td>
+                    <?php if ($r->id_venta) : ?>
+                        <td>
+                            <a href="#cobrosModal" class="btn btn-success" data-toggle="modal" data-target="#cobrosModal" data-id="<?php echo $r->id; ?>">Cobros</a>
+                            <a href="#detallesModal" class="btn btn-default" data-toggle="modal" data-target="#detallesModal" data-id="<?php echo $r->id_venta; ?>">Venta</a>
+                        </td>
+                    <?php else : ?>
+                        <td>
+                            <a href="#cobrosModal" class="btn btn-success" data-toggle="modal" data-target="#cobrosModal" data-id="<?php echo $r->id; ?>">Cobros</a>
+                            <a class="btn btn-warning edit" href="#crudModal" class="btn btn-success" data-toggle="modal" data-target="#crudModal" data-id="<?php echo $r->id; ?>" data-c="deuda">Editar</a>
+                            <!-- <a class="btn btn-danger" onclick="javascript:return confirm('¿Seguro de eliminar este registro?');" href="?c=deuda&a=Eliminar&id=<?php //echo $r->id; 
+                                                                                                                                                                    ?>">Eliminar</a> -->
+                        </td>
+                    <?php endif ?>
+                </tr>
+            <?php
+                $suma += $r->monto;
+                $saldo += $r->saldo;
+            endforeach; ?>
+        </tbody>
+        <tfoot>
+            <tr style="background-color: #666666; color:#fff">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td style="padding-right:2px" align="right">TOTAL: </td>
+                <td style="padding-right:2px" align="right"><?php echo number_format($suma, 0, ".", ","); ?></td>
+                <td style="padding-right:2px" align="right"><?php echo number_format($saldo, 0, ".", ","); ?></td>
+                <td></td>
+                <td></td>
+                <td></td>
+        </tfoot>
+    </table>
 
 </div>
 
@@ -113,7 +119,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-8">
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -140,12 +146,12 @@
                             </div>
                         </div>
                         <hr>
-                        
+
                         <!-- Tabla de deudas del cliente -->
                         <div id="deudas-cliente-container">
                             <!-- Deudas específicas del cliente -->
                         </div>
-                        
+
                         <!-- Panel de pagos múltiples registrados -->
                         <div class="panel panel-warning" style="margin-top: 20px;">
                             <div class="panel-heading">
@@ -159,7 +165,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Contenedor de Recibos Anulados -->
                         <div class="panel panel-danger" style="margin-top: 20px;">
                             <div class="panel-heading">
@@ -174,7 +180,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div id="mensaje-seleccionar" class="text-center" style="padding: 50px;">
                         <i class="fa fa-hand-pointer-o fa-3x text-muted"></i>
                         <p class="text-muted">Selecciona un cliente de la lista para ver sus deudas</p>
@@ -192,7 +198,7 @@
   *                                                                       *
   *************************************************************************
 -->
-<div id="pagados-content" style="display: none;"> 
+<div id="pagados-content" style="display: none;">
     <div id="pagados-loader" style="text-align: center; padding: 50px; display: none;">
         <i class="fa fa-spinner fa-spin fa-2x"></i>
         <p>Cargando datos de pagados...</p>
@@ -231,7 +237,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-8">
             <div class="panel panel-success">
                 <div class="panel-heading">
@@ -328,8 +334,12 @@
         var clientesCargados = false;
         var clienteSeleccionado = null;
         var metodosPago = []; // Variable global para almacenar métodos de pago
-        var tiposCambio = { USD: 7500, RS: 1400, GS: 1 }; // Variable global para tipos de cambio
-        
+        var tiposCambio = {
+            USD: 7500,
+            RS: 1400,
+            GS: 1
+        }; // Variable global para tipos de cambio
+
         // Funciones utilitarias globales
         function formatearNumero(numero) {
             if (!numero) return '0';
@@ -338,13 +348,16 @@
                 maximumFractionDigits: 0
             });
         }
-        
+
         function formatearFecha(fecha) {
             if (!fecha) return 'N/A';
             var date = new Date(fecha);
-            return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+            return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
-        
+
         function verRecibo(grupoPagoId) {
             var url = '?c=deuda&a=generarReciboPDF&grupo_pago_id=' + grupoPagoId;
             window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no');
@@ -370,11 +383,11 @@
             var url = '?c=deuda&a=generarReciboPDF&grupo_pago_id=' + grupoPagoId + '&anulado=1';
             window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no');
         }
-        
+
         // Cargar métodos de pago y tipos de cambio al inicio
         cargarMetodosPago();
         cargarTiposCambio();
-        
+
         // Función para cargar tipos de cambio desde la base de datos
         function cargarTiposCambio() {
             $.ajax({
@@ -394,7 +407,7 @@
                 }
             });
         }
-        
+
         // Función para actualizar los displays de tipos de cambio
         function actualizarDisplayTiposCambio() {
             $('#tipo-cambio-usd').text(tiposCambio.USD);
@@ -402,7 +415,7 @@
             $('#tipo-cambio-usd-modal').text(tiposCambio.USD);
             $('#tipo-cambio-rs-modal').text(tiposCambio.RS);
         }
-        
+
         // Función para cargar métodos de pago desde la base de datos
         function cargarMetodosPago() {
             $.ajax({
@@ -416,27 +429,49 @@
                     } else {
                         console.error('Error al cargar métodos de pago:', resultado.message);
                         // Fallback a métodos por defecto
-                        metodosPago = [
-                            {id: 1, metodo: 'Efectivo'},
-                            {id: 2, metodo: 'Transferencia'},
-                            {id: 3, metodo: 'Cheque'},
-                            {id: 4, metodo: 'Tarjeta'}
+                        metodosPago = [{
+                                id: 1,
+                                metodo: 'Efectivo'
+                            },
+                            {
+                                id: 2,
+                                metodo: 'Transferencia'
+                            },
+                            {
+                                id: 3,
+                                metodo: 'Cheque'
+                            },
+                            {
+                                id: 4,
+                                metodo: 'Tarjeta'
+                            }
                         ];
                     }
                 },
                 error: function() {
                     console.error('Error al cargar métodos de pago');
                     // Fallback a métodos por defecto
-                    metodosPago = [
-                        {id: 1, metodo: 'Efectivo'},
-                        {id: 2, metodo: 'Transferencia'},
-                        {id: 3, metodo: 'Cheque'},
-                        {id: 4, metodo: 'Tarjeta'}
+                    metodosPago = [{
+                            id: 1,
+                            metodo: 'Efectivo'
+                        },
+                        {
+                            id: 2,
+                            metodo: 'Transferencia'
+                        },
+                        {
+                            id: 3,
+                            metodo: 'Cheque'
+                        },
+                        {
+                            id: 4,
+                            metodo: 'Tarjeta'
+                        }
                     ];
                 }
             });
         }
-        
+
         // Función para generar opciones de métodos de pago
         function generarOpcionesMetodos(seleccionado = '') {
             var opciones = '<option value="">Método</option>';
@@ -446,7 +481,7 @@
             });
             return opciones;
         }
-        
+
         // Maneja el evento de clic en las pestañas
         $('#tab-list li').click(function() {
             $('#tab-list li').removeClass('active');
@@ -462,7 +497,7 @@
                 $('#agrupados-content').show();
                 $('#pagados-content').hide();
                 $('#recibos-content').hide();
-                
+
                 if (!clientesCargados) {
                     cargarListaClientes();
                 }
@@ -471,7 +506,7 @@
                 $('#agrupados-content').hide();
                 $('#pagados-content').show();
                 $('#recibos-content').hide();
-                
+
                 if (!pagadosCargados) {
                     cargarTablaPagados();
                 }
@@ -480,16 +515,16 @@
                 $('#agrupados-content').hide();
                 $('#pagados-content').hide();
                 $('#recibos-content').show();
-                
+
                 cargarListaClientesRecibo();
             }
         });
-        
+
         // Función para cargar la lista de clientes con deudas
         function cargarListaClientes() {
             $('#clientes-loader').show();
             $('#clientes-container').empty();
-            
+
             $.ajax({
                 url: '?c=deuda&a=cargarClientesConDeudas',
                 method: 'GET',
@@ -498,7 +533,7 @@
                     $('#clientes-loader').hide();
                     $('#clientes-container').html(response);
                     clientesCargados = true;
-                    
+
                     // Manejar clic en cliente
                     $('.cliente-item').click(function() {
                         var idCliente = $(this).data('id');
@@ -512,25 +547,27 @@
                 }
             });
         }
-        
+
         // Función para seleccionar un cliente y cargar sus deudas
         function seleccionarCliente(idCliente, nombreCliente) {
             clienteSeleccionado = idCliente;
             $('#cliente-seleccionado-titulo').text('Deudas de: ' + nombreCliente);
             $('#mensaje-seleccionar').hide();
             $('#detalle-cliente').show();
-            
+
             // Cargar deudas del cliente
             $.ajax({
                 url: '?c=deuda&a=cargarDeudasCliente',
                 method: 'GET',
-                data: { id_cliente: idCliente },
+                data: {
+                    id_cliente: idCliente
+                },
                 cache: false,
                 success: function(response) {
                     var data = JSON.parse(response);
                     $('#total-adeudado').text(data.total_formateado);
                     $('#deudas-cliente-container').html(data.tabla_html);
-                    
+
                     // Cargar pagos múltiples del cliente
                     cargarPagosMultiples(idCliente);
                 },
@@ -539,19 +576,21 @@
                 }
             });
         }
-        
+
         // Función para cargar pagos múltiples
         function cargarPagosMultiples(idCliente) {
             $.ajax({
                 url: '?c=deuda&a=listarPagosMultiples',
                 method: 'GET',
-                data: { id_cliente: idCliente },
+                data: {
+                    id_cliente: idCliente
+                },
                 cache: false,
                 success: function(response) {
                     console.log('Respuesta pagos múltiples:', response);
                     var data = JSON.parse(response);
                     console.log('Datos parseados:', data);
-                    
+
                     if (data.success && data.pagos.length > 0) {
                         var html = '<div class="table-responsive">';
                         html += '<table class="table table-bordered table-striped table-condensed">';
@@ -566,7 +605,7 @@
                         html += '</tr>';
                         html += '</thead>';
                         html += '<tbody>';
-                        
+
                         data.pagos.forEach(function(pago) {
                             html += '<tr>';
                             html += '<td><strong>' + (pago.nro_recibo || 'N/A') + '</strong></td>';
@@ -591,13 +630,13 @@
                             html += '</td>';
                             html += '</tr>';
                         });
-                        
+
                         html += '</tbody>';
                         html += '</table>';
                         html += '</div>';
-                        
+
                         $('#pagos-multiples-container').html(html);
-                        
+
                         // Cargar recibos anulados después de cargar pagos múltiples
                         cargarRecibosAnuladosEnPagados(idCliente);
                     } else {
@@ -606,7 +645,7 @@
                             '<i class="fa fa-info-circle"></i> No hay pagos múltiples registrados para este cliente' +
                             '</div>'
                         );
-                        
+
                         // Aún así cargar recibos anulados
                         cargarRecibosAnuladosEnPagados(idCliente);
                     }
@@ -615,27 +654,29 @@
                     $('#pagos-multiples-container').html(
                         '<div class="alert alert-danger">Error al cargar pagos múltiples</div>'
                     );
-                    
+
                     // En caso de error, aún intentar cargar recibos anulados
                     cargarRecibosAnuladosEnPagados(idCliente);
                 }
             });
         }
-        
+
         // Manejar reversión de pagos múltiples
         $(document).on('click', '.revertir-pago-btn', function() {
             var grupoId = $(this).data('grupo-id');
             var total = $(this).data('total');
-            
+
             var mensaje = 'Esta acción revertirá el pago múltiple por ' + formatearNumero(total) + ' Gs.\n\n';
             mensaje += 'Se restaurarán los saldos de las deudas afectadas.\n';
             mensaje += '¿Está seguro de continuar?';
-            
+
             if (confirm(mensaje)) {
                 $.ajax({
                     url: '?c=deuda&a=revertirPagoMultiple',
                     method: 'POST',
-                    data: { grupo_pago_id: grupoId },
+                    data: {
+                        grupo_pago_id: grupoId
+                    },
                     success: function(response) {
                         var resultado = JSON.parse(response);
                         if (resultado.success) {
@@ -655,25 +696,25 @@
                 });
             }
         });
-        
+
         // Manejar ver recibo desde pagos múltiples
         $(document).on('click', '.ver-recibo-btn', function() {
             var grupoId = $(this).data('grupo-id');
             verRecibo(grupoId);
         });
-        
+
         // Manejar imprimir recibo desde pagos múltiples
         $(document).on('click', '.imprimir-recibo-btn', function() {
             var grupoId = $(this).data('grupo-id');
             imprimirRecibo(grupoId);
         });
-        
+
         // Manejar descargar recibo desde pagos múltiples
         $(document).on('click', '.descargar-recibo-btn', function() {
             var grupoId = $(this).data('grupo-id');
             descargarRecibo(grupoId);
         });
-        
+
         // Búsqueda de clientes
         $('#buscar-cliente').on('keyup', function() {
             var filtro = $(this).val().toLowerCase();
@@ -686,7 +727,7 @@
                 }
             });
         });
-        
+
         // Pago total (desde el más viejo al más nuevo)
         $('#pagar-total').click(function() {
             var cantidad = parseFloat($('#pago-total').val());
@@ -694,12 +735,12 @@
                 alert('Por favor ingrese una cantidad válida');
                 return;
             }
-            
+
             if (!clienteSeleccionado) {
                 alert('No hay cliente seleccionado');
                 return;
             }
-            
+
             if (confirm('¿Confirma el pago de ' + cantidad + ' con método simple (Efectivo)?')) {
                 realizarPagoTotal(clienteSeleccionado, cantidad);
             }
@@ -715,7 +756,7 @@
             var totalAdeudado = parseFloat($('#total-adeudado').text().replace(/\./g, ''));
             abrirModalPagoTotalMultiple(totalAdeudado);
         });
-        
+
         // Función para realizar pago total
         function realizarPagoTotal(idCliente, cantidad) {
             $.ajax({
@@ -742,12 +783,12 @@
                 }
             });
         }
-        
+
         // Función para cargar la tabla de pagados
         function cargarTablaPagados() {
             $('#pagados-loader').show();
             $('#pagados-table-container').empty();
-            
+
             $.ajax({
                 url: '?c=deuda&a=cargarPagados',
                 method: 'GET',
@@ -756,7 +797,7 @@
                     $('#pagados-loader').hide();
                     $('#pagados-table-container').html(response);
                     pagadosCargados = true;
-                    
+
                     if ($.fn.DataTable.isDataTable('#pagados-table')) {
                         $('#pagados-table').DataTable().destroy();
                     }
@@ -773,16 +814,16 @@
                 }
             });
         }
-        
+
         // Manejar cobro específico
         $(document).on('click', '.cobro-especifico-btn', function() {
             var idDeuda = $(this).data('id');
             var concepto = $(this).data('concepto');
             var saldo = $(this).data('saldo');
             var saldoNumerico = parseFloat(saldo.replace(/\./g, ''));
-            
+
             $('#cobroEspecificoModal .modal-title').text('Cobrar: ' + concepto);
-            
+
             var formulario = `
                 <form id="form-cobro-especifico">
                     <div class="row">
@@ -888,36 +929,36 @@
                     </div>
                 </form>
             `;
-            
+
             $('#cobro-especifico-content').html(formulario);
             $('#cobroEspecificoModal').modal('show');
-            
+
             // Variables para el control de métodos de pago
             var contadorMetodos = 1;
             // Usar tipos de cambio globales (ya cargados desde la base de datos)
-            
+
             // Función para calcular totales
             function calcularTotales() {
                 var totalPagar = 0;
                 var saldoPendiente = parseFloat($('#saldo-numerico').val());
-                
+
                 $('.metodo-pago-item').each(function() {
                     var cantidad = parseFloat($(this).find('.cantidad-input').val()) || 0;
                     var moneda = $(this).find('.moneda-select').val();
-                    
+
                     if (cantidad > 0 && moneda) {
                         // Convertir a guaraníes
                         var cantidadEnGuaranies = cantidad * tiposCambio[moneda];
                         totalPagar += cantidadEnGuaranies;
                     }
                 });
-                
+
                 var saldoRestante = saldoPendiente - totalPagar;
-                
+
                 // Actualizar displays
                 $('#total-pagar').text(formatearNumero(totalPagar));
                 $('#saldo-restante').text(formatearNumero(saldoRestante));
-                
+
                 // Cambiar color según el estado
                 if (saldoRestante < 0) {
                     $('#saldo-restante').removeClass('text-success text-warning').addClass('text-danger');
@@ -926,16 +967,16 @@
                 } else {
                     $('#saldo-restante').removeClass('text-danger text-success').addClass('text-warning');
                 }
-                
+
                 // Habilitar/deshabilitar botón de pago
                 $('#btn-realizar-pago').prop('disabled', totalPagar <= 0 || saldoRestante < 0);
             }
-            
+
             // Función para formatear números
             function formatearNumero(numero) {
                 return new Intl.NumberFormat('es-PY').format(Math.round(numero));
             }
-            
+
             // Agregar nuevo método de pago
             $('#agregar-metodo').click(function() {
                 var nuevoMetodo = `
@@ -970,51 +1011,51 @@
                         <hr style="margin: 10px 0;">
                     </div>
                 `;
-                
+
                 $('#metodos-pago-container').append(nuevoMetodo);
                 contadorMetodos++;
-                
+
                 // Habilitar botones de eliminar si hay más de un método
                 if ($('.metodo-pago-item').length > 1) {
                     $('.remove-metodo').prop('disabled', false);
                 }
             });
-            
+
             // Eliminar método de pago
             $(document).on('click', '.remove-metodo', function() {
                 $(this).closest('.metodo-pago-item').remove();
-                
+
                 // Deshabilitar botones de eliminar si solo queda uno
                 if ($('.metodo-pago-item').length === 1) {
                     $('.remove-metodo').prop('disabled', true);
                 }
-                
+
                 calcularTotales();
             });
-            
+
             // Calcular totales en tiempo real
             $(document).on('input change', '.cantidad-input, .moneda-select', function() {
                 calcularTotales();
             });
-            
+
             // Manejar envío del formulario
             $('#form-cobro-especifico').on('submit', function(e) {
                 e.preventDefault();
                 realizarCobroEspecificoMultiple(idDeuda);
             });
         });
-        
+
         // Función para realizar cobro específico con múltiples métodos
         function realizarCobroEspecificoMultiple(idDeuda) {
             var metodosPago = [];
             var totalPagar = 0;
-            
+
             $('.metodo-pago-item').each(function() {
                 var metodo = $(this).find('.metodo-select').val();
                 var moneda = $(this).find('.moneda-select').val();
                 var cantidad = parseFloat($(this).find('.cantidad-input').val()) || 0;
                 var observaciones = $(this).find('.observacion-input').val();
-                
+
                 if (metodo && moneda && cantidad > 0) {
                     metodosPago.push({
                         metodo: metodo,
@@ -1022,17 +1063,17 @@
                         cantidad: cantidad,
                         observaciones: observaciones
                     });
-                    
+
                     // Convertir a guaraníes para el total usando tipos de cambio globales
                     totalPagar += cantidad * tiposCambio[moneda];
                 }
             });
-            
+
             if (metodosPago.length === 0) {
                 alert('Debe agregar al menos un método de pago válido');
                 return;
             }
-            
+
             $.ajax({
                 url: '?c=deuda&a=cobroEspecificoMultiple',
                 method: 'POST',
@@ -1064,9 +1105,9 @@
         // Función para abrir modal de pago total múltiple
         function abrirModalPagoTotalMultiple(totalAdeudado) {
             var saldoFormateado = new Intl.NumberFormat('es-PY').format(totalAdeudado);
-            
+
             $('#pagoTotalMultipleModal .modal-title').text('Pago Total: ' + saldoFormateado + ' Gs');
-            
+
             var formulario = `
                 <form id="form-pago-total-multiple">
                     <div class="row">
@@ -1169,34 +1210,34 @@
                     </div>
                 </form>
             `;
-            
+
             $('#pago-total-multiple-content').html(formulario);
             $('#pagoTotalMultipleModal').modal('show');
-            
+
             // Variables para el control de métodos de pago total
             var contadorMetodosTotal = 1;
             // Usar tipos de cambio globales (ya cargados desde la base de datos)
-            
+
             // Función para calcular totales del pago total
             function calcularTotalesTotal() {
                 var totalPagar = 0;
                 var totalAdeudadoNumerico = totalAdeudado;
-                
+
                 $('.metodo-pago-total-item').each(function() {
                     var cantidad = parseFloat($(this).find('.cantidad-total-input').val()) || 0;
                     var moneda = $(this).find('.moneda-total-select').val();
-                    
+
                     if (cantidad > 0 && moneda) {
                         var cantidadEnGuaranies = cantidad * tiposCambio[moneda];
                         totalPagar += cantidadEnGuaranies;
                     }
                 });
-                
+
                 var saldoRestante = totalAdeudadoNumerico - totalPagar;
-                
+
                 $('#total-pagar-modal').text(formatearNumeroTotal(totalPagar));
                 $('#saldo-restante-modal').text(formatearNumeroTotal(saldoRestante));
-                
+
                 if (saldoRestante < 0) {
                     $('#saldo-restante-modal').removeClass('text-success text-warning').addClass('text-danger');
                 } else if (saldoRestante === 0) {
@@ -1204,14 +1245,14 @@
                 } else {
                     $('#saldo-restante-modal').removeClass('text-danger text-success').addClass('text-warning');
                 }
-                
+
                 $('#btn-realizar-pago-total').prop('disabled', totalPagar <= 0);
             }
-            
+
             function formatearNumeroTotal(numero) {
                 return new Intl.NumberFormat('es-PY').format(Math.round(numero));
             }
-            
+
             $('#agregar-metodo-total').click(function() {
                 var nuevoMetodoTotal = `
                     <div class="metodo-pago-total-item" data-index="${contadorMetodosTotal}">
@@ -1245,29 +1286,29 @@
                         <hr style="margin: 10px 0;">
                     </div>
                 `;
-                
+
                 $('#metodos-pago-total-container').append(nuevoMetodoTotal);
                 contadorMetodosTotal++;
-                
+
                 if ($('.metodo-pago-total-item').length > 1) {
                     $('.remove-metodo-total').prop('disabled', false);
                 }
             });
-            
+
             $(document).on('click', '.remove-metodo-total', function() {
                 $(this).closest('.metodo-pago-total-item').remove();
-                
+
                 if ($('.metodo-pago-total-item').length === 1) {
                     $('.remove-metodo-total').prop('disabled', true);
                 }
-                
+
                 calcularTotalesTotal();
             });
-            
+
             $(document).on('input change', '.cantidad-total-input, .moneda-total-select', function() {
                 calcularTotalesTotal();
             });
-            
+
             $('#form-pago-total-multiple').on('submit', function(e) {
                 e.preventDefault();
                 realizarPagoTotalMultiple();
@@ -1277,13 +1318,13 @@
         function realizarPagoTotalMultiple() {
             var metodosPago = [];
             var totalPagar = 0;
-            
+
             $('.metodo-pago-total-item').each(function() {
                 var metodo = $(this).find('.metodo-total-select').val();
                 var moneda = $(this).find('.moneda-total-select').val();
                 var cantidad = parseFloat($(this).find('.cantidad-total-input').val()) || 0;
                 var observaciones = $(this).find('.observacion-total-input').val();
-                
+
                 if (metodo && moneda && cantidad > 0) {
                     metodosPago.push({
                         metodo: metodo,
@@ -1291,17 +1332,17 @@
                         cantidad: cantidad,
                         observaciones: observaciones
                     });
-                    
+
                     // Usar tipos de cambio globales
                     totalPagar += cantidad * tiposCambio[moneda];
                 }
             });
-            
+
             if (metodosPago.length === 0) {
                 alert('Debe agregar al menos un método de pago válido');
                 return;
             }
-            
+
             $.ajax({
                 url: '?c=deuda&a=pagoTotalMultiple',
                 method: 'POST',
@@ -1333,11 +1374,11 @@
         // =====================================
         // FUNCIONES PARA MANEJO DE RECIBOS
         // =====================================
-        
+
         function cargarListaClientesRecibo() {
             $('#clientes-recibo-loader').show();
             $('#clientes-recibo-container').empty();
-            
+
             $.ajax({
                 url: '?c=deuda&a=cargarClientesConDeudas',
                 method: 'GET',
@@ -1347,7 +1388,7 @@
                     // Modificar el HTML para usar IDs específicos de recibo
                     var htmlModificado = response.replace(/cliente-item/g, 'cliente-recibo-item');
                     $('#clientes-recibo-container').html(htmlModificado);
-                    
+
                     // Manejar clic en cliente para recibos
                     $('.cliente-recibo-item').click(function() {
                         var idCliente = $(this).data('id');
@@ -1390,7 +1431,7 @@
 
         function mostrarListaRecibos(recibos) {
             console.log('Recibos recibidos:', recibos);
-            
+
             if (!recibos || recibos.length === 0) {
                 $('#recibos-lista-container').html(
                     '<div class="text-center text-muted" style="padding: 50px;">' +
@@ -1402,34 +1443,34 @@
             }
 
             var html = '<div class="table-responsive">' +
-                       '<table class="table table-striped table-bordered">' +
-                       '<thead>' +
-                       '<tr style="background-color: #5cb85c; color: white;">' +
-                       '<th>Fecha</th>' +
-                       '<th>Recibo Nº</th>' +
-                       '<th>Total</th>' +
-                       '<th>Deudas</th>' +
-                       '<th>Usuario</th>' +
-                       '<th>Acciones</th>' +
-                       '</tr>' +
-                       '</thead>' +
-                       '<tbody>';
+                '<table class="table table-striped table-bordered">' +
+                '<thead>' +
+                '<tr style="background-color: #5cb85c; color: white;">' +
+                '<th>Fecha</th>' +
+                '<th>Recibo Nº</th>' +
+                '<th>Total</th>' +
+                '<th>Deudas</th>' +
+                '<th>Usuario</th>' +
+                '<th>Acciones</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>';
 
             recibos.forEach(function(recibo) {
                 html += '<tr>' +
-                        '<td>' + formatearFecha(recibo.fecha_recibo) + '</td>' +
-                        '<td>' + recibo.grupo_pago_id + '</td>' +
-                        '<td class="text-right">' + formatearNumero(recibo.total_recibo) + '</td>' +
-                        '<td class="text-center">' + recibo.cantidad_deudas + '</td>' +
-                        '<td>' + recibo.usuario_nombre + '</td>' +
-                        '<td>' +
-                        '<div class="btn-group" role="group">' +
-                        '<button class="btn btn-sm btn-primary" onclick="verRecibo(\'' + recibo.grupo_pago_id + '\')">' +
-                        '<i class="fa fa-eye"></i> Ver PDF' +
-                        '</button>' +
-                        '</div>' +
-                        '</td>' +
-                        '</tr>';
+                    '<td>' + formatearFecha(recibo.fecha_recibo) + '</td>' +
+                    '<td>' + recibo.grupo_pago_id + '</td>' +
+                    '<td class="text-right">' + formatearNumero(recibo.total_recibo) + '</td>' +
+                    '<td class="text-center">' + recibo.cantidad_deudas + '</td>' +
+                    '<td>' + recibo.usuario_nombre + '</td>' +
+                    '<td>' +
+                    '<div class="btn-group" role="group">' +
+                    '<button class="btn btn-sm btn-primary" onclick="verRecibo(\'' + recibo.grupo_pago_id + '\')">' +
+                    '<i class="fa fa-eye"></i> Ver PDF' +
+                    '</button>' +
+                    '</div>' +
+                    '</td>' +
+                    '</tr>';
             });
 
             html += '</tbody></table></div>';
@@ -1441,7 +1482,9 @@
             $.ajax({
                 url: '?c=deuda&a=obtenerRecibosAnulados',
                 method: 'POST',
-                data: { id_cliente: idCliente },
+                data: {
+                    id_cliente: idCliente
+                },
                 success: function(response) {
                     try {
                         var data = JSON.parse(response);
@@ -1477,7 +1520,7 @@
                 );
                 return;
             }
-            
+
             var html = '<div class="table-responsive">';
             html += '<table class="table table-bordered table-striped table-condensed">';
             html += '<thead>';
@@ -1491,7 +1534,7 @@
             html += '</tr>';
             html += '</thead>';
             html += '<tbody>';
-            
+
             recibos.forEach(function(recibo) {
                 html += '<tr style="background-color: #f2dede;">';
                 html += '<td><strong>' + (recibo.nro_recibo || 'N/A') + '</strong></td>';
@@ -1506,11 +1549,11 @@
                 html += '</td>';
                 html += '</tr>';
             });
-            
+
             html += '</tbody>';
             html += '</table>';
             html += '</div>';
-            
+
             $('#recibos-anulados-pagados-container').html(html);
         }
 
@@ -1526,13 +1569,13 @@
                 }
             });
         });
-        
+
         // Event listener para botones PDF de recibos anulados
         $(document).on('click', '.btn-pdf-anulado', function() {
             var grupoPagoId = $(this).data('grupo-id');
             generarPDFAnuladoPagados(grupoPagoId);
         });
-        
+
         // Cargar automáticamente la lista de clientes al inicializar la página
         // ya que "Por Cliente" es la pestaña activa por defecto
         cargarListaClientes();
