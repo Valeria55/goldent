@@ -65,11 +65,11 @@
                     </div>
                     <div class="form-group col-sm-6" >
                         <label>Nro. comprobante</label>
-                        <input type="text" name="nro_comprobante" id="n" class="form-control" placeholder="Ingrese el numero de comprobante">
+                        <input type="text" name="nro_comprobante" id="n" class="form-control" placeholder="Ingrese el numero de comprobante" readonly>
                     </div>
                     <div class="form-group col-sm-6">
                         <label>Comprobante</label>
-                        <select name="comprobante" id="co" class="form-control">
+                        <select name="comprobante" id="co" class="form-control" disabled>
                             <option value="Ticket">Ticket</option>
                             <option value="TicketSi">Sin impresión</option>
                             <option value="Factura">Factura</option>  
