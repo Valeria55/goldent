@@ -161,7 +161,7 @@ class FacturaGenerator
     public function __construct($venta)
     {
         $this->venta = $venta;
-        
+
         // ==========================================
         // CONFIGURACIÓN CENTRALIZADA
         // Ajuste estos valores para alinear con el preimpreso
@@ -203,35 +203,35 @@ class FacturaGenerator
             // ║   Los valores son en mm desde el INICIO de cada copia        ║
             // ║   AUMENTAR = mover hacia ABAJO, REDUCIR = mover hacia ARRIBA ║
             // ╚══════════════════════════════════════════════════════════════╝
-            
+
             // ► copia_altura: Altura de cada copia (Original/Duplicado/Triplicado)
             //   - Si las copias se solapan → AUMENTAR (ej: 120, 122)
             //   - Si hay mucho espacio entre copias → REDUCIR (ej: 117, 115)
             'copia_altura' => 108,
-            
+
             // ► header_y_offset: Posición de Fecha/Nombre/RUC
             //   - Si el header está muy arriba → AUMENTAR (ej: 35, 38)
             //   - Si el header está muy abajo → REDUCIR (ej: 30, 28)
             'header_y_offset' => 33,
-            
+
             // ► header_line_height: Espacio entre líneas del header (mm)
             //   - Si las líneas del header están muy juntas → AUMENTAR (ej: 5, 5.5)
             //   - Si están muy separadas → REDUCIR (ej: 4, 3.5)
             'header_line_height' => 4.5,
-            
+
             // ► productos_y_inicio: Donde empieza el PRIMER producto
             //   - Si los productos empiezan muy arriba → AUMENTAR (ej: 55, 58)
             //   - Si empiezan muy abajo → REDUCIR (ej: 50, 48)
             'productos_y_inicio' => 54,
-            
+
             // ► productos_line_height: Espacio entre cada línea de producto
             //   - Si los productos están muy juntos → AUMENTAR (ej: 4.5, 5)
             //   - Si están muy separados → REDUCIR (ej: 4, 3.8)
             'productos_line_height' => 3.5,
-            
+
             // ► max_lineas_productos: Cantidad máxima de líneas antes de saltar de página
             'max_lineas_productos' => 7,
-            
+
             // ========================================
             // LÍMITE DE CARACTERES POR LÍNEA
             // ========================================
@@ -239,12 +239,12 @@ class FacturaGenerator
             // ► Si los productos saltan muy rápido a 2 líneas → AUMENTAR (ej: 45, 50)
             // ► Si no saltan cuando deberían → REDUCIR (ej: 35, 30)
             'chars_por_linea' => 40,
-            
+
             // ► subtotal_y_offset: Donde aparece la línea de SUBTOTAL
             //   - Si el subtotal está muy arriba → AUMENTAR (ej: 85, 88)
             //   - Si está muy abajo → REDUCIR (ej: 80, 78)
             'subtotal_y_offset' => 78,
-            
+
             // ► iva_y_offset: Donde aparece la LIQUIDACIÓN IVA
             //   - Si el IVA está muy arriba → AUMENTAR (ej: 100, 102)
             //   - Si está muy abajo → REDUCIR (ej: 95, 93)
@@ -274,14 +274,14 @@ class FacturaGenerator
 
         $medidas = [$this->config['page_width'], $this->config['page_height']];
         $this->pdf = new TCPDF('P', 'mm', $medidas, true, 'UTF-8', false);
-        
+
         $this->pdf->SetPrintHeader(false);
         $this->pdf->SetPrintFooter(false);
         $this->pdf->SetHeaderMargin(0);
         $this->pdf->SetFooterMargin(0);
         $this->pdf->SetMargins(
-            $this->config['margin_left'], 
-            $this->config['margin_top'], 
+            $this->config['margin_left'],
+            $this->config['margin_top'],
             $this->config['margin_right']
         );
         $this->pdf->SetAutoPageBreak(false);
@@ -332,7 +332,7 @@ class FacturaGenerator
                 $this->datosFactura['fecha'] = date("d/m/Y", strtotime($r->fecha_venta));
                 $this->datosFactura['telefono'] = $r->telefono ?? "";
                 $this->datosFactura['vendedor'] = $r->vendedor ?? "";
-                
+
                 if ($r->contado == "Contado") {
                     $this->datosFactura['contado'] = "X";
                     $this->datosFactura['credito'] = "";
@@ -364,13 +364,13 @@ class FacturaGenerator
         if ($anchoDisponible === null) {
             $anchoDisponible = $this->config['chars_por_linea'];
         }
-        
+
         $longitud = mb_strlen($descripcion, 'UTF-8');
-        
+
         if ($longitud <= $anchoDisponible) {
             return 1;
         }
-        
+
         // Por simplicidad, asumimos máximo 2 líneas.
         // Si quisieras más granularidad: return ceil($longitud / $anchoDisponible);
         return 2;
@@ -406,7 +406,7 @@ class FacturaGenerator
         $paginas = [];
         $paginaActual = [];
         $lineasUsadas = 0;
-        
+
         // Totales de esta página
         $totalesPagina = [
             'sumaTotal' => 0,
@@ -419,7 +419,7 @@ class FacturaGenerator
 
         foreach ($productosConLineas as $producto) {
             $lineasProducto = $producto['lineas_ocupadas'];
-            
+
             // Si agregar este producto excede el límite, crear nueva página
             if ($lineasUsadas + $lineasProducto > $maxLineas && !empty($paginaActual)) {
                 $paginas[] = [
@@ -439,13 +439,13 @@ class FacturaGenerator
                     'iva10' => 0
                 ];
             }
-            
+
             // Acumular totales de esta página
             $rawTotal = $producto['raw_total'];
             $rawIva = $producto['raw_iva'];
-            
+
             $totalesPagina['sumaTotal'] += $rawTotal;
-            
+
             switch ($rawIva) {
                 case 5:
                     $totalesPagina['sumaTotal5'] += $rawTotal;
@@ -459,11 +459,11 @@ class FacturaGenerator
                     $totalesPagina['sumaTotalexe'] += $rawTotal;
                     break;
             }
-            
+
             $paginaActual[] = $producto;
             $lineasUsadas += $lineasProducto;
         }
-        
+
         // Última página
         if (!empty($paginaActual)) {
             $paginas[] = [
@@ -472,7 +472,7 @@ class FacturaGenerator
                 'totales' => $totalesPagina
             ];
         }
-        
+
         return $paginas;
     }
 
@@ -511,14 +511,14 @@ class FacturaGenerator
                 'raw_total' => $r->total,
                 'raw_iva' => $r->iva
             ];
-            
+
             $this->totales['cantidad_total'] += $r->cantidad;
             $this->totales['sumaTotal'] += $r->total;
         }
 
         // Preparar productos con información de líneas
         $productosConLineas = $this->generarLineasProductos($items);
-        
+
         // Dividir en páginas si es necesario (ahora incluye totales por página)
         $paginas = $this->dividirEnPaginasConTotales($productosConLineas);
 
@@ -560,30 +560,30 @@ class FacturaGenerator
     {
         $copiaAltura = $this->config['copia_altura'];
         $totalPaginasProductos = count($paginas);
-        
+
         // Iterar primero por PÁGINA DE PRODUCTOS, luego por las 3 COPIAS
         foreach ($paginas as $numPagina => $datosPagina) {
             $esUltimaPaginaProductos = ($numPagina === $totalPaginasProductos - 1);
-            
+
             // Obtener los totales de ESTA página (no el global)
             $totalesPagina = $datosPagina['totales'];
-            
+
             // Para cada página de productos, imprimir las 3 copias en la misma hoja física
             for ($indiceCopia = 0; $indiceCopia < 3; $indiceCopia++) {
-                
+
                 // Calcular Y base para esta copia (0, 119, 238 mm)
                 $yBase = $indiceCopia * $copiaAltura;
-                
+
                 // 1. Imprimir HEADER (Fecha, Nombre, RUC, etc.)
                 $this->imprimirHeader($yBase);
-                
+
                 // 2. Imprimir PRODUCTOS de esta página
                 $this->imprimirProductos($yBase, $datosPagina['productos']);
-                
+
                 // 3. Imprimir FOOTER con los totales de ESTA página
                 $this->imprimirFooter($yBase, $totalesPagina);
             }
-            
+
             // Si hay más páginas de productos, crear nueva página física
             if (!$esUltimaPaginaProductos) {
                 $this->pdf->AddPage();
@@ -612,13 +612,13 @@ class FacturaGenerator
         // Línea 1: Fecha + Condición de venta (Contado/Crédito)
         $this->pdf->SetXY($marginLeft + 15, $yHeader);
         $this->pdf->Cell(40, $lh, $d['fecha'], 0, 0, 'L');
-        
+
         // ► Posición X de Contado y Crédito
         // ► xContado: posición de la X de Contado
         // ► Crédito está 10mm (1cm) a la derecha de Contado
         $xContado = $marginLeft + 150;  // Ajustar para mover Contado
         $espacioContadoCredito = -3.5;     // 10mm = 1cm de separación
-        
+
         $this->pdf->SetXY($xContado, $yHeader);
         $this->pdf->Cell(10, $lh, $d['contado'], 0, 0, 'C');
         $this->pdf->SetXY($xContado + $espacioContadoCredito + 20, $yHeader); // +20mm extra a la derecha
@@ -666,7 +666,7 @@ class FacturaGenerator
 
         foreach ($productos as $item) {
             $lineasOcupadas = $item['lineas_ocupadas'];
-            
+
             // Posición X inicial
             $x = $marginLeft;
 
@@ -683,8 +683,16 @@ class FacturaGenerator
             // Limitamos el ancho para que no solape con el precio desplazado
             // ============================================================
             $anchoProductoReal = $wProd - $precioOffsetIzquierda; // Restamos el offset del precio
+
+            // Reducir fuente solo para el producto
+            $this->pdf->SetFont($this->config['font_family'], '', $this->config['font_size_body'] - 1.5);
+
             $this->pdf->SetXY($x, $yActual);
             $this->pdf->MultiCell($anchoProductoReal, $lineHeight, $item['producto'], 0, 'L', false, 0);
+
+            // Restaurar fuente normal
+            $this->pdf->SetFont($this->config['font_family'], '', $fs);
+
             $x += $wProd; // Seguimos usando wProd para mantener la posición de las columnas siguientes
 
             // ============================================================
@@ -754,10 +762,10 @@ class FacturaGenerator
             'iva10' => number_format($totalesPagina['iva10'], 0, ",", "."),
             'ivaTotal' => number_format(($totalesPagina['iva5'] + $totalesPagina['iva10']), 0, ",", ".")
         ];
-        
+
         // Generar letras del total de esta página
         $letras = NumeroALetras::convertir($totalesPagina['sumaTotal']);
-        
+
         $fs = $this->config['font_size_footer'];
         $marginLeft = $this->config['margin_left'];
         $pageWidth = $this->config['page_width'] - $marginLeft - $this->config['margin_right'];
@@ -794,15 +802,15 @@ class FacturaGenerator
         // ► Offset para separar Exenta e IVA 5% del valor IVA 10%
         // Si los 0s están muy pegados al valor → AUMENTAR
         $separarIzquierda = 25; // mm para mover Exenta e IVA 5% a la izquierda
-        
+
         // Subtotal Exenta (movido a la izquierda)
         $this->pdf->SetXY($xExe - $separarIzquierda, $ySubtotal);
         $this->pdf->Cell($wExe, 4, $t['exe'], 0, 0, 'R');
-        
+
         // Subtotal IVA 5% (movido a la izquierda)
         $this->pdf->SetXY($xIva5 - ($separarIzquierda / 2), $ySubtotal);
         $this->pdf->Cell($wIva5, 4, $t['total5'], 0, 0, 'R');
-        
+
         // Subtotal IVA 10% (alineado exactamente con columna de productos)
         $this->pdf->SetXY($xIva10, $ySubtotal);
         $this->pdf->Cell($wIva10, 4, $t['total10'], 0, 0, 'R');
@@ -813,7 +821,7 @@ class FacturaGenerator
         $yTotal = $ySubtotal + 5;
         $this->pdf->SetXY($marginLeft + 30, $yTotal);
         $this->pdf->Cell(100, 4, 'Guaranies ' . $letras, 0, 0, 'L');
-        
+
         $this->pdf->SetFont($this->config['font_family'], 'B', $fs);
         $this->pdf->SetXY($xIva10, $yTotal);
         $this->pdf->Cell($wIva10, 4, $t['total'], 0, 0, 'R');
@@ -823,13 +831,13 @@ class FacturaGenerator
         // LIQUIDACIÓN IVA (posición Y fija)
         // ============================================================
         $yIVA = $yBase + $this->config['iva_y_offset'];
-        
+
         $this->pdf->SetXY($marginLeft + 55, $yIVA);
         $this->pdf->Cell(25, 4, $t['iva5'], 0, 0, 'L');
-        
+
         $this->pdf->SetXY($marginLeft + 100, $yIVA);
         $this->pdf->Cell(25, 4, $t['iva10'], 0, 0, 'C');
-        
+
         $this->pdf->SetXY($marginLeft + 150, $yIVA);
         $this->pdf->Cell(30, 4, 'Total IVA: ' . $t['ivaTotal'], 0, 0, 'R');
     }
@@ -868,23 +876,21 @@ try {
     if (!isset($_GET['id'])) {
         throw new Exception('ID no especificado');
     }
-    
+
     $id = (int)$_GET['id'];
     $venta = new venta(); // Se asume que $this->venta existe en el contexto donde se hace el require, 
-                          // PERO al ser 'require_once' desde un controller, el contexto de 'this' puede perderse 
-                          // si no estamos dentro de un método de clase.
-                          // En el código original se usaba $this->venta. 
-                          // PAra asegurar, instanciamos si es necesario o usamos global.
-                          // Revisando el controller: $this->venta = new venta();
-                          
+    // PERO al ser 'require_once' desde un controller, el contexto de 'this' puede perderse 
+    // si no estamos dentro de un método de clase.
+    // En el código original se usaba $this->venta. 
+    // PAra asegurar, instanciamos si es necesario o usamos global.
+    // Revisando el controller: $this->venta = new venta();
+
     // Como esto es un archivo incluido dentro de un método de controller (Factura()), '$this' se refiere al Controller.
     // El controller tiene la propiedad 'venta'.
-    
+
     $generator = new FacturaGenerator($this->venta);
     $generator->generarFactura($id);
-
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
 }
-    // Garbage removed
-?>
+// Garbage removed
