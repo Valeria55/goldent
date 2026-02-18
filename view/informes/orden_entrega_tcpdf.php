@@ -13,14 +13,14 @@ $pdf->SetSubject('Orden de Entrega');
 $pdf->SetKeywords('Orden, Entrega, PDF, TCPDF');
 $pdf->setPrintHeader(false);
 // Configurar márgenes
-$pdf->SetMargins(15, 15, 15);
+$pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(FALSE, 15);
 
 // Agregar una página
 $pdf->AddPage();
 
 // Estilo de fuente
-$pdf->SetFont('helvetica', '', 12);
+$pdf->SetFont('helvetica', '', 11);
 
 // Función para crear el contenido de la orden
 function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL') {
