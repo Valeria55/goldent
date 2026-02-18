@@ -46,7 +46,7 @@ $html = '<h1 style="text-align: center;">PAGARÉ A LA ORDEN</h1>
 <td><b>Vencimiento:</b> ' . $fecha_vencimiento . '</td>
 </tr>
 <tr>
-<td colspan="2"><b>Pagará a:</b> Calixto Villalba Ayala</td>
+<td colspan="2"><b>Pagará a:</b> Goldent S.A</td>
 </tr>
 <tr>
 <td colspan="2">o a su orden la cantidad de Gs: <b> ' . $valor_letra . '</b></td>
