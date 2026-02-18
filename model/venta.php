@@ -1137,7 +1137,7 @@ class venta
 	{
 		try {
 			$stm = $this->pdo
-				->prepare("SELECT v.*, c.nombre AS cliente, c.ruc, c.direccion, c.telefono
+				->prepare("SELECT v.*, c.nombre AS cliente, c.ruc, c.direccion, c.telefono, SUM(precio_venta*cantidad) AS total
 				 FROM ventas v 
 				 LEFT JOIN clientes c ON v.id_cliente = c.id
 				 WHERE v.id_venta = ? LIMIT 1");
