@@ -156,8 +156,7 @@ class venta
 				SUM(total) as total, 
 				AVG(margen_ganancia) as margen_ganancia, 
 				fecha_venta, 
-				IF(v.autoimpresor > 0 , 
-				CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
+				v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
                 (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, 
                 (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
                 FROM ventas v 
@@ -186,7 +185,7 @@ class venta
                 , v.total, 
                 v.id_presupuesto,
                 v.margen_ganancia
-                , fecha_venta, nro_comprobante, 
+                , fecha_venta, v.nro_comprobante, 
                 c.nombre as nombre_cli
                 , c.ruc
                 , c.direccion
@@ -746,7 +745,7 @@ class venta
 			$stm = $this->pdo->prepare("SELECT 
 			IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
 				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
-			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta,IF(v.autoimpresor > 0 , CONCAT(LPAD(t.establecimiento, 3, '0'), '-', LPAD(t.punto_expedicion, 3, '0'), '-', LPAD(v.autoimpresor, 7, '0')) ,v.nro_comprobante) AS nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
+			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 			FROM ventas v 
