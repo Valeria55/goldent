@@ -21,11 +21,26 @@
 						<input type="datetime-local" name="fecha_venta" class="form-control" value="<?php echo date("Y-m-d") ?>T<?php echo date("H:i") ?>">
 					</div>
 
+					<?php
+					$ultima_venta = $this->venta->UltimoAutoimpresor();
+
+					$numero = (isset($ultima_venta->autoimpresor) && is_numeric($ultima_venta->autoimpresor))
+						? $ultima_venta->autoimpresor + 1
+						: 1;
+
+					// Formatear con ceros a la izquierda (7 dígitos)
+					$numero_formateado = str_pad($numero, 7, "0", STR_PAD_LEFT);
+
+					// Concatenar formato completo
+					$nro_comprobante = "001-003-" . $numero_formateado;
+					?>
 
 					<div class="form-group col-sm-4" id="nro_comprobante">
 						<label>Nro. comprobante</label>
-						<input type="text" name="nro_comprobante" class="form-control" placeholder="Ingrese el nro de comprobante">
+						<input type="text" name="nro_comprobante" class="form-control"
+							value="<?php echo $nro_comprobante; ?>" readonly>
 					</div>
+
 					<div class="form-group col-sm-4">
 						<label>Comprobante</label>
 						<select name="comprobante" id="comprobante" class="form-control">
@@ -95,7 +110,7 @@
 							?>
 								<option value="<?php //echo $gift->id_venta; 
 												?>"><?php //echo $gift->id_venta . ' ' . $gift->nombre . ' (' . $gift->ruc; 
-																					?> )
+													?> )
 								</option>
 							<?php //endforeach; 
 							?>
@@ -187,17 +202,17 @@
 			$("#fin").show();
 			$("#entrega").show();
 			$("#forma_pago").show();
-            // Mostrar opción de Pagaré solo en Crédito
-            $("#div_pagare").show();
+			// Mostrar opción de Pagaré solo en Crédito
+			$("#div_pagare").show();
 
 		} else {
 			$("#creditos").show();
 			$("#fin").hide();
 			$("#entrega").hide();
 			$("#forma_pago").hide();
-            // Ocultar y resetear Pagaré
-            $("#div_pagare").hide();
-            $("#pagare").val(""); 
+			// Ocultar y resetear Pagaré
+			$("#div_pagare").hide();
+			$("#pagare").val("");
 		}
 	});
 </script>
