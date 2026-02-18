@@ -1204,6 +1204,18 @@ class venta
 		}
 	}
 
+	public function UltimoComprobante()
+	{
+		try {
+			$stm = $this->pdo
+				->prepare("SELECT MAX(nro_comprobante) as nro FROM ventas");
+			$stm->execute();
+			return $stm->fetch(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 
 	public function Cantidad($id_item, $id_venta, $cantidad)
 	{

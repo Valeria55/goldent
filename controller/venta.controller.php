@@ -432,7 +432,7 @@ class ventaController
         $ven = new venta();
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
-        // $autoimpresor = ($_REQUEST['comprobante'] == "Factura") ? $this->model->UltimoAutoimpresor()->autoimpresor + 1 : 0;
+        $autoimpresor = ($_REQUEST['comprobante'] == "Factura") ? $this->model->UltimoAutoimpresor()->autoimpresor + 1 : 0;
 
         // Obtener las cotizaciones del cierre actual
         if (!isset($_SESSION)) session_start();
@@ -460,9 +460,9 @@ class ventaController
             $venta->iva = $_REQUEST['ivaval'];
             $venta->total = $venta->subtotal - ($venta->subtotal * ($venta->descuento / 100));
             $venta->comprobante = $_REQUEST['comprobante'];
-            $venta->nro_comprobante = $_REQUEST['nro_comprobante'];
+            $venta->nro_comprobante = $_REQUEST['comprobante'] == "Factura" ? $_REQUEST['nro_comprobante'] : "";
             $venta->id_timbrado = $_REQUEST['id_timbrado'] ?? 1;
-            // $venta->autoimpresor = $autoimpresor;
+            $venta->autoimpresor = $_REQUEST['comprobante'] == "Factura" ? $autoimpresor : 0;
             $venta->cantidad = $v->cantidad;
             $venta->margen_ganancia = $venta->precio_costo > 0 ? ((($venta->precio_venta - ($venta->precio_venta * ($venta->descuento / 100))) - $venta->precio_costo) / ($venta->precio_costo)) * 100 : 0;
             $venta->fecha_venta = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
