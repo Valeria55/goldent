@@ -195,7 +195,7 @@ class FacturaGenerator
             // ► font_size_*: Aumentar = texto más grande, Reducir = texto más pequeño
             'font_family' => 'helvetica',
             'font_size_header' => 8,   // Tamaño de Fecha, Nombre, RUC
-            'font_size_body' => 8,     // Tamaño de productos
+            'font_size_body' => 6,     // Tamaño de productos
             'font_size_footer' => 8,   // Tamaño de totales
 
             // ╔══════════════════════════════════════════════════════════════╗
@@ -212,7 +212,7 @@ class FacturaGenerator
             // ► header_y_offset: Posición de Fecha/Nombre/RUC
             //   - Si el header está muy arriba → AUMENTAR (ej: 35, 38)
             //   - Si el header está muy abajo → REDUCIR (ej: 30, 28)
-            'header_y_offset' => 33,
+            'header_y_offset' => 31,
 
             // ► header_line_height: Espacio entre líneas del header (mm)
             //   - Si las líneas del header están muy juntas → AUMENTAR (ej: 5, 5.5)
@@ -238,7 +238,7 @@ class FacturaGenerator
             // Si la descripción supera este límite → cuenta como 2 líneas
             // ► Si los productos saltan muy rápido a 2 líneas → AUMENTAR (ej: 45, 50)
             // ► Si no saltan cuando deberían → REDUCIR (ej: 35, 30)
-            'chars_por_linea' => 40,
+            'chars_por_linea' => 60,
 
             // ► subtotal_y_offset: Donde aparece la línea de SUBTOTAL
             //   - Si el subtotal está muy arriba → AUMENTAR (ej: 85, 88)
@@ -616,12 +616,12 @@ class FacturaGenerator
         // ► Posición X de Contado y Crédito
         // ► xContado: posición de la X de Contado
         // ► Crédito está 10mm (1cm) a la derecha de Contado
-        $xContado = $marginLeft + 150;  // Ajustar para mover Contado
+        $xContado = $marginLeft + 148;  // Ajustar para mover Contado
         $espacioContadoCredito = -3.5;     // 10mm = 1cm de separación
 
         $this->pdf->SetXY($xContado, $yHeader);
         $this->pdf->Cell(10, $lh, $d['contado'], 0, 0, 'C');
-        $this->pdf->SetXY($xContado + $espacioContadoCredito + 20, $yHeader); // +20mm extra a la derecha
+        $this->pdf->SetXY($xContado + $espacioContadoCredito + 17, $yHeader); // +20mm extra a la derecha
         $this->pdf->Cell(10, $lh, $d['credito'], 0, 0, 'C');
 
         // Línea 2: Nombre/Razón Social (Mivido 1mm hacia arriba)
@@ -729,7 +729,7 @@ class FacturaGenerator
             // pero nosotros usamos altura fija para mantener espaciado uniforme
             // ============================================================
             // Opción 1: Altura fija por producto (más uniforme)
-            $yActual += $lineHeight * $lineasOcupadas;
+            $yActual += $lineHeight;
         }
     }
 
@@ -839,7 +839,7 @@ class FacturaGenerator
         $this->pdf->Cell(25, 4, $t['iva10'], 0, 0, 'C');
 
         $this->pdf->SetXY($marginLeft + 150, $yIVA);
-        $this->pdf->Cell(30, 4, 'Total IVA: ' . $t['ivaTotal'], 0, 0, 'R');
+        $this->pdf->Cell(30, 4, '' . $t['ivaTotal'], 0, 0, 'R');
     }
 
     // ================================================================
