@@ -67,8 +67,8 @@
 
         <div class="form-group col-md-6">
             <label>Precio de venta</label>
-            <input type="number" id="porcentaje_minorista" class="form-control" placeholder="Ingrese el porcentaje" <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))   echo "readonly"; ?>>
-            <input type="number" name="precio_minorista" id="precio_minorista" value="<?php echo $producto->precio_minorista; ?>" class="form-control" placeholder="Ingrese el precio" <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
+            <input type="number" id="porcentaje_minorista" class="form-control" placeholder="Ingrese el porcentaje" <?php //if (($_SESSION['nivel'] != 1) && ($producto->id != null))   echo "readonly"; ?>>
+            <input type="number" name="precio_minorista" id="precio_minorista" value="<?php echo $producto->precio_minorista; ?>" class="form-control" placeholder="Ingrese el precio" <?php //if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
         </div>
     </div>
 
