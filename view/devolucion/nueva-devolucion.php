@@ -26,7 +26,7 @@ $fecha = date("Y-m-d");
                 </select>
             </div>
             <div class="col-sm-3">
-                <label>Precio Costo</label>
+                <label>Precio Venta</label>
                 <input type="number" name="precio_venta" class="form-control" id="precio_costo" min="0" step="any">
             </div>
             <div class="col-sm-3">
@@ -45,7 +45,7 @@ $fecha = date("Y-m-d");
             <tr style="background-color: #000; color:#fff">
                 <th>Cod.</th>
                 <th>Producto</th>
-                <th>Costo por Unidad</th>
+                <th>Venta por Unidad</th>
                 <th>Cantidad</th>
                 <th>Motivo</th>
                 <th>Total (Gs.)</th>
@@ -170,8 +170,8 @@ $fecha = date("Y-m-d");
             processData: false,
             success: function(respuesta) {
                 var producto = JSON.parse(respuesta);
-                $("#precio_costo").val(producto.precio_costo);
-                $("#precio_costo").html(producto.precio_costo);
+                $("#precio_costo").val(producto.precio_minorista);
+                $("#precio_costo").html(producto.precio_minorista);
                 $("#cantidad").focus();
             }
         })
