@@ -7,7 +7,7 @@
             <th>Fecha y Hora</th>
             <th>Comprobante</th>
             <th>Nro. comprobante</th>
-            <th>Pago</th>
+            <th>Factura</th>
             <?php if (!isset($_SESSION)) session_start();
             if ($_SESSION['nivel'] == 1) { ?>
                 <th>Costo</th>
@@ -97,7 +97,7 @@ if (!isset($_SESSION)) session_start();
                     "data": "nro_comprobante"
                 },
                 {
-                    "data": "contado",
+                    "data": "condicion_factura",
                 },
                 <?php
                 if ($_SESSION['nivel'] == 1) { ?> {

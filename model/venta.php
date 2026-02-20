@@ -27,6 +27,7 @@ class venta
 	public $estado;
 	public $paciente;
 	public $pagare;
+	public $condicion_factura;
 
 	public $cot_usd;  // Nuevo campo
 	public $cot_real; // Nuevo campo
@@ -47,6 +48,7 @@ class venta
 			if ($id_venta == 0) {
 
 				$stm = $this->pdo->prepare("SELECT 
+				v.condicion_factura,
 				v.id_cliente, 
 				v.descuento AS descuentov, 
 				SUM(v.precio_costo*v.cantidad) AS costo, 
@@ -82,6 +84,7 @@ class venta
 				$stm->execute();
 			} else {
 				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				v.condicion_factura,
 				v.descuento AS descuentov, 
 				v.id_venta AS id_venta 
 				, v.id
@@ -139,6 +142,7 @@ class venta
 				$fecha_desde = date('Y-m-d', strtotime('-29 days'));
 
 				$stm = $this->pdo->prepare("SELECT 
+				v.condicion_factura,
 				v.id_cliente, 
 				v.descuento AS descuentov, 
 				IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta AND a.anulado=0), 0) AS costo,
@@ -169,6 +173,7 @@ class venta
 				$stm->execute([$fecha_desde, $fecha_hasta]);
 			} else {
 				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				v.condicion_factura,
                 v.descuento AS descuentov, 
                 v.id_venta AS id_venta 
                 , v.id
@@ -240,6 +245,7 @@ class venta
 			if ($id_venta == 0) {
 
 				$stm = $this->pdo->prepare("SELECT 
+				v.condicion_factura,
 				v.id_cliente, 
 				v.descuento AS descuentov, 
 				SUM(v.precio_costo*v.cantidad) AS costo, 
@@ -257,6 +263,7 @@ class venta
 				$stm->execute();
 			} else {
 				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				v.condicion_factura,
 				v.descuento AS descuentov, 
 				v.id_venta AS id_venta 
 				, v.id
@@ -304,6 +311,7 @@ class venta
 			if ($id_venta == 0) {
 
 				$stm = $this->pdo->prepare("SELECT 
+				v.condicion_factura,
 				v.id_cliente, 
 				v.descuento AS descuentov, 
 				SUM(v.precio_costo*v.cantidad) AS costo, 
@@ -321,6 +329,7 @@ class venta
 				$stm->execute();
 			} else {
 				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				v.condicion_factura,
 				v.descuento AS descuentov, 
 				v.id_venta AS id_venta 
 				, v.id
@@ -366,7 +375,7 @@ class venta
 
 			if ($id_venta == 0) {
 
-				$stm = $this->pdo->prepare("SELECT v.id_cliente, v.descuento AS descuentov, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta as id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
+				$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id_cliente, v.descuento AS descuentov, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta as id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
 					(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, 
 					(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 					FROM ventas v 
@@ -376,7 +385,7 @@ class venta
 					GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute();
 			} else {
-				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id_cliente, 
 				v.descuento AS descuentov, 
 				v.id_venta AS id_venta 
 				, v.id
@@ -435,7 +444,7 @@ class venta
                 GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 				$stm->execute([$fecha_desde, $fecha_hasta]);
 			} else {
-				$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id_cliente, 
                 v.descuento AS descuentov, 
                 v.id_venta AS id_venta 
                 , v.id
@@ -504,7 +513,8 @@ class venta
 				c.nombre, 
 				cap.categoria as categoria, 
 				ca.categoria as sub_categoria,
-				v.contado,  
+				v.condicion_factura,  
+				
 				(SELECT user FROM usuario WHERE id = IF(pres.id_vendedor IS NOT NULL, pres.id_vendedor, v.id_vendedor) ) as vendedor
 				FROM ventas v
                 		LEFT JOIN presupuestos pres ON v.id_presupuesto = pres.id
@@ -636,7 +646,7 @@ class venta
 				}
 			}
 
-			$stm = $this->pdo->prepare("SELECT  v.id, v.id_venta, v.id_vendedor, v.comprobante, v.metodo, v.anulado, contado, p.producto, c.ruc, p.codigo, SUM(v.cantidad) AS cantidad, v.precio_venta,
+			$stm = $this->pdo->prepare("SELECT  v.condicion_factura, v.id, v.id_venta, v.id_vendedor, v.comprobante, v.metodo, v.anulado, contado, p.producto, c.ruc, p.codigo, SUM(v.cantidad) AS cantidad, v.precio_venta,
 											SUM(subtotal) as subtotal, descuento, 
 											SUM(total) as total, 
 											SUM(v.precio_costo*v.cantidad) as costo,
@@ -742,7 +752,7 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT 
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura,
 			IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
 				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
 			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
@@ -766,7 +776,7 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 			FROM ventas v 
@@ -787,7 +797,7 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
 			FROM ventas v 
@@ -822,7 +832,7 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE id_cliente = ? GROUP BY v.id_venta ORDER BY v.id_venta DESC");
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE id_cliente = ? GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 			$stm->execute(array($id_cliente));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -836,7 +846,7 @@ class venta
 		try {
 
 			$fecha = $mes . "-10";
-			$stm = $this->pdo->prepare("SELECT v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon, (SELECT comision FROM usuario WHERE id = v.id_vendedor) as comision  FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE vendedor_salon = ? AND MONTH(fecha_venta) = MONTH(?) AND YEAR(fecha_venta) = YEAR(?) AND v.anulado = '0' GROUP BY v.id_venta ORDER BY v.id_venta DESC");
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon, (SELECT comision FROM usuario WHERE id = v.id_vendedor) as comision  FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE vendedor_salon = ? AND MONTH(fecha_venta) = MONTH(?) AND YEAR(fecha_venta) = YEAR(?) AND v.anulado = '0' GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 			$stm->execute(array($id_usuario, $fecha, $fecha));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -898,7 +908,7 @@ class venta
 	{
 		try {
 
-			$stm = $this->pdo->prepare("SELECT v.id_cliente, v.metodo, v.contado, v.id_venta, a.nombre as nombre_cli, v.anulado, c.producto, SUM(subtotal) as subtotal, v.descuento, SUM(v.precio_costo * v.cantidad) as costo, SUM(v.total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos c ON v.id_producto = c.id LEFT JOIN clientes a ON v.id_cliente = a.id WHERE CAST(v.fecha_venta AS date) >= ? AND CAST(v.fecha_venta AS date) <= ? AND v.anulado <> 1  GROUP BY v.id_venta DESC");
+			$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id_cliente, v.metodo, v.contado, v.id_venta, a.nombre as nombre_cli, v.anulado, c.producto, SUM(subtotal) as subtotal, v.descuento, SUM(v.precio_costo * v.cantidad) as costo, SUM(v.total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos c ON v.id_producto = c.id LEFT JOIN clientes a ON v.id_cliente = a.id WHERE CAST(v.fecha_venta AS date) >= ? AND CAST(v.fecha_venta AS date) <= ? AND v.anulado <> 1  GROUP BY v.id_venta DESC");
 			$stm->execute(array($desde, $hasta));
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
@@ -1354,8 +1364,8 @@ class venta
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente, pagare) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente, pagare, condicion_factura) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -1389,7 +1399,8 @@ class venta
 						$data->cot_rs,
 						$data->moneda,
 						$data->paciente,
-						$data->pagare
+						$data->pagare,
+						$data->condicion_factura
 					)
 				);
 		} catch (Exception $e) {

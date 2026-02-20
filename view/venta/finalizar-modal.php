@@ -44,29 +44,18 @@
 					<div class="form-group col-sm-4">
 						<label>Comprobante</label>
 						<select name="comprobante" id="comprobante" class="form-control">
+							<option value="Factura">Factura</option>
 							<option value="Ticket">Ticket</option>
 							<option value="TicketSi">Sin impresión</option>
-							<option value="Factura">Factura</option>
 						</select>
 					</div>
-					<!-- <div class="col-sm-5">
-						<label>Gift Card</label>
-						<select name="id_gift" id="id_gift" class="form-control " data-show-subtext="true" data-live-search="true" data-style="form-control" title="-- Seleccione el Gift Card --" autofocus>
-							<option value="" selected>Sin seleccionar</option>
-							<?php //foreach ($this->gift_card->ListarClientesSinAnular() as $gift) : 
-							?>
-								<option value="<?php //echo $gift->id; 
-												?>"><?php //echo $gift->nombre . ' (' . $gift->nro_tarjeta; 
-													?> )
-								</option>
-							<?php //endforeach; 
-							?>
+					<div class="form-group col-sm-4">
+						<label>Condición Factura</label>
+						<select name="condicion_factura" id="condicion_factura" class="form-control">
+							<option value="Contado">Contado</option>
+							<option value="Credito">Credito</option>
 						</select>
 					</div>
-					<div class="col-sm-3">
-						<label>Monto</label>
-						<input type="number" id="monto_gift" class="form-control">
-					</div> -->
 					<div class="form-group col-sm-4">
 						<label>Formas de pago</label>
 						<select name="contado" id="contado" class="form-control">

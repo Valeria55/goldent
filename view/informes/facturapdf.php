@@ -333,7 +333,7 @@ class FacturaGenerator
                 $this->datosFactura['telefono'] = $r->telefono ?? "";
                 $this->datosFactura['vendedor'] = $r->vendedor ?? "";
 
-                if ($r->contado == "Contado") {
+                if ($r->condicion_factura == "Contado") {
                     $this->datosFactura['contado'] = "X";
                     $this->datosFactura['credito'] = "";
                 } else {

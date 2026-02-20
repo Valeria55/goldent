@@ -468,6 +468,7 @@ class ventaController
             $venta->fecha_venta = $_REQUEST["fecha_venta"]; //date("Y-m-d H:i");
             $venta->metodo = $_REQUEST['forma_pago'];
             $venta->contado = $_REQUEST['contado'];
+            $venta->condicion_factura = $_REQUEST['condicion_factura'];
             $venta->banco = $_REQUEST['banco'];
             $venta->id_devolucion = $_REQUEST['id_devolucion'] ?? 0;
             $venta->pagare = (isset($_REQUEST['pagare']) && $_REQUEST['pagare'] != '') ? $_REQUEST['pagare'] : null;
