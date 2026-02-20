@@ -1,4 +1,7 @@
+
 <?php
+// Si el PDF se muestra embebido en el navegador, forzar el diálogo de impresión
+
 
 /**
  * Generador de Facturas PDF Optimizado
@@ -867,6 +870,9 @@ class FacturaGenerator
 
     private function generarOutputPDF()
     {
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
         $this->pdf->Output('factura.pdf', 'I');
     }
 }

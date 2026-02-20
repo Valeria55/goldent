@@ -1,3 +1,4 @@
+
 <table id="tabla1" class="table table-striped table-bordered display responsive nowrap" width="100%">
     <div style="height: 45px;"></div>
     <thead>
@@ -146,7 +147,7 @@ if (!isset($_SESSION)) session_start();
                         }
 
                         // 5. Orden Delivery
-                        botones += "<a href='javascript:void(0)' class='btn btn-dark action-btn' onclick='abrirVentanaFlotante(\"?c=venta&a=OrdenDelivery&id=" + row.id_venta + "\", \"Orden de Entrega\")' title='Orden Delivery'><i class='fas fa-truck'></i> Delivery</a>";
+                        botones += "<a href='javascript:void(0)' class='btn btn-dark action-btn' onclick='abrirVentanaFlotante(\"?c=venta&a=OrdenDelivery&id=" + row.id_venta + "\", \"Orden de Entrega\")' title='Orden Delivery'><i class='fas fa-truck'></i>Nota de remisión</a>";
                         
                         <?php if ($_SESSION['nivel'] == 1) { ?>
                         // 6. Eliminar (Admin)
