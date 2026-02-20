@@ -5,6 +5,7 @@
 
     <thead>
         <tr style="background-color: #000; color:#fff">
+            <th>Cod.</th>
             <th>CI/RUC</th>
             <th>Nombre y Apellido</th>
             <th>Teléfono</th>
@@ -30,6 +31,7 @@
         }
     ?>
         <tr class="click">
+            <td><?php echo $r->id; ?></td>
             <td><?php echo $r->ruc; ?></td>
             <td><a href="?c=venta&a=listarcliente&id_cliente=<?php echo $r->id; ?>"><?php echo $r->nombre; ?></a></td>
             <td><?php echo $r->telefono; ?></td>

@@ -551,7 +551,7 @@
         // Función para seleccionar un cliente y cargar sus deudas
         function seleccionarCliente(idCliente, nombreCliente) {
             clienteSeleccionado = idCliente;
-            $('#cliente-seleccionado-titulo').text('Deudas de: ' + nombreCliente);
+            $('#cliente-seleccionado-titulo').text('Deudas de: ' + nombreCliente +' ('+ idCliente+')');
             $('#mensaje-seleccionar').hide();
             $('#detalle-cliente').show();
 

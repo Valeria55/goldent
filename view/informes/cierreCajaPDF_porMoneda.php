@@ -1587,7 +1587,7 @@ $explicacion = <<<EOF
     </div>
 EOF;
 
-$pdf->writeHTML($explicacion, false, false, false, false, '');
+//$pdf->writeHTML($explicacion, false, false, false, false, '');
 
 ob_end_clean();
 $pdf->Output('cierre.pdf', 'I');

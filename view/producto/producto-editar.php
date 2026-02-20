@@ -62,7 +62,7 @@
     <div class="row">
         <div class="form-group col-md-6">
             <label>Precio costo</label>
-            <input type="text" name="precio_costo" id="precio_costo" value="<?php echo $producto->precio_costo; ?>" class="form-control" placeholder="Ingrese el precio" required <?php if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
+            <input type="text" name="precio_costo" id="precio_costo" value="<?php echo $producto->precio_costo; ?>" class="form-control" placeholder="Ingrese el precio" required <?php //if (($_SESSION['nivel'] != 1) && ($producto->id != null))  echo "readonly"; ?>>
         </div>
 
         <div class="form-group col-md-6">
