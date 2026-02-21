@@ -1029,12 +1029,22 @@ class cierre
 			$stm = $this->pdo->prepare("
 				SELECT 
 					i.*,
+					i.id as cod,
+					COALESCE(
+						c.nombre,
+						(SELECT cli.nombre
+							FROM ventas v
+							LEFT JOIN clientes cli ON v.id_cliente = cli.id
+							WHERE v.id_venta = i.id_venta
+							LIMIT 1)
+					) as cliente,
 					i.pago_deuda,
 					CASE 
 						WHEN i.pago_deuda IS NOT NULL AND i.pago_deuda != '' THEN 'Cobro de Deuda'
 						ELSE 'Pago al Contado'
 					END as tipo_ingreso
 				FROM ingresos i 
+				LEFT JOIN clientes c ON i.id_cliente = c.id
 				WHERE i.fecha >= ? 
 				AND i.fecha <= ? 
 				AND i.id_usuario = ? 
@@ -1045,6 +1055,50 @@ class cierre
 						ELSE 2
 					END,
 					i.fecha ASC
+			");
+			$stm->execute(array($desde, $hasta, $id_usuario));
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function SumarEgresosEfectivo($id_usuario, $desde, $hasta, $id_caja = 1)
+	{
+		try {
+			$stm = $this->pdo->prepare("
+				SELECT COALESCE(SUM(e.monto * COALESCE(e.cambio, 1)), 0) as total
+				FROM egresos e
+				WHERE e.fecha >= ?
+				  AND e.fecha <= ?
+				  AND e.id_usuario = ?
+				  AND e.anulado IS NULL
+				  AND e.forma_pago = 'Efectivo'
+				  AND e.id_caja = ?
+			");
+			$stm->execute(array($desde, $hasta, $id_usuario, $id_caja));
+			$row = $stm->fetch(PDO::FETCH_OBJ);
+			return (float)($row->total ?? 0);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarEgresosPorTipo($id_usuario, $desde, $hasta)
+	{
+		try {
+			$stm = $this->pdo->prepare("
+				SELECT
+					e.*,
+					e.id as cod,
+					COALESCE(c.nombre, '') as cliente
+				FROM egresos e
+				LEFT JOIN clientes c ON e.id_cliente = c.id
+				WHERE e.fecha >= ?
+				  AND e.fecha <= ?
+				  AND e.id_usuario = ?
+				  AND e.anulado IS NULL
+				ORDER BY e.fecha ASC
 			");
 			$stm->execute(array($desde, $hasta, $id_usuario));
 			return $stm->fetchAll(PDO::FETCH_OBJ);

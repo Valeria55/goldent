@@ -5,6 +5,23 @@ ini_set('memory_limit', '512M'); // Incrementar límite de memoria
 ini_set('max_execution_time', 300);
 
 require_once('plugins/tcpdf2/tcpdf.php');
+require_once('model/deuda.php');
+
+class CierreCajaPDF extends TCPDF
+{
+    public $fechaEmision = '';
+
+    public function Footer()
+    {
+        $this->SetY(-15);
+        $this->SetFont('helvetica', 'I', 8);
+
+        $fecha = $this->fechaEmision ?: date('d/m/Y H:i');
+        $texto = 'Emitido: ' . $fecha . ' | Pág. ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages();
+
+        $this->Cell(0, 10, $texto, 0, 0, 'C');
+    }
+}
 
 $id_cierre = $_GET['id_cierre'];
 $cierre = $this->model->Obtener($id_cierre);
@@ -22,8 +39,13 @@ $hastaV = date("d/m/Y H:i", strtotime($hasta));
 $id_usuario = $cierre->id_usuario;
 
 
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-$pdf->AddPage('P', 'A4');
+$pdf = new CierreCajaPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf->AddPage('L', 'A4');
+
+// Footer global: fecha de emisión + paginación
+$pdf->fechaEmision = date('d/m/Y H:i');
+$pdf->setPrintFooter(true);
+$pdf->SetFooterMargin(12);
 
 $fechahoy = date("d/m/Y");
 $horahoy = date("H:i");
@@ -36,19 +58,8 @@ $espacio = "<h1>&nbsp;</h1>";
 $html1 = <<<EOF
         $espacio
 		<h1 align="center">Cierre nro $id_cierre</h1>
-		<p>Desde $desdeV hasta $hastaV Generado a las $horahoy de la fecha $fechahoy</p>
-		<div>
-		<table width="100%">
-		<tr>
-		<td>
-	
-		</td>
-		<td>
+		<p>Desde $desdeV hasta $hastaV </p>
 		
-		</td>
-		</tr>
-		</table>
-		</div>
 
 EOF;
 
@@ -79,6 +90,565 @@ $estilos = <<<EOF
         }
     </style>
 EOF;
+
+/*==============================================================
+		REPORTE NUEVO (Ventas + Ingresos)
+		Solicitado: 20/02/2026
+==============================================================*/
+
+// Helpers locales (evitar dependencias externas)
+$h = function ($value) {
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+};
+$fmtGs = function ($value) {
+    return number_format((float)$value, 0, ',', '.');
+};
+$truncate = function ($text, $maxLen = 80) {
+    $text = (string)$text;
+    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if (mb_strlen($text, 'UTF-8') <= $maxLen) return $text;
+        return mb_substr($text, 0, $maxLen - 3, 'UTF-8') . '...';
+    }
+
+    if (strlen($text) <= $maxLen) return $text;
+    return substr($text, 0, $maxLen - 3) . '...';
+};
+
+// 1) Obtener ventas del cierre (rango del cierre / usuario)
+$ventas = [];
+$errorVentas = null;
+try {
+    $ventas = $this->venta->ListarRangoSinAnularConCobrado($desde, $hasta, $id_usuario);
+} catch (Exception $e) {
+    $errorVentas = $e->getMessage();
+    error_log("Error obteniendo ventas para cierre PDF: " . $errorVentas);
+}
+
+// Ordenar ventas por fecha (desc) y como desempate por id_venta (desc)
+if (!empty($ventas)) {
+    usort($ventas, function ($a, $b) {
+        $aTs = isset($a->fecha_venta) ? strtotime((string)$a->fecha_venta) : 0;
+        $bTs = isset($b->fecha_venta) ? strtotime((string)$b->fecha_venta) : 0;
+        if ($aTs === $bTs) {
+            $aId = (int)($a->id_venta ?? 0);
+            $bId = (int)($b->id_venta ?? 0);
+            return $bId <=> $aId;
+        }
+        return $bTs <=> $aTs;
+    });
+}
+
+$renderVentasTablaUnificada = function ($titulo, $ventasLista) use ($estilos, $h, $fmtGs, $truncate) {
+    $totalMonto = 0;
+    $cantidad = 0;
+    $montoContado = 0;
+    $montoCredito = 0;
+
+    $html = <<<EOF
+        $estilos
+        <h1 align="center">$titulo</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th width="12%">Nro Venta</th>
+                    <th width="21%">Doctor</th>
+                    <th width="44%">Concepto</th>
+                    <th width="8%">Condición</th>
+                    <th width="15%" class="right">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+    EOF;
+
+    if (empty($ventasLista)) {
+        $html .= <<<EOF
+                <tr>
+                    <td colspan="5" align="center" style="color:#666; font-style: italic;">Sin registros</td>
+                </tr>
+        EOF;
+    } else {
+        foreach ($ventasLista as $venta) {
+            $cantidad++;
+            $total = (float)($venta->total ?? 0);
+            $totalMonto += $total;
+
+            $contadoRaw = trim((string)($venta->contado ?? ''));
+            $esContado = (strcasecmp($contadoRaw, 'Contado') === 0) || (strcasecmp($contadoRaw, 'contado') === 0);
+            if ($esContado) {
+                $montoContado += $total;
+            } else {
+                $montoCredito += $total;
+            }
+
+            $doctor = $h($venta->nombre_cli ?? '');
+            $comprobante = $h($venta->nro_comprobante ?? ($venta->id_venta ?? ''));
+
+            $concepto = (string)($venta->concepto ?? '');
+            if (trim($concepto) === '') {
+                $concepto = (string)($venta->producto ?? '');
+            }
+            $concepto = trim($concepto) !== '' ? $concepto : '-';
+            $concepto = $h($truncate($concepto, 110));
+
+            $montoV = $fmtGs($total);
+
+            $html .= <<<EOF
+                <tr>
+                    <td width="12%" style="font-size: 7px;">$comprobante</td>
+                    <td width="21%" style="font-size: 7px;">$doctor</td>
+                    <td width="44%" style="font-size: 7px;">$concepto</td>
+                    <td width="8%" style="font-size: 8px;">$venta->contado</td>
+                    <td width="15%" align="right" style="font-size: 10px;">$montoV</td>
+                </tr>
+            EOF;
+        }
+    }
+
+    $totalMontoV = $fmtGs($totalMonto);
+    $montoContadoV = $fmtGs($montoContado);
+    $montoCreditoV = $fmtGs($montoCredito);
+    $html .= <<<EOF
+            </tbody>
+        </table>
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <td width="70%" align="right"><strong>Total de ventas:</strong></td>
+                    <td width="30%" align="right"><strong>$cantidad</strong></td>
+                </tr>
+                <tr>
+                    <td width="70%" align="right"><strong>Monto total (Gs.):</strong></td>
+                    <td width="30%" align="right"><strong>$totalMontoV</strong></td>
+                </tr>
+                <tr>
+                    <td width="70%" align="right"><strong>Monto contado (Gs.):</strong></td>
+                    <td width="30%" align="right"><strong>$montoContadoV</strong></td>
+                </tr>
+                <tr>
+                    <td width="70%" align="right"><strong>Monto crédito (Gs.):</strong></td>
+                    <td width="30%" align="right"><strong>$montoCreditoV</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    EOF;
+
+    return $html;
+};
+
+// Hoja 1: Ventas (contado + crédito) en un único bloque ordenado
+if ($errorVentas) {
+    $pdf->writeHTML($estilos . '<h1 align="center">Ventas</h1><p style="color:#cc0000; font-weight:bold;">Error al obtener ventas: ' . $h($errorVentas) . '</p>', false, false, false, false, '');
+} else {
+    $pdf->writeHTML($renderVentasTablaUnificada('Ventas (Contado + Crédito)', $ventas), false, false, false, false, '');
+}
+
+// 2) Hoja 2: Ingresos
+$pdf->AddPage('L', 'A4');
+
+$ingresos = [];
+$errorIngresos = null;
+try {
+    $ingresos = $this->model->ListarIngresosPorTipo($id_usuario, $desde, $hasta);
+} catch (Exception $e) {
+    $errorIngresos = $e->getMessage();
+    error_log("Error obteniendo ingresos para cierre PDF: " . $errorIngresos);
+}
+
+$htmlIngresos = <<<EOF
+    $estilos
+    <h1 align="center">Ingresos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th width="10%">Cod.</th>
+                <th width="12%">Comprobante</th>
+                <th width="38%">Cliente</th>
+                <th width="20%">Concepto</th>
+                <th width="10%">Forma Pago</th>
+                <th width="10%" class="right">Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+EOF;
+
+$totalIngresosGs = 0;
+$totalesPorForma = [];
+
+if ($errorIngresos) {
+    $htmlIngresos .= '<tr><td colspan="6" align="center" style="color:#cc0000; font-weight:bold;">Error al obtener ingresos: ' . $h($errorIngresos) . '</td></tr>';
+} elseif (empty($ingresos)) {
+    $htmlIngresos .= '<tr><td colspan="6" align="center" style="color:#666; font-style: italic;">Sin registros</td></tr>';
+} else {
+    foreach ($ingresos as $ingreso) {
+        $cod = $h($ingreso->cod ?? ($ingreso->id ?? ''));
+
+        $cliente = $ingreso->cliente ?? 'Sin seleccionar';
+
+        $comprobanteRaw = trim((string)($ingreso->comprobante ?? ''));
+        if ($comprobanteRaw !== '') {
+            $comprobanteRaw = preg_replace('/^\s*Factura\s*N(?:º|°|o)?\s*[:\-]?\s*/iu', '', $comprobanteRaw);
+        }
+        $comprobante = $comprobanteRaw !== '' ? $h($comprobanteRaw) : '-';
+
+        $monto = (float)($ingreso->monto ?? 0);
+        $cambio = (float)($ingreso->cambio ?? 1);
+        if ($cambio == 0) $cambio = 1;
+        $montoGs = $monto * $cambio;
+
+        $formaPago = (string)($ingreso->forma_pago ?? '');
+        $formaPagoKey = trim($formaPago) !== '' ? $formaPago : 'No especificado';
+        $totalesPorForma[$formaPagoKey] = ($totalesPorForma[$formaPagoKey] ?? 0) + $montoGs;
+        $totalIngresosGs += $montoGs;
+
+        $montoV = $fmtGs($montoGs);
+        $htmlIngresos .= <<<EOF
+            <tr>
+                <td width="10%">$cod</td>
+                <td width="12%" style="font-size: 7px;">$comprobante</td>
+                <td width="38%" style="font-size: 10px;">$cliente</td>
+                <td width="20%">$ingreso->concepto</td>
+                <td width="10%">{$h($formaPagoKey)}</td>
+                <td width="10%" align="right">$montoV</td>
+            </tr>
+        EOF;
+    }
+}
+
+$totalIngresosV = $fmtGs($totalIngresosGs);
+$htmlIngresos .= <<<EOF
+        </tbody>
+    </table>
+    <br>
+    <table>
+        <tbody>
+            <tr>
+                <td width="70%" align="right"><strong>Total ingresos (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$totalIngresosV</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <h3>Valor total por forma de pago</h3>
+EOF;
+
+// Resumen por forma de pago
+if (empty($totalesPorForma)) {
+    $htmlIngresos .= '<p style="color:#666; font-style: italic;">Sin datos para resumir</p>';
+} else {
+    arsort($totalesPorForma);
+
+    $htmlIngresos .= <<<EOF
+        <table>
+            <thead>
+                <tr>
+                    <th width="70%">Forma de Pago</th>
+                    <th width="30%" class="right">Total (Gs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+    EOF;
+
+    foreach ($totalesPorForma as $forma => $montoFormaGs) {
+        $formaH = $h($forma);
+        $montoFormaV = $fmtGs($montoFormaGs);
+        $htmlIngresos .= <<<EOF
+                <tr>
+                    <td width="70%">$formaH</td>
+                    <td width="30%" align="right">$montoFormaV</td>
+                </tr>
+        EOF;
+    }
+
+    $htmlIngresos .= <<<EOF
+            </tbody>
+        </table>
+    EOF;
+}
+
+/*==============================================================
+		EGRESOS (tabla igual a ingresos)
+==============================================================*/
+
+$egresos = [];
+$errorEgresos = null;
+try {
+    $egresos = $this->model->ListarEgresosPorTipo($id_usuario, $desde, $hasta);
+} catch (Exception $e) {
+    $errorEgresos = $e->getMessage();
+    error_log("Error obteniendo egresos para cierre PDF: " . $errorEgresos);
+}
+
+$htmlEgresos = <<<EOF
+    <br>
+    <h1 align="center">Egresos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th width="10%">Cod.</th>
+                <th width="12%">Comprobante</th>
+                <th width="38%">Cliente</th>
+                <th width="20%">Concepto</th>
+                <th width="10%">Forma Pago</th>
+                <th width="10%" class="right">Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+EOF;
+
+$totalEgresosGs = 0;
+$totalesEgresosPorForma = [];
+
+if ($errorEgresos) {
+    $htmlEgresos .= '<tr><td colspan="6" align="center" style="color:#cc0000; font-weight:bold;">Error al obtener egresos: ' . $h($errorEgresos) . '</td></tr>';
+} elseif (empty($egresos)) {
+    $htmlEgresos .= '<tr><td colspan="6" align="center" style="color:#666; font-style: italic;">Sin registros</td></tr>';
+} else {
+    foreach ($egresos as $egreso) {
+        $cod = $h($egreso->cod ?? ($egreso->id ?? ''));
+
+        $clienteRaw = trim((string)($egreso->cliente ?? ''));
+        $cliente = $clienteRaw !== '' ? $h($truncate($clienteRaw, 35)) : '-';
+
+        $comprobanteRaw = trim((string)($egreso->comprobante ?? ''));
+        if ($comprobanteRaw !== '') {
+            $comprobanteRaw = preg_replace('/^\s*Factura\s*N(?:º|°|o)?\s*[:\-]?\s*/iu', '', $comprobanteRaw);
+        }
+        $comprobante = $comprobanteRaw !== '' ? $h($comprobanteRaw) : '-';
+
+        $conceptoRaw = trim((string)($egreso->concepto ?? ''));
+        $concepto = $conceptoRaw !== '' ? $h($truncate($conceptoRaw, 60)) : '-';
+
+        $monto = (float)($egreso->monto ?? 0);
+        $cambio = (float)($egreso->cambio ?? 1);
+        if ($cambio == 0) $cambio = 1;
+        $montoGs = $monto * $cambio;
+
+        $formaPago = (string)($egreso->forma_pago ?? '');
+        $formaPagoKey = trim($formaPago) !== '' ? $formaPago : 'No especificado';
+        $totalesEgresosPorForma[$formaPagoKey] = ($totalesEgresosPorForma[$formaPagoKey] ?? 0) + $montoGs;
+        $totalEgresosGs += $montoGs;
+
+        $montoV = $fmtGs($montoGs);
+        $htmlEgresos .= <<<EOF
+            <tr>
+                <td width="10%">$cod</td>
+                <td width="12%" style="font-size: 7px;">$comprobante</td>
+                <td width="38%" style="font-size: 10px;">$cliente</td>
+                <td width="20%">$concepto</td>
+                <td width="10%">{$h($formaPagoKey)}</td>
+                <td width="10%" align="right">$montoV</td>
+            </tr>
+EOF;
+    }
+}
+
+$totalEgresosV = $fmtGs($totalEgresosGs);
+$htmlEgresos .= <<<EOF
+        </tbody>
+    </table>
+    <br>
+    <table>
+        <tbody>
+            <tr>
+                <td width="70%" align="right"><strong>Total egresos (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$totalEgresosV</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <h3>Valor total por forma de pago (Egresos)</h3>
+EOF;
+
+if (empty($totalesEgresosPorForma)) {
+    $htmlEgresos .= '<p style="color:#666; font-style: italic;">Sin datos para resumir</p>';
+} else {
+    arsort($totalesEgresosPorForma);
+    $htmlEgresos .= <<<EOF
+        <table>
+            <thead>
+                <tr>
+                    <th width="70%">Forma de Pago</th>
+                    <th width="30%" class="right">Total (Gs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+EOF;
+
+    foreach ($totalesEgresosPorForma as $forma => $montoFormaGs) {
+        $formaH = $h($forma);
+        $montoFormaV = $fmtGs($montoFormaGs);
+        $htmlEgresos .= <<<EOF
+                <tr>
+                    <td width="70%">$formaH</td>
+                    <td width="30%" align="right">$montoFormaV</td>
+                </tr>
+EOF;
+    }
+
+    $htmlEgresos .= <<<EOF
+            </tbody>
+        </table>
+EOF;
+}
+
+$htmlIngresos .= $htmlEgresos;
+
+// Resumen de caja para efectivo (caja 1) para detectar faltante/sobrante
+$aperturaCajaGs = (float)($cierre->monto_apertura ?? 0);
+$cierreTipeadoGs = (float)($cierre->monto_cierre ?? 0);
+
+$ingresoEfectivoCajaGs = 0.0;
+if (!$errorIngresos && !empty($ingresos)) {
+    foreach ($ingresos as $ingreso) {
+        $forma = trim((string)($ingreso->forma_pago ?? ''));
+        $idCaja = (int)($ingreso->id_caja ?? 0);
+        if (strcasecmp($forma, 'Efectivo') !== 0) continue;
+        if ($idCaja !== 1) continue;
+
+        $monto = (float)($ingreso->monto ?? 0);
+        $cambio = (float)($ingreso->cambio ?? 1);
+        if ($cambio == 0) $cambio = 1;
+        $ingresoEfectivoCajaGs += ($monto * $cambio);
+    }
+}
+
+$egresoEfectivoCajaGs = 0.0;
+try {
+    $egresoEfectivoCajaGs = (float)$this->model->SumarEgresosEfectivo($id_usuario, $desde, $hasta, 1);
+} catch (Exception $e) {
+    error_log('Error sumando egresos efectivo para cierre PDF: ' . $e->getMessage());
+    $egresoEfectivoCajaGs = 0.0;
+}
+
+$cierreSistemaGs = $aperturaCajaGs + $ingresoEfectivoCajaGs - $egresoEfectivoCajaGs;
+$diferenciaGs = $cierreTipeadoGs - $cierreSistemaGs;
+$tipoDif = $diferenciaGs >= 0 ? 'Sobrante' : 'Faltante';
+
+$aperturaCajaV = $fmtGs($aperturaCajaGs);
+$ingresoEfectivoCajaV = $fmtGs($ingresoEfectivoCajaGs);
+$egresoEfectivoCajaV = $fmtGs($egresoEfectivoCajaGs);
+$cierreSistemaV = $fmtGs($cierreSistemaGs);
+$cierreTipeadoV = $fmtGs($cierreTipeadoGs);
+$diferenciaConSigno = ($diferenciaGs < 0 ? '-' : '') . $fmtGs(abs($diferenciaGs));
+
+$htmlIngresos .= <<<EOF
+    <br>
+    <h3>Resumen Caja (Efectivo)</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td width="70%" align="right"><strong>Apertura (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$aperturaCajaV</strong></td>
+            </tr>
+            <tr>
+                <td width="70%" align="right"><strong>Ingreso en efectivo (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$ingresoEfectivoCajaV</strong></td>
+            </tr>
+            <tr>
+                <td width="70%" align="right"><strong>Egreso en efectivo (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$egresoEfectivoCajaV</strong></td>
+            </tr>
+            <tr>
+                <td width="70%" align="right"><strong>Cierre sistema (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$cierreSistemaV</strong></td>
+            </tr>
+            <tr>
+                <td width="70%" align="right"><strong>Cierre caja (tipeado) (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$cierreTipeadoV</strong></td>
+            </tr>
+            <tr>
+                <td width="70%" align="right"><strong>Diferencia ($tipoDif) (Gs.):</strong></td>
+                <td width="30%" align="right"><strong>$diferenciaConSigno</strong></td>
+            </tr>
+        </tbody>
+    </table>
+EOF;
+
+$pdf->writeHTML($htmlIngresos, false, false, false, false, '');
+
+/*==============================================================
+        DEUDAS AGRUPADAS POR CLIENTE (otra hoja)
+==============================================================*/
+
+$deudasAgrupadas = [];
+$errorDeudas = null;
+try {
+    $deudaModel = new deuda();
+    $deudasAgrupadas = $deudaModel->ListarAgrupadoCliente();
+} catch (Exception $e) {
+    $errorDeudas = $e->getMessage();
+    error_log('Error obteniendo deudas agrupadas por cliente para cierre PDF: ' . $errorDeudas);
+}
+
+$pdf->AddPage('L', 'A4');
+
+$htmlDeudas = <<<EOF
+    $estilos
+    <h1 align="center">Deudas por cliente</h1>
+    <table>
+        <thead>
+            <tr>
+                <th width="10%">Item</th>
+                <th width="70%">Cliente</th>
+                <th width="20%" class="right">Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+EOF;
+
+$totalDeudasPendiente = 0.0;
+
+if ($errorDeudas) {
+    $htmlDeudas .= '<tr><td colspan="3" align="center" style="color:#cc0000; font-weight:bold;">Error al obtener deudas: ' . $h($errorDeudas) . '</td></tr>';
+} elseif (empty($deudasAgrupadas)) {
+    $htmlDeudas .= '<tr><td colspan="3" align="center" style="color:#666; font-style: italic;">Sin registros</td></tr>';
+} else {
+    $item = 1;
+    foreach ($deudasAgrupadas as $deudaAgr) {
+        $clienteRaw = trim((string)($deudaAgr->nombre ?? ''));
+        $cliente = $clienteRaw !== '' ? $h($truncate($clienteRaw, 80)) : '-';
+
+        // Se usa saldo como deuda pendiente total por cliente
+        $montoPendiente = (float)($deudaAgr->saldo ?? 0);
+        $totalDeudasPendiente += $montoPendiente;
+        $montoPendienteV = $fmtGs($montoPendiente);
+
+        $itemV = $h($item);
+        $htmlDeudas .= <<<EOF
+            <tr>
+                <td width="10%">$itemV</td>
+                <td width="70%">$cliente</td>
+                <td width="20%" align="right">$montoPendienteV</td>
+            </tr>
+EOF;
+        $item++;
+    }
+}
+
+$htmlDeudas .= <<<EOF
+        </tbody>
+    </table>
+EOF;
+
+$totalDeudasPendienteV = $fmtGs($totalDeudasPendiente);
+$htmlDeudas .= <<<EOF
+    <br>
+    <table>
+        <tbody>
+            <tr>
+                <td width="80%" align="right"><strong>Total deudas por cliente (Gs.):</strong></td>
+                <td width="20%" align="right"><strong>$totalDeudasPendienteV</strong></td>
+            </tr>
+        </tbody>
+    </table>
+EOF;
+
+$pdf->writeHTML($htmlDeudas, false, false, false, false, '');
+
+ob_end_clean();
+$pdf->Output('cierre.pdf', 'I');
+exit;
 
 // Función para generar HTML de movimientos
 function movimientos($movimientos_data, $metodo, $apertura = 0)
@@ -1155,154 +1725,92 @@ $totalVentasCredito = 0;
 $contadorVentasContado = 0;
 $contadorVentasCredito = 0;
 
-// Separar en dos secciones: Ventas al Contado y Ventas a Crédito
+// Listar todas las ventas juntas en orden y al final solo resumir cantidades (contado/crédito)
 try {
     error_log("=== DEBUG ANÁLISIS DE VENTAS POR TIPO ===");
     error_log("Consultando ventas del cierre $id_cierre");
     
-    // Reutilizar las ventas ya obtenidas anteriormente
     if (!empty($ventas)) {
-        // Sección 1: Ventas al Contado
-        $html_ventas_tipo .= <<<EOF
-            <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="8" align="center"><strong>CONTADO</strong></td>
-            </tr>
-EOF;
-
-        $hayVentaContado = false;
-        foreach ($ventas as $venta) {
-            if (($venta->contado ?? '') == 'Contado') {
-                $hayVentaContado = true;
-                $hora = date("H:i", strtotime($venta->fecha_venta));
-                $nombre_cliente = isset($venta->nombre_cli) && !empty($venta->nombre_cli) ? htmlspecialchars($venta->nombre_cli) : 'Cliente no especificado';
-                $vendedor = isset($venta->vendedor) && !empty($venta->vendedor) ? htmlspecialchars($venta->vendedor) : 'N/A';
-                $metodo = isset($venta->metodo) && !empty($venta->metodo) ? htmlspecialchars($venta->metodo) : 'No especificado';
-                $nro_comprobante = isset($venta->nro_comprobante) && !empty($venta->nro_comprobante) ? htmlspecialchars($venta->nro_comprobante) : '-';
-                $total = number_format($venta->total, 0, ",", ".");
-                
-                $totalVentasContado += $venta->total;
-                $contadorVentasContado++;
-
-                $html_ventas_tipo .= <<<EOF
-                    <tr>
-                        <td width="6%">$hora</td>
-                        <td width="6%">{$venta->id_venta}</td>
-                        <td width="8%">$nro_comprobante</td>
-                        <td width="25%">$nombre_cliente</td>
-                        <td width="12%">$vendedor</td>
-                        <td width="12%">$metodo</td>
-                        <td width="15%" align="right">$total</td>
-                        <td width="16%" align="center">Pagado</td>
-                    </tr>
-EOF;
+        // Asegurar orden por fecha (desc) para el análisis
+        $ventasOrdenadas = $ventas;
+        usort($ventasOrdenadas, function ($a, $b) {
+            $aTs = isset($a->fecha_venta) ? strtotime((string)$a->fecha_venta) : 0;
+            $bTs = isset($b->fecha_venta) ? strtotime((string)$b->fecha_venta) : 0;
+            if ($aTs === $bTs) {
+                $aId = (int)($a->id_venta ?? 0);
+                $bId = (int)($b->id_venta ?? 0);
+                return $bId <=> $aId;
             }
-        }
+            return $bTs <=> $aTs;
+        });
 
-        if (!$hayVentaContado) {
-            $html_ventas_tipo .= <<<EOF
-                <tr>
-                    <td colspan="8" align="center" style="color: #666; font-style: italic;">
-                        No se registraron ventas al contado en este período
-                    </td>
-                </tr>
-EOF;
-        }
+        foreach ($ventasOrdenadas as $venta) {
+            $esContado = (($venta->contado ?? '') == 'Contado');
 
-        // Subtotal Ventas al Contado
-        $totalVentasContadoV = number_format($totalVentasContado, 0, ",", ".");
-        $html_ventas_tipo .= <<<EOF
-            <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="6" align="right"><strong>Subtotal Contado ($contadorVentasContado):</strong></td>
-                <td align="right"><strong>$totalVentasContadoV</strong></td>
-                <td align="center"><strong>-</strong></td>
-            </tr>
-            <tr>
-                <td colspan="8" style="height: 15px; background-color: white; border: none;"></td>
-            </tr>
-EOF;
+            $hora = date("H:i", strtotime($venta->fecha_venta));
+            $nombre_cliente = isset($venta->nombre_cli) && !empty($venta->nombre_cli) ? htmlspecialchars($venta->nombre_cli) : 'Cliente no especificado';
+            $vendedor = isset($venta->vendedor) && !empty($venta->vendedor) ? htmlspecialchars($venta->vendedor) : 'N/A';
+            $nro_comprobante = isset($venta->nro_comprobante) && !empty($venta->nro_comprobante) ? htmlspecialchars($venta->nro_comprobante) : '-';
+            $total = number_format($venta->total, 0, ",", ".");
 
-        // Sección 2: Ventas a Crédito
-        $html_ventas_tipo .= <<<EOF
-            <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="8" align="center"><strong>CRÉDITO</strong></td>
-            </tr>
-EOF;
-
-        $hayVentaCredito = false;
-        foreach ($ventas as $venta) {
-            if (($venta->contado ?? '') != 'Contado') {
-                $hayVentaCredito = true;
-                $hora = date("H:i", strtotime($venta->fecha_venta));
-                $nombre_cliente = isset($venta->nombre_cli) && !empty($venta->nombre_cli) ? htmlspecialchars($venta->nombre_cli) : 'Cliente no especificado';
-                $vendedor = isset($venta->vendedor) && !empty($venta->vendedor) ? htmlspecialchars($venta->vendedor) : 'N/A';
-                $metodo = isset($venta->metodo) && !empty($venta->metodo) ? htmlspecialchars($venta->metodo) : 'Crédito';
-                $nro_comprobante = isset($venta->nro_comprobante) && !empty($venta->nro_comprobante) ? htmlspecialchars($venta->nro_comprobante) : '-';
-                $total = number_format($venta->total, 0, ",", ".");
-                
-                // Determinar el estado basado en el monto cobrado
+            $tipoPago = '';
+            $estado = '';
+            if ($esContado) {
+                $tipoPago = isset($venta->metodo) && !empty($venta->metodo) ? htmlspecialchars($venta->metodo) : 'No especificado';
+                $estado = 'Pagado';
+                $totalVentasContado += ($venta->total ?? 0);
+                $contadorVentasContado++;
+            } else {
+                $tipoPago = 'Crédito';
                 $monto_cobrado = $venta->cobrado ?? 0;
-                $estado = '';
-                if ($monto_cobrado >= $venta->total) {
+                if ($monto_cobrado >= ($venta->total ?? 0)) {
                     $estado = 'Cobrado';
                 } elseif ($monto_cobrado > 0) {
                     $estado = 'Parcial';
                 } else {
                     $estado = 'Pendiente';
                 }
-                
-                $totalVentasCredito += $venta->total;
+                $totalVentasCredito += ($venta->total ?? 0);
                 $contadorVentasCredito++;
-
-                $html_ventas_tipo .= <<<EOF
-                    <tr>
-                        <td width="6%">$hora</td>
-                        <td width="6%">{$venta->id_venta}</td>
-                        <td width="8%">$nro_comprobante</td>
-                        <td width="25%">$nombre_cliente</td>
-                        <td width="12%">$vendedor</td>
-                        <td width="12%">$metodo</td>
-                        <td width="15%" align="right">$total</td>
-                        <td width="16%" align="center">$estado</td>
-                    </tr>
-EOF;
             }
-        }
 
-        if (!$hayVentaCredito) {
             $html_ventas_tipo .= <<<EOF
                 <tr>
-                    <td colspan="8" align="center" style="color: #666; font-style: italic;">
-                        No se registraron ventas a crédito en este período
-                    </td>
+                    <td width="6%">$hora</td>
+                    <td width="6%">{$venta->id_venta}</td>
+                    <td width="8%">$nro_comprobante</td>
+                    <td width="25%">$nombre_cliente</td>
+                    <td width="12%">$vendedor</td>
+                    <td width="12%">$tipoPago</td>
+                    <td width="15%" align="right">$total</td>
+                    <td width="16%" align="center">$estado</td>
                 </tr>
 EOF;
         }
 
-        // Subtotal Ventas a Crédito
-        $totalVentasCreditoV = number_format($totalVentasCredito, 0, ",", ".");
-        $html_ventas_tipo .= <<<EOF
-            <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="6" align="right"><strong>Subtotal Crédito ($contadorVentasCredito):</strong></td>
-                <td align="right"><strong>$totalVentasCreditoV</strong></td>
-                <td align="center"><strong>-</strong></td>
-            </tr>
-            <tr>
-                <td colspan="8" style="height: 15px; background-color: white; border: none;"></td>
-            </tr>
-EOF;
-
-        // Total General de Ventas
         $totalGeneralVentas = $totalVentasContado + $totalVentasCredito;
         $totalGeneralVentasV = number_format($totalGeneralVentas, 0, ",", ".");
         $totalCantidadVentas = $contadorVentasContado + $contadorVentasCredito;
+
+        $totalVentasContadoV = number_format($totalVentasContado, 0, ",", ".");
+        $totalVentasCreditoV = number_format($totalVentasCredito, 0, ",", ".");
         $html_ventas_tipo .= <<<EOF
             <tr style="background-color: #e9ecef; font-weight: bold; font-size: 12px;">
                 <td colspan="6" align="right"><strong>TOTAL ($totalCantidadVentas):</strong></td>
                 <td align="right"><strong>$totalGeneralVentasV</strong></td>
                 <td align="center"><strong>-</strong></td>
             </tr>
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="6" align="right"><strong>Total contado (Gs.):</strong></td>
+                <td align="right"><strong>$totalVentasContadoV</strong></td>
+                <td align="center"><strong>-</strong></td>
+            </tr>
+            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <td colspan="6" align="right"><strong>Total crédito (Gs.):</strong></td>
+                <td align="right"><strong>$totalVentasCreditoV</strong></td>
+                <td align="center"><strong>-</strong></td>
+            </tr>
 EOF;
-
     } else {
         $html_ventas_tipo .= <<<EOF
             <tr>

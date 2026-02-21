@@ -664,7 +664,8 @@ class deuda
 					VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				");
 				
-				$concepto_ingreso = "Cobro de deuda a " . $deuda->cliente_nombre;
+				$observacion = trim((string)($metodo_pago['observaciones'] ?? ''));
+				$concepto_ingreso = $observacion !== '' ? $observacion : 'Cobro de deuda';
 				
 				$stm->execute(array(
 					$concepto_ingreso,
@@ -772,7 +773,8 @@ class deuda
 						VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					");
 					
-					$concepto_ingreso = "Cobro de deuda a " . $deuda->cliente_nombre . " - Pago múltiple";
+					$observacion = trim((string)($metodo_pago['observaciones'] ?? ''));
+					$concepto_ingreso = $observacion !== '' ? $observacion : 'Cobro de deuda';
 					
 					$stm->execute(array(
 						$concepto_ingreso,

@@ -1004,26 +1004,39 @@ class venta
 			error_log("- id_vendedor: '$id_vendedor'");
 
 			// Consulta que incluye el monto realmente cobrado desde la tabla ingresos
-			$sql = "SELECT v.metodo, v.contado, v.id_venta, a.nombre as nombre_cli, v.anulado, c.producto, 
-					SUM(v.subtotal) as subtotal, v.descuento, SUM(v.precio_costo * v.cantidad) as costo, 
-					SUM(v.total) as total, AVG(v.margen_ganancia) as margen_ganancia, v.fecha_venta, 
-					v.nro_comprobante, v.id_producto, 
-					(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, 
+			// y además consolida los productos en un único campo "concepto" por venta.
+			$sql = "SELECT 
+					v.metodo,
+					v.contado,
+					v.id_venta,
+					a.nombre as nombre_cli,
+					v.anulado,
+					GROUP_CONCAT(DISTINCT c.producto ORDER BY c.producto SEPARATOR ', ') as concepto,
+					MAX(c.producto) as producto,
+					SUM(v.subtotal) as subtotal,
+					v.descuento,
+					SUM(v.precio_costo * v.cantidad) as costo,
+					SUM(v.total) as total,
+					AVG(v.margen_ganancia) as margen_ganancia,
+					v.fecha_venta,
+					v.nro_comprobante,
+					MAX(v.id_producto) as id_producto,
+					(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
 					(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon,
 					COALESCE(
-						(SELECT SUM(i.monto * i.cambio) -- Monto cobrado en la moneda del ingreso
+						(SELECT SUM(i.monto * i.cambio)
 						 FROM ingresos i 
 						 WHERE i.id_venta = v.id_venta 
 						   AND i.anulado IS NULL), 
 						0
 					) as cobrado
-					FROM ventas v 
-					LEFT JOIN productos c ON v.id_producto = c.id 
-					LEFT JOIN clientes a ON v.id_cliente = a.id 
-					WHERE v.fecha_venta >= ? AND v.fecha_venta <= ? 
-					  AND v.anulado <> 1 AND v.id_vendedor = ? 
-					GROUP BY v.id_venta 
-					ORDER BY v.id_venta DESC";
+				FROM ventas v 
+				LEFT JOIN productos c ON v.id_producto = c.id 
+				LEFT JOIN clientes a ON v.id_cliente = a.id 
+				WHERE v.fecha_venta >= ? AND v.fecha_venta <= ? 
+				  AND v.anulado <> 1 AND v.id_vendedor = ? 
+				GROUP BY v.id_venta 
+				ORDER BY v.id_venta DESC";
 
 			error_log("SQL Query con cobrado: " . $sql);
 
