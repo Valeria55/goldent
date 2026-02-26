@@ -68,13 +68,13 @@ try {
         $pdf->SetFont('helvetica', 'B', 10);
         
         // Caja izquierda - GOLDENT S.A. (con bordes redondeados)
-        $pdf->RoundedRect(10, 10 + $y_offset, 95, 30, 2, '1111', 'D');
+        $pdf->RoundedRect(10, 7 + $y_offset, 95, 30, 2, '1111', 'D');
         $pdf->SetXY(10, 13 + $y_offset);
         $pdf->Cell(95, 5, 'GOLDENT S.A', 0, 1, 'C');
         
         $pdf->SetFont('helvetica', '', 7);
-        $pdf->SetXY(10, 18 + $y_offset);
-        $pdf->Cell(95, 3, 'de César Villalba Ayala', 0, 1, 'C');
+        // $pdf->SetXY(10, 18 + $y_offset);
+        // $pdf->Cell(95, 3, 'de César Villalba Ayala', 0, 1, 'C');
         $pdf->SetXY(10, 21 + $y_offset);
         $pdf->Cell(95, 3, 'Actividades de Laboratorios - Médicos Dentales', 0, 1, 'C');
         $pdf->SetXY(10, 24 + $y_offset);
@@ -85,23 +85,23 @@ try {
         $pdf->Cell(95, 3, 'Ciudad del Este', 0, 1, 'C');
         
         // Caja derecha - RECIBO DE DINERO (con bordes redondeados)
-        $pdf->RoundedRect(105, 10 + $y_offset, 95, 30, 2, '1111', 'D');
+        $pdf->RoundedRect(105, 7 + $y_offset, 95, 30, 2, '1111', 'D');
         $pdf->SetFont('helvetica', 'B', 12);
-        $pdf->SetXY(105, 15 + $y_offset);
+        $pdf->SetXY(105, 11 + $y_offset);
         $pdf->Cell(95, 5, 'RECIBO DE DINERO', 0, 1, 'C');
         
         $pdf->SetFont('helvetica', 'B', 9);
-        $pdf->SetXY(105, 22 + $y_offset);
+        $pdf->SetXY(105, 18 + $y_offset);
         $pdf->Cell(95, 4, $tipo, 0, 1, 'C'); // ORIGINAL o DUPLICADO
         
         $pdf->SetFont('helvetica', '', 8);
-        $pdf->SetXY(105, 28 + $y_offset);
+        $pdf->SetXY(105, 25 + $y_offset);
         $pdf->Cell(95, 3, 'RUC: 80108438-5', 0, 1, 'C');
         
         // Configurar color rojo oscuro y negrita para el número de recibo
         $pdf->SetTextColor(139, 0, 0); // Rojo oscuro (RGB: 139, 0, 0)
         $pdf->SetFont('helvetica', 'B', 14); // Negrita
-        $pdf->SetXY(105, 32 + $y_offset);
+        $pdf->SetXY(105, 30 + $y_offset);
         $pdf->Cell(95, 3, $numero_recibo, 0, 1, 'C');
         
         // Si es anulado, agregar marca de ANULADO
@@ -116,26 +116,26 @@ try {
         $pdf->SetTextColor(0, 0, 0);
         
         // === LAYOUT DE DOS COLUMNAS ===
-        $y_start = 45 + $y_offset;
+        $y_start = 40 + $y_offset;
         if ($es_anulado) {
             $y_start += 5; // Dar espacio extra para la marca de anulado
         }
         
         // === COLUMNA DERECHA - TABLA DE FACTURAS (más pequeña) ===
-        $tabla_x = 120; // Posición X de la tabla (lado derecho)
+        $tabla_x = 110; // Posición X de la tabla (lado derecho)
         $tabla_ancho = 80; // Ancho total de la tabla
         
         // Headers de la tabla (con bordes redondeados)
         $pdf->SetFont('helvetica', 'B', 7);
-        $pdf->RoundedRect($tabla_x, $y_start, 35, 5, 1, '1111', 'D'); // FACTURA N°
-        $pdf->RoundedRect($tabla_x + 35, $y_start, 25, 5, 1, '1111', 'D'); // FECHA
-        $pdf->RoundedRect($tabla_x + 60, $y_start, 20, 5, 1, '1111', 'D'); // IMPORTE
+        $pdf->Rect($tabla_x, $y_start, 37, 5, 'D'); // FACTURA N°
+        $pdf->Rect($tabla_x + 37, $y_start, 27, 5, 1,  'D'); // FECHA
+        $pdf->Rect($tabla_x + 64, $y_start, 26, 5, 1,  'D'); // IMPORTE
         
         $pdf->SetXY($tabla_x, $y_start + 1);
         $pdf->Cell(35, 3, 'FACTURA N°', 0, 0, 'C');
         $pdf->SetXY($tabla_x + 35, $y_start + 1);
         $pdf->Cell(25, 3, 'FECHA', 0, 0, 'C');
-        $pdf->SetXY($tabla_x + 60, $y_start + 1);
+        $pdf->SetXY($tabla_x + 64, $y_start + 1);
         $pdf->Cell(20, 3, 'IMPORTE', 0, 0, 'C');
         
         // Datos de las facturas
@@ -144,9 +144,9 @@ try {
         
         foreach ($detalle['detalle_deudas'] as $deuda) {
             // Líneas para cada fila (con bordes redondeados)
-            $pdf->RoundedRect($tabla_x, $y_pos, 35, 5, 1, '1111', 'D');
-            $pdf->RoundedRect($tabla_x + 35, $y_pos, 25, 5, 1, '1111', 'D');
-            $pdf->RoundedRect($tabla_x + 60, $y_pos, 20, 5, 1, '1111', 'D');
+            $pdf->Rect($tabla_x, $y_pos, 37, 5, 1,  'D');
+            $pdf->Rect($tabla_x + 37, $y_pos, 27, 5, 1,  'D');
+            $pdf->Rect($tabla_x + 64, $y_pos, 26, 5, 1,  'D');
             
             // Datos
             $pdf->SetXY($tabla_x + 1, $y_pos + 1);
@@ -156,7 +156,7 @@ try {
             $fecha_formateada = date('d/m/Y', strtotime($deuda->deuda_fecha));
             $pdf->Cell(23, 3, $fecha_formateada, 0, 0, 'C');
             
-            $pdf->SetXY($tabla_x + 61, $y_pos + 1);
+            $pdf->SetXY($tabla_x + 68, $y_pos + 1);
             $monto_formateado = number_format($deuda->monto_aplicado, 0, '.', '.');
             $pdf->Cell(18, 3, $monto_formateado, 0, 0, 'R');
             
@@ -166,42 +166,45 @@ try {
         
         // Completar filas vacías hasta llegar a 10 filas totales
         $filas_usadas = count($detalle['detalle_deudas']);
-        $filas_vacias = max(0, 10 - $filas_usadas);
+        $filas_vacias = max(0, 15 - $filas_usadas);
         
         for ($i = 0; $i < $filas_vacias; $i++) {
-            $pdf->RoundedRect($tabla_x, $y_pos, 35, 5, 1, '1111', 'D');
-            $pdf->RoundedRect($tabla_x + 35, $y_pos, 25, 5, 1, '1111', 'D');
-            $pdf->RoundedRect($tabla_x + 60, $y_pos, 20, 5, 1, '1111', 'D');
+            $pdf->Rect($tabla_x, $y_pos, 37, 5, 1,  'D');
+            $pdf->Rect($tabla_x + 37, $y_pos, 27, 5, 1, 'D');
+            $pdf->Rect($tabla_x + 64, $y_pos, 26, 5, 1,  'D');
             $y_pos += 5;
         }
         
         // TOTAL (con bordes redondeados)
         $pdf->SetFont('helvetica', 'B', 7);
-        $pdf->RoundedRect($tabla_x, $y_pos, 60, 5, 1, '1111', 'D');
-        $pdf->RoundedRect($tabla_x + 60, $y_pos, 20, 5, 1, '1111', 'D');
+        $pdf->Rect($tabla_x, $y_pos, 64, 5, 1,  'D');
+        $pdf->Rect($tabla_x + 64, $y_pos, 26, 5, 1,  'D');
         
         $pdf->SetXY($tabla_x + 1, $y_pos + 1);
         $pdf->Cell(58, 3, 'TOTALES Gs.', 0, 0, 'L');
         $pdf->SetXY($tabla_x + 61, $y_pos + 1);
-        $pdf->Cell(18, 3, number_format($total_general, 0, '.', '.'), 0, 0, 'R');
+        $pdf->Cell(25, 3, number_format($total_general, 0, '.', '.'), 0, 0, 'R');
         
         // === COLUMNA IZQUIERDA - INFORMACIÓN DEL CLIENTE ===
         $y_left = $y_start;
         
         // Caja para COD. CLIENTE y LUGAR Y FECHA (con bordes redondeados)
-        $pdf->RoundedRect(10, $y_left, 40, 10, 1.5, '1111', 'D');
-        $pdf->RoundedRect(50, $y_left, 65, 10, 1.5, '1111', 'D');
+        $pdf->RoundedRect(10, $y_left, 30, 10, 1.5, '1111', 'D');
+        $pdf->RoundedRect(40, $y_left, 65, 10, 1.5, '1111', 'D');
         
         $pdf->SetFont('helvetica', '', 7);
         $pdf->SetXY(12, $y_left + 1);
         $pdf->Cell(36, 3, 'COD. CLIENTE', 0, 1, 'L');
-        $pdf->SetXY(52, $y_left + 1);
+        $pdf->SetXY(45, $y_left + 1);
         $pdf->Cell(61, 3, 'LUGAR Y FECHA', 0, 1, 'L');
         
         $pdf->SetXY(12, $y_left + 5);
         $pdf->Cell(36, 3, $primera_deuda->id_cliente ?: '156', 0, 1, 'L');
-        $pdf->SetXY(52, $y_left + 5);
-        $fecha_actual = 'Ciudad del Este, ' . date('d \d\e F \d\e Y');
+        $pdf->SetXY(45, $y_left + 5);
+        setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'spanish');
+
+        $fecha_actual = 'Ciudad del Este, ' . strftime('%d de %B de %Y');
+        // $fecha_actual = 'Ciudad del Este, ' . date('d \d\e F \d\e Y');
         $pdf->Cell(61, 3, $fecha_actual, 0, 1, 'L');
         
         // HEMOS RECIBIDO DE:
@@ -295,7 +298,7 @@ function numeroALetras($numero) {
     if ($numero >= 1000000) {
         $millones = floor($numero / 1000000);
         if ($millones == 1) {
-            $resultado .= 'un millón ';
+            $resultado .= 'un millon ';
         } else {
             $resultado .= numeroALetras($millones) . ' millones ';
         }

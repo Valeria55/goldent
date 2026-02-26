@@ -40,7 +40,7 @@ $id_usuario = $cierre->id_usuario;
 
 
 $pdf = new CierreCajaPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-$pdf->AddPage('L', 'A4');
+$pdf->AddPage('P', 'A4');
 
 // Footer global: fecha de emisión + paginación
 $pdf->fechaEmision = date('d/m/Y H:i');
@@ -244,7 +244,7 @@ if ($errorVentas) {
 }
 
 // 2) Hoja 2: Ingresos
-$pdf->AddPage('L', 'A4');
+$pdf->AddPage('P', 'A4');
 
 $ingresos = [];
 $errorIngresos = null;
@@ -262,11 +262,11 @@ $htmlIngresos = <<<EOF
         <thead>
             <tr>
                 <th width="10%">Cod.</th>
-                <th width="12%">Comprobante</th>
-                <th width="38%">Cliente</th>
+                <th width="12%">Comp.</th>
+                <th width="30%">Cliente</th>
                 <th width="20%">Concepto</th>
-                <th width="10%">Forma Pago</th>
-                <th width="10%" class="right">Monto</th>
+                <th width="15%">Forma Pago</th>
+                <th width="13%" class="right">Monto</th>
             </tr>
         </thead>
         <tbody>
@@ -306,10 +306,10 @@ if ($errorIngresos) {
             <tr>
                 <td width="10%">$cod</td>
                 <td width="12%" style="font-size: 7px;">$comprobante</td>
-                <td width="38%" style="font-size: 10px;">$cliente</td>
+                <td width="30%" style="font-size: 8px;">$cliente</td>
                 <td width="20%">$ingreso->concepto</td>
-                <td width="10%">{$h($formaPagoKey)}</td>
-                <td width="10%" align="right">$montoV</td>
+                <td width="15%">{$h($formaPagoKey)}</td>
+                <td width="13%" align="right">$montoV</td>
             </tr>
         EOF;
     }
@@ -581,7 +581,7 @@ try {
     error_log('Error obteniendo deudas agrupadas por cliente para cierre PDF: ' . $errorDeudas);
 }
 
-$pdf->AddPage('L', 'A4');
+$pdf->AddPage('P', 'A4');
 
 $htmlDeudas = <<<EOF
     $estilos
