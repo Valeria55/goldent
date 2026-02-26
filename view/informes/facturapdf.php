@@ -233,7 +233,7 @@ class FacturaGenerator
             'productos_line_height' => 3.5,
 
             // ► max_lineas_productos: Cantidad máxima de líneas antes de saltar de página
-            'max_lineas_productos' => 7,
+            'max_lineas_productos' => 8,
 
             // ========================================
             // LÍMITE DE CARACTERES POR LÍNEA

@@ -646,15 +646,17 @@ class deuda
 			$id_usuario = $_SESSION['user_id'];
 
 			// Registrar el detalle del pago en la tabla pagos_detalle
+			$fecha_hoy=date('Y-m-d h:i');
 			$stm = $this->pdo->prepare("
 				INSERT INTO pagos_detalle (grupo_pago_id, id_deuda, id_cliente, monto_aplicado, fecha, id_usuario, nro_recibo) 
-				VALUES (?, ?, ?, ?, NOW(), ?, ?)
+				VALUES (?, ?, ?, ?,?, ?, ?) 
 			");
 			$stm->execute(array(
 				$grupo_pago_id,
 				$id_deuda,
 				$deuda->id_cliente,
 				$total_guaranies,
+				$fecha_hoy,
 				$id_usuario,
 				$nro_recibo
 			));
@@ -673,7 +675,7 @@ class deuda
 				// Registrar el ingreso con los campos exactos de la tabla
 				$stm = $this->pdo->prepare("
 					INSERT INTO ingresos (concepto, monto, fecha, id_deuda, id_cliente, id_usuario, categoria, forma_pago, moneda, cambio, pago_deuda, id_caja) 
-					VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				");
 				
 				$observacion = trim((string)($metodo_pago['observaciones'] ?? ''));
@@ -682,6 +684,7 @@ class deuda
 				$stm->execute(array(
 					$concepto_ingreso,
 					$metodo_pago['cantidad'],
+					$fecha_hoy,
 					$id_deuda,
 					$deuda->id_cliente,
 					$id_usuario,
@@ -1183,7 +1186,7 @@ class deuda
 				       COUNT(*) as total_recibos
 				FROM pagos_detalle 
 				WHERE nro_recibo IS NOT NULL 
-				AND nro_recibo LIKE '001-002-%'
+				AND nro_recibo LIKE '001-003-%'
 			");
 			$stm->execute();
 			$resultado = $stm->fetch(PDO::FETCH_OBJ);
@@ -1196,7 +1199,7 @@ class deuda
 				$nuevo_numero = $numero_inicial;
 			}
 			
-			// Formatear el número como 001-002-0000XXX
+			// Formatear el número como 001-003-0000XXX
 			return $this->formatearNumeroRecibo($nuevo_numero);
 			
 		} catch (Exception $e) {
@@ -1209,7 +1212,7 @@ class deuda
 	// Función para formatear el número de recibo
 	private function formatearNumeroRecibo($numero)
 	{
-		// Formato: 001-002-0000XXX (donde XXX es el número incremental)
+		// Formato: 001-003-0000XXX (donde XXX es el número incremental)
 		$parte1 = "001";
 		$parte2 = "002";
 		$parte3 = str_pad($numero, 7, "0", STR_PAD_LEFT);
@@ -1277,7 +1280,7 @@ class deuda
 				// Si no hay recibos, podemos configurar el número inicial
 				return array(
 					'success' => true,
-					'message' => "Se configurará el próximo recibo para iniciar en: 001-002-" . str_pad($numero_inicial, 7, "0", STR_PAD_LEFT)
+					'message' => "Se configurará el próximo recibo para iniciar en: 001-003-" . str_pad($numero_inicial, 7, "0", STR_PAD_LEFT)
 				);
 			} else {
 				// Si ya hay recibos, mostrar el estado actual
@@ -1285,7 +1288,7 @@ class deuda
 					SELECT MAX(CAST(SUBSTRING_INDEX(nro_recibo, '-', -1) AS UNSIGNED)) as ultimo_numero
 					FROM pagos_detalle 
 					WHERE nro_recibo IS NOT NULL 
-					AND nro_recibo LIKE '001-002-%'
+					AND nro_recibo LIKE '001-003-%'
 				");
 				$stm->execute();
 				$ultimo = $stm->fetch(PDO::FETCH_OBJ);
@@ -1316,7 +1319,7 @@ class deuda
 					MAX(CAST(SUBSTRING_INDEX(nro_recibo, '-', -1) AS UNSIGNED)) as ultimo_numero
 				FROM pagos_detalle 
 				WHERE nro_recibo IS NOT NULL 
-				AND nro_recibo LIKE '001-002-%'
+				AND nro_recibo LIKE '001-003-%'
 			");
 			$stm->execute();
 			$resultado = $stm->fetch(PDO::FETCH_OBJ);
