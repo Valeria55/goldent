@@ -243,6 +243,31 @@ class deudaController
         }
     }
 
+    public function cargarClientesConPagos()
+    {
+        $clientes = $this->model->listarClientesConPagosMultiples();
+
+        if (empty($clientes)) {
+            echo '<div class="alert alert-info">No hay pagos múltiples registrados.</div>';
+            return;
+        }
+
+        foreach ($clientes as $cliente) {
+            echo '<div class="cliente-pagados-item list-group-item" data-id="' . $cliente->id_cliente . '" data-nombre="' . htmlspecialchars($cliente->nombre) . '" style="cursor: pointer; margin-bottom: 5px;">';
+            echo '<div class="row">';
+            echo '<div class="col-md-8">';
+            echo '<strong>' . htmlspecialchars($cliente->nombre) . '</strong>';
+            echo '<br><small class="text-muted">RUC: ' . ($cliente->ruc ?: 'No especificado') . '</small>';
+            echo '</div>';
+            echo '<div class="col-md-4 text-right">';
+            echo '<span class="badge badge-success">' . number_format($cliente->total_pagado, 0, ',', '.') . '</span>';
+            echo '<br><small class="text-muted">' . $cliente->cantidad_recibos . ' recibo(s)</small>';
+            echo '</div>';
+            echo '</div>';
+            echo '</div>';
+        }
+    }
+
     public function cargarDeudasCliente()
     {
         $id_cliente = $_GET['id_cliente'];

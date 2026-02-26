@@ -503,6 +503,30 @@ class deuda
 		}
 	}
 
+	public function listarClientesConPagosMultiples()
+	{
+		try {
+			$stm = $this->pdo->prepare("
+				SELECT
+					c.id as id_cliente,
+					c.nombre,
+					c.ruc,
+					COUNT(DISTINCT pd.grupo_pago_id) as cantidad_recibos,
+					COALESCE(SUM(pd.monto_aplicado), 0) as total_pagado,
+					MAX(pd.fecha) as ultima_fecha
+				FROM pagos_detalle pd
+				INNER JOIN clientes c ON pd.id_cliente = c.id
+				WHERE pd.grupo_pago_id IS NOT NULL AND pd.grupo_pago_id != ''
+				GROUP BY c.id, c.nombre, c.ruc
+				ORDER BY ultima_fecha DESC
+			");
+			$stm->execute();
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function listarDeudasPorCliente($id_cliente)
 	{
 		try {

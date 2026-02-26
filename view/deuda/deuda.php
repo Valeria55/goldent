@@ -9,7 +9,6 @@
     <!-- <li id="recibos-tab" class=""><a href="#">Recibos</a></li> -->
 </ul>
 
-
 <!--
   *************************************************************************
   *                                                                       *
@@ -199,12 +198,69 @@
   *************************************************************************
 -->
 <div id="pagados-content" style="display: none;">
-    <div id="pagados-loader" style="text-align: center; padding: 50px; display: none;">
-        <i class="fa fa-spinner fa-spin fa-2x"></i>
-        <p>Cargando datos de pagados...</p>
-    </div>
-    <div id="pagados-table-container">
-        <!-- La tabla se cargará aquí dinámicamente -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4>Buscar Cliente</h4>
+                </div>
+                <div class="panel-body">
+                    <input type="text" id="buscar-cliente-pagados" class="form-control" placeholder="Buscar cliente...">
+                    <br>
+                    <div id="lista-clientes-pagados" style="max-height: 400px; overflow-y: auto;">
+                        <div id="clientes-pagados-loader" style="text-align: center; padding: 50px; display: none;">
+                            <i class="fa fa-spinner fa-spin fa-2x"></i>
+                            <p>Cargando clientes...</p>
+                        </div>
+                        <div id="clientes-pagados-container">
+                            <!-- Lista de clientes con pagos se carga aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h4 id="cliente-pagados-titulo">Selecciona un cliente</h4>
+                </div>
+                <div class="panel-body">
+                    <div id="detalle-pagados" style="display: none;">
+                        <div class="panel panel-warning" style="margin-top: 0;">
+                            <div class="panel-heading">
+                                <h5><i class="fa fa-history"></i> Pagos Múltiples Registrados</h5>
+                            </div>
+                            <div class="panel-body">
+                                <div id="pagos-multiples-pagados-container">
+                                    <div class="text-center text-muted">
+                                        <i class="fa fa-info-circle"></i> Selecciona un cliente para ver sus pagos múltiples
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-danger" style="margin-top: 20px;">
+                            <div class="panel-heading">
+                                <h5><i class="fa fa-ban"></i> Recibos Anulados</h5>
+                            </div>
+                            <div class="panel-body">
+                                <div id="recibos-anulados-pagados2-container">
+                                    <div class="text-center text-muted">
+                                        <i class="fa fa-info-circle"></i> Selecciona un cliente para ver sus recibos anulados
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mensaje-seleccionar-pagados" class="text-center" style="padding: 50px;">
+                        <i class="fa fa-hand-pointer-o fa-3x text-muted"></i>
+                        <p class="text-muted">Selecciona un cliente de la lista para ver sus pagos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -333,6 +389,9 @@
         var pagadosCargados = false;
         var clientesCargados = false;
         var clienteSeleccionado = null;
+        var clienteSeleccionadoNombre = null;
+        var clienteSeleccionadoPagados = null;
+        var clienteSeleccionadoPagadosNombre = null;
         var metodosPago = []; // Variable global para almacenar métodos de pago
         var tiposCambio = {
             USD: 7500,
@@ -508,7 +567,7 @@
                 $('#recibos-content').hide();
 
                 if (!pagadosCargados) {
-                    cargarTablaPagados();
+                    cargarListaClientesPagados();
                 }
             } else if ($(this).attr('id') === 'recibos-tab') {
                 $('#deudores-content').hide();
@@ -551,6 +610,7 @@
         // Función para seleccionar un cliente y cargar sus deudas
         function seleccionarCliente(idCliente, nombreCliente) {
             clienteSeleccionado = idCliente;
+            clienteSeleccionadoNombre = nombreCliente;
             $('#cliente-seleccionado-titulo').text('Deudas de: ' + nombreCliente +' ('+ idCliente+')');
             $('#mensaje-seleccionar').hide();
             $('#detalle-cliente').show();
@@ -575,6 +635,197 @@
                     $('#deudas-cliente-container').html('<div class="alert alert-danger">Error al cargar deudas del cliente.</div>');
                 }
             });
+        }
+
+        // ================================
+        // PAGADOS (POR CLIENTE)
+        // ================================
+        function cargarListaClientesPagados() {
+            $('#clientes-pagados-loader').show();
+            $('#clientes-pagados-container').empty();
+
+            $.ajax({
+                url: '?c=deuda&a=cargarClientesConPagos',
+                method: 'GET',
+                cache: false,
+                success: function(response) {
+                    $('#clientes-pagados-loader').hide();
+                    $('#clientes-pagados-container').html(response);
+                    pagadosCargados = true;
+
+                    $('.cliente-pagados-item').click(function() {
+                        var idCliente = $(this).data('id');
+                        var nombreCliente = $(this).data('nombre');
+                        seleccionarClientePagados(idCliente, nombreCliente);
+                    });
+                },
+                error: function() {
+                    $('#clientes-pagados-loader').hide();
+                    $('#clientes-pagados-container').html('<div class="alert alert-danger">Error al cargar clientes.</div>');
+                }
+            });
+        }
+
+        function seleccionarClientePagados(idCliente, nombreCliente) {
+            clienteSeleccionadoPagados = idCliente;
+            clienteSeleccionadoPagadosNombre = nombreCliente;
+            $('#cliente-pagados-titulo').text('Pagos de: ' + nombreCliente + ' (' + idCliente + ')');
+            $('#mensaje-seleccionar-pagados').hide();
+            $('#detalle-pagados').show();
+
+            cargarPagosMultiplesTabPagados(idCliente);
+            cargarRecibosAnuladosTabPagados(idCliente);
+        }
+
+        function cargarPagosMultiplesTabPagados(idCliente) {
+            $.ajax({
+                url: '?c=deuda&a=listarPagosMultiples',
+                method: 'GET',
+                data: {
+                    id_cliente: idCliente
+                },
+                cache: false,
+                success: function(response) {
+                    var data = JSON.parse(response);
+
+                    if (data.success && data.pagos.length > 0) {
+                        var html = '<div class="table-responsive">';
+                        html += '<table class="table table-bordered table-striped table-condensed">';
+                        html += '<thead>';
+                        html += '<tr style="background-color: #f39c12; color: white;">';
+                        html += '<th>Recibo N°</th>';
+                        html += '<th>Fecha</th>';
+                        html += '<th>Métodos</th>';
+                        html += '<th>Deudas</th>';
+                        html += '<th>Total</th>';
+                        html += '<th>Acciones</th>';
+                        html += '</tr>';
+                        html += '</thead>';
+                        html += '<tbody>';
+
+                        data.pagos.forEach(function(pago) {
+                            html += '<tr>';
+                            html += '<td><strong>' + (pago.nro_recibo || 'N/A') + '</strong></td>';
+                            html += '<td>' + new Date(pago.fecha_pago).toLocaleDateString('es-PY') + '</td>';
+                            html += '<td><small>' + pago.cantidad_metodos + ' método(s)</small></td>';
+                            html += '<td><small>' + pago.deudas_afectadas.split(',').length + ' deuda(s)</small></td>';
+                            html += '<td class="text-right"><strong>' + formatearNumero(pago.total_monto) + '</strong></td>';
+                            html += '<td>';
+                            html += '<div class="btn-group" role="group">';
+                            html += '<button class="btn btn-xs btn-primary ver-recibo-btn" ';
+                            html += 'data-grupo-id="' + pago.grupo_id + '" ';
+                            html += 'title="Ver recibo PDF">';
+                            html += '<i class="fa fa-file-pdf-o"></i> PDF';
+                            html += '</button>';
+                            html += '<button class="btn btn-xs btn-danger revertir-pago-btn" ';
+                            html += 'data-grupo-id="' + pago.grupo_id + '" ';
+                            html += 'data-total="' + pago.total_monto + '" ';
+                            html += 'title="Revertir pago múltiple">';
+                            html += '<i class="fa fa-undo"></i> Revertir';
+                            html += '</button>';
+                            html += '</div>';
+                            html += '</td>';
+                            html += '</tr>';
+                        });
+
+                        html += '</tbody>';
+                        html += '</table>';
+                        html += '</div>';
+
+                        $('#pagos-multiples-pagados-container').html(html);
+                    } else {
+                        $('#pagos-multiples-pagados-container').html(
+                            '<div class="text-center text-muted">' +
+                            '<i class="fa fa-info-circle"></i> No hay pagos múltiples registrados para este cliente' +
+                            '</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#pagos-multiples-pagados-container').html(
+                        '<div class="alert alert-danger">Error al cargar pagos múltiples</div>'
+                    );
+                }
+            });
+        }
+
+        function cargarRecibosAnuladosTabPagados(idCliente) {
+            $.ajax({
+                url: '?c=deuda&a=obtenerRecibosAnulados',
+                method: 'POST',
+                data: {
+                    id_cliente: idCliente
+                },
+                success: function(response) {
+                    try {
+                        var data = JSON.parse(response);
+                        if (data.success) {
+                            mostrarRecibosAnuladosTabPagados(data.recibos);
+                        } else {
+                            $('#recibos-anulados-pagados2-container').html(
+                                '<div class="text-center text-muted">' +
+                                '<i class="fa fa-info-circle"></i> No hay recibos anulados para este cliente' +
+                                '</div>'
+                            );
+                        }
+                    } catch (e) {
+                        $('#recibos-anulados-pagados2-container').html(
+                            '<div class="alert alert-warning">Error al procesar la respuesta</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#recibos-anulados-pagados2-container').html(
+                        '<div class="alert alert-danger">Error al cargar recibos anulados</div>'
+                    );
+                }
+            });
+        }
+
+        function mostrarRecibosAnuladosTabPagados(recibos) {
+            if (!recibos || recibos.length === 0) {
+                $('#recibos-anulados-pagados2-container').html(
+                    '<div class="text-center text-muted">' +
+                    '<i class="fa fa-info-circle"></i> No hay recibos anulados para este cliente' +
+                    '</div>'
+                );
+                return;
+            }
+
+            var html = '<div class="table-responsive">';
+            html += '<table class="table table-bordered table-striped table-condensed">';
+            html += '<thead>';
+            html += '<tr style="background-color: #d9534f; color: white;">';
+            html += '<th>Recibo N°</th>';
+            html += '<th>Fecha</th>';
+            html += '<th>Total</th>';
+            html += '<th>Cant. Deudas</th>';
+            html += '<th>Usuario</th>';
+            html += '<th>Acciones</th>';
+            html += '</tr>';
+            html += '</thead>';
+            html += '<tbody>';
+
+            recibos.forEach(function(recibo) {
+                html += '<tr style="background-color: #f2dede;">';
+                html += '<td><strong>' + (recibo.nro_recibo || 'N/A') + '</strong></td>';
+                html += '<td>' + formatearFecha(recibo.fecha_recibo) + '</td>';
+                html += '<td class="text-right"><strong>' + formatearNumero(recibo.total_recibo) + '</strong></td>';
+                html += '<td class="text-center">' + recibo.cantidad_deudas + '</td>';
+                html += '<td>' + (recibo.usuario_nombre || 'N/A') + '</td>';
+                html += '<td>';
+                html += '<button class="btn btn-xs btn-danger btn-pdf-anulado" data-grupo-id="' + recibo.grupo_pago_id + '" title="Ver PDF del recibo anulado">';
+                html += '<i class="fa fa-file-pdf-o"></i> PDF';
+                html += '</button>';
+                html += '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div>';
+
+            $('#recibos-anulados-pagados2-container').html(html);
         }
 
         // Función para cargar pagos múltiples
@@ -683,8 +934,11 @@
                             alert('Pago revertido correctamente');
                             // Recargar las deudas del cliente
                             if (clienteSeleccionado) {
-                                var nombreCliente = $('#cliente-seleccionado-titulo').text().replace('Deudas de: ', '');
-                                seleccionarCliente(clienteSeleccionado, nombreCliente);
+                                seleccionarCliente(clienteSeleccionado, clienteSeleccionadoNombre || '');
+                            }
+                            // Recargar la vista de Pagados por cliente
+                            if (clienteSeleccionadoPagados) {
+                                seleccionarClientePagados(clienteSeleccionadoPagados, clienteSeleccionadoPagadosNombre || '');
                             }
                         } else {
                             alert('Error: ' + resultado.message);
@@ -719,6 +973,19 @@
         $('#buscar-cliente').on('keyup', function() {
             var filtro = $(this).val().toLowerCase();
             $('.cliente-item').each(function() {
+                var nombre = $(this).text().toLowerCase();
+                if (nombre.indexOf(filtro) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Búsqueda de clientes (Pagados)
+        $('#buscar-cliente-pagados').on('keyup', function() {
+            var filtro = $(this).val().toLowerCase();
+            $('.cliente-pagados-item').each(function() {
                 var nombre = $(this).text().toLowerCase();
                 if (nombre.indexOf(filtro) > -1) {
                     $(this).show();
