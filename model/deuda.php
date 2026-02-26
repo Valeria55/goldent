@@ -1239,7 +1239,7 @@ class deuda
 	{
 		// Formato: 001-003-0000XXX (donde XXX es el número incremental)
 		$parte1 = "001";
-		$parte2 = "002";
+		$parte2 = "003";
 		$parte3 = str_pad($numero, 7, "0", STR_PAD_LEFT);
 		
 		return $parte1 . "-" . $parte2 . "-" . $parte3;
