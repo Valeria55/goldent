@@ -85,10 +85,8 @@
                 <form method="get">
                     <input type="hidden" name="c" value="venta">
 
-                    <div class="form-group col-md-2">
-                    </div>
-                    <div class="form-group col-md-2">
-                    </div>
+                   
+                  
                     <div class="form-group col-md-2">
                         <label>Desde</label>
                         <input type="date" name="desde" value="<?php echo (isset($_GET['desde'])) ? $_GET['desde'] : '';
@@ -98,6 +96,33 @@
                         <label>Hasta</label>
                         <input type="date" name="hasta" value="<?php echo (isset($_GET['hasta'])) ? $_GET['hasta'] : '';
                                                                 ?>" class="form-control">
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label>Cliente</label>
+                        <select name="id_cliente" class="selectpicker" data-live-search="true" data-width="100%" title="Todos">
+                            <?php
+                            $clienteSeleccionado = $_GET['id_cliente'] ?? '';
+
+                            $selTodos = ((string)$clienteSeleccionado === '') ? 'selected' : '';
+                            echo "<option value=\"\" {$selTodos}>Todos</option>";
+
+                            // Muchos registros no tienen el flag `cliente=1` cargado, por eso ListarClientes() puede traer 1 solo.
+                            // Para el filtro, listamos todos y excluimos proveedores.
+                            $clientes = $this->cliente->Listar();
+
+                            foreach ($clientes as $c) {
+                                if (isset($c->proveedor) && (int)$c->proveedor === 1) {
+                                    continue;
+                                }
+                                $selected = ((string)$clienteSeleccionado === (string)$c->id) ? 'selected' : '';
+                                $nombre = htmlspecialchars($c->nombre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                                $ruc = htmlspecialchars((string)($c->ruc ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                                $label = trim($nombre . (($ruc !== '') ? " - $ruc" : ''));
+                                echo "<option value=\"{$c->id}\" {$selected}>{$label}</option>";
+                            }
+                            ?>
+                        </select>
                     </div>
 
                     <div class="form-group col-md-2">
@@ -152,6 +177,11 @@
 
 <script>
     $(document).ready(function() {
+        // Select con búsqueda (bootstrap-select)
+        if ($.fn.selectpicker) {
+            $('.selectpicker').selectpicker();
+        }
+
         // Ocultar todas las tablas excepto la primera al cargar la página
         $("#tab2, #tab3").hide();
 

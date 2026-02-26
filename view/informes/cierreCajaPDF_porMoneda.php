@@ -197,7 +197,7 @@ $renderVentasTablaUnificada = function ($titulo, $ventasLista) use ($estilos, $h
                     <td width="12%" style="font-size: 7px;">$comprobante</td>
                     <td width="21%" style="font-size: 7px;">$doctor</td>
                     <td width="44%" style="font-size: 7px;">$concepto</td>
-                    <td width="8%" style="font-size: 8px;">$venta->contado</td>
+                    <td width="8%" style="font-size: 8px;">$venta->condicion_factura</td>
                     <td width="15%" align="right" style="font-size: 10px;">$montoV</td>
                 </tr>
             EOF;

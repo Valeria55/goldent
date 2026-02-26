@@ -37,6 +37,15 @@ if (!isset($_SESSION)) session_start();
 <script type="text/javascript">
     $(document).ready(function() {
 
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         let tablaUsuarios = $('#tabla1').DataTable({
 
             "dom": 'Bfrtip',
@@ -60,8 +69,14 @@ if (!isset($_SESSION)) session_start();
                 details: true
             },
             "sort": false,
-            <?php if (isset($_GET['desde'])) { ?> "ajax": {
-                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $_GET['desde'] ?>&hasta=<?php echo $_GET['hasta'] ?>",
+            <?php
+            $filtroDesde = $_GET['desde'] ?? '';
+            $filtroHasta = $_GET['hasta'] ?? '';
+            $filtroCliente = $_GET['id_cliente'] ?? '';
+            $extraCliente = (!empty($filtroCliente)) ? '&id_cliente=' . urlencode($filtroCliente) : '';
+            if (isset($_GET['desde']) || isset($_GET['hasta']) || isset($_GET['id_cliente'])) {
+            ?> "ajax": {
+                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $filtroDesde ?>&hasta=<?php echo $filtroHasta ?><?php echo $extraCliente; ?>",
                     "dataSrc": ""
                 },
             <?php } else { ?>
@@ -76,7 +91,17 @@ if (!isset($_SESSION)) session_start();
                     "data": "id_venta"
                 },
                 {
-                    "data": "nombre_cli"
+                    "data": null,
+                    render: function(data, type, row) {
+                        if (type !== 'display') {
+                            return row.nombre_cli;
+                        }
+
+                        var idCliente = row.id_cliente ?? '';
+                        var nombreCliente = escapeHtml(row.nombre_cli ?? '');
+                        var url = "?c=venta&a=listarcliente&id_cliente=" + encodeURIComponent(idCliente);
+                        return "<a class='btn btn-default btn-xs' href='" + url + "'>" + nombreCliente + "</a>";
+                    }
                 },
                 {
                     "data": "fecha_venta"

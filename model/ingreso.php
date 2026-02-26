@@ -122,7 +122,7 @@ class ingreso
 	public function ObtenerCobro($id_venta)
 	{
 		try {
-			$stm = $this->pdo->prepare("SELECT forma_pago, 'Guaranies' as moneda, monto FROM ingresos WHERE id_venta = ? AND anulado IS NULL ORDER BY id ASC");
+			$stm = $this->pdo->prepare("SELECT fecha, comprobante, forma_pago, COALESCE(moneda,'Guaranies') as moneda, monto FROM ingresos WHERE id_venta = ? AND anulado IS NULL ORDER BY id ASC");
 			$stm->execute(array($id_venta));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);

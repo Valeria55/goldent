@@ -177,6 +177,18 @@ class deuda
 		}
 	}
 
+	public function ResumenPorVenta($id_venta)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT SUM(monto) AS monto, SUM(saldo) AS saldo FROM deudas WHERE id_venta = ?");
+			$stm->execute(array($id_venta));
+
+			return $stm->fetch(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 
 	public function AgrupadoMes($desde, $hasta, $anho)
 	{

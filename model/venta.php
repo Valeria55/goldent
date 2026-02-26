@@ -747,24 +747,44 @@ class venta
 		}
 	}
 
-	public function ListarFiltros($desde, $hasta)
+	public function ListarFiltros($desde, $hasta, $id_cliente = null)
 	{
 		try {
+			$condiciones = array();
+			$params = array();
 
+			if (!empty($desde)) {
+				$condiciones[] = 'CAST(v.fecha_venta AS date) >= ?';
+				$params[] = $desde;
+			}
+			if (!empty($hasta)) {
+				$condiciones[] = 'CAST(v.fecha_venta AS date) <= ?';
+				$params[] = $hasta;
+			}
+			if (!empty($id_cliente)) {
+				$condiciones[] = 'v.id_cliente = ?';
+				$params[] = $id_cliente;
+			}
+
+			$where = '';
+			if (count($condiciones) > 0) {
+				$where = 'WHERE ' . implode(' AND ', $condiciones);
+			}
 
 			$stm = $this->pdo->prepare("SELECT v.condicion_factura,
-			IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
+				IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
 				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
-			(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, 
-			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
-			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
-			FROM ventas v 
-			LEFT JOIN productos p ON v.id_producto = p.id
-			LEFT JOIN clientes c ON v.id_cliente = c.id 
-			LEFT JOIN timbrados t ON t.id = v.id_timbrado
-			WHERE CAST(v.fecha_venta AS date) >= '$desde' AND CAST(v.fecha_venta AS date) <= '$hasta'
-			GROUP BY v.id_venta ORDER BY v.id_venta DESC");
-			$stm->execute(array());
+				v.id_cliente, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado,
+				p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia,
+				fecha_venta, v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto,
+				(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
+				(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon
+				FROM ventas v
+				LEFT JOIN productos p ON v.id_producto = p.id
+				LEFT JOIN clientes c ON v.id_cliente = c.id
+				$where
+				GROUP BY v.id_venta ORDER BY v.id_venta DESC");
+			$stm->execute($params);
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
@@ -774,14 +794,12 @@ class venta
 	public function ListarFiltrosAprobar($desde, $hasta)
 	{
 		try {
-
-
 			$stm = $this->pdo->prepare("SELECT v.condicion_factura, SUM(v.precio_costo*v.cantidad) AS costo, (SUM(v.total) - SUM(v.precio_costo*v.cantidad)) AS ganancia, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, v.estado,
 			(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
-			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon 
-			FROM ventas v 
+			(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon
+			FROM ventas v
 			LEFT JOIN productos p ON v.id_producto = p.id
-			LEFT JOIN clientes c ON v.id_cliente = c.id 
+			LEFT JOIN clientes c ON v.id_cliente = c.id
 			WHERE CAST(v.fecha_venta AS date) >= '$desde' AND CAST(v.fecha_venta AS date) <= '$hasta'
 			AND contado='Credito' AND v.estado='PENDIENTE'
 			GROUP BY v.id_venta ORDER BY v.id_venta DESC");
@@ -834,6 +852,38 @@ class venta
 
 			$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE id_cliente = ? GROUP BY v.id_venta ORDER BY v.id_venta DESC");
 			$stm->execute(array($id_cliente));
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarDetallePorClienteRango($id_cliente, $desde, $hasta, $orden = 'DESC')
+	{
+		try {
+			// $orden = strtoupper(trim((string)$orden));
+			// $orden = ($orden === 'ASC') ? 'ASC' : 'DESC';
+
+			$stm = $this->pdo->prepare("SELECT 
+				v.id,
+				v.fecha_venta,
+				v.comprobante,
+				v.id_venta,
+				v.nro_comprobante,
+				p.producto,
+				v.paciente,
+				v.cantidad,
+				v.precio_venta,
+				v.total
+				FROM ventas v
+				LEFT JOIN productos p ON v.id_producto = p.id
+				WHERE v.id_cliente = ?
+				AND v.anulado = 0
+				AND CAST(v.fecha_venta AS date) >= ?
+				AND CAST(v.fecha_venta AS date) <= ?
+				ORDER BY v.fecha_venta DESC");
+			$stm->execute(array($id_cliente, $desde, $hasta));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
@@ -1007,6 +1057,7 @@ class venta
 			// y además consolida los productos en un único campo "concepto" por venta.
 			$sql = "SELECT 
 					v.metodo,
+					v.condicion_factura,
 					v.contado,
 					v.id_venta,
 					a.nombre as nombre_cli,
