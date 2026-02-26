@@ -142,7 +142,7 @@ class deudaController
         $ingreso->id_venta = $_REQUEST['id_venta'];
         $ingreso->id_deuda = $_REQUEST['id'];
         $ingreso->forma_pago = $_REQUEST['forma_pago'];
-        $ingreso->fecha = date("Y-m-d H:i");
+        $ingreso->fecha = date("Y-m-d H:i:s");
         $ingreso->categoria = 'Cobro de deuda';
         $ingreso->concepto = "Cobro de deuda a " . $_REQUEST['cli'];
         $ingreso->comprobante = $_REQUEST['comprobante'];

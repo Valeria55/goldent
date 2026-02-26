@@ -292,6 +292,9 @@ $pdf->writeHTML($header, false, false, false, false, '');
 $pdf->writeHTML($espacio, false, false, false, false, '');
 $pdf->writeHTML($header, false, false, false, false, '');
 
+if (ob_get_length()) {
+    ob_end_clean();
+}
 $pdf->Output('uin.pdf', 'I');
 
 

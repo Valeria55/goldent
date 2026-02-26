@@ -13,18 +13,11 @@
             <th>ID</th>
             <th>Cliente</th>
             <th>Fecha y Hora</th>
+            <th>Venta</th>
             <th>Comprobante</th>
             <th>Nro. comprobante</th>
             <th>Factura</th>
-            <?php if (!isset($_SESSION)) session_start();
-            if ($_SESSION['nivel'] == 1) { ?>
-                <th>Costo</th>
-            <?php } ?>
             <th>Total</th>
-            <?php if (!isset($_SESSION)) session_start();
-            if ($_SESSION['nivel'] == 1) { ?>
-                <th>Ganancia</th>
-            <?php } ?>
             <th>Acciones</th>
             <?php if (!isset($_SESSION)) session_start();
             if ($_SESSION['nivel'] == 1) { ?>
@@ -114,6 +107,9 @@ if (!isset($_SESSION)) session_start();
                     "data": "fecha_venta"
                 },
                 {
+                    "data": "contado",
+                },
+                {
                     "data": "",
                     render: function(data, type, row) {
 
@@ -132,22 +128,10 @@ if (!isset($_SESSION)) session_start();
                 {
                     "data": "condicion_factura",
                 },
-                <?php
-                if ($_SESSION['nivel'] == 1) { ?> {
-                        "data": "costo",
-                        render: $.fn.dataTable.render.number(',', '.', 0)
-                    },
-                <?php } ?> {
+                {
                     "data": "total",
                     render: $.fn.dataTable.render.number(',', '.', 0)
                 },
-
-                <?php
-                if ($_SESSION['nivel'] == 1) { ?> {
-                        "data": "ganancia",
-                        render: $.fn.dataTable.render.number(',', '.', 0)
-                    },
-                <?php } ?> 
                 {
                     "data": null,
                     "orderable": false,
