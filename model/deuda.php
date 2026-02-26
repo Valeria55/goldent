@@ -552,7 +552,7 @@ class deuda
 		}
 	}
 
-	public function registrarPago($id_deuda, $cantidad, $metodo, $moneda = 'GS', $cambio = 1)
+	public function registrarPago($id_deuda, $cantidad, $metodo, $observaciones = '', $moneda = 'GS', $cambio = 1)
 	{
 		try {
 			$this->pdo->beginTransaction();
@@ -577,16 +577,41 @@ class deuda
 			$stm = $this->pdo->prepare("UPDATE deudas SET saldo = ? WHERE id = ?");
 			$stm->execute(array($nuevo_saldo, $id_deuda));
 
-			// Determinar id_caja según el método de pago
-			$id_caja = ($metodo == 'Efectivo') ? 1 : 3;
-			
-			// Registrar el ingreso del pago
+			if (!isset($_SESSION)) session_start();
+			$id_usuario = $_SESSION['user_id'] ?? null;
+			$nivel = $_SESSION['nivel'] ?? null;
+
+			// Determinar id_caja según el método de pago (mismo criterio que Cobrar())
+			if ($metodo == 'Efectivo') {
+				$id_caja = ($nivel == 4) ? 3 : 1;
+			} else {
+				$id_caja = 2;
+			}
+
+			$fecha_hoy = date('Y-m-d H:i:s');
+			$concepto_ingreso = trim((string)$observaciones);
+			if ($concepto_ingreso === '') {
+				$concepto_ingreso = 'Cobro de deuda';
+			}
+
+			// Registrar el ingreso del pago (con categoria para que aparezca en listados)
 			$stm = $this->pdo->prepare("
-				INSERT INTO ingresos (concepto, monto, fecha, id_deuda, forma_pago, moneda, cambio, id_caja) 
-				VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
+				INSERT INTO ingresos (concepto, monto, fecha, id_deuda, id_cliente, id_usuario, categoria, forma_pago, moneda, cambio, id_caja)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			");
-			$concepto_ingreso = "Pago de deuda: " . $deuda->concepto;
-			$stm->execute(array($concepto_ingreso, $cantidad, $id_deuda, $metodo, $moneda, $cambio, $id_caja));
+			$stm->execute(array(
+				$concepto_ingreso,
+				$cantidad,
+				$fecha_hoy,
+				$id_deuda,
+				$deuda->id_cliente,
+				$id_usuario,
+				'Cobro de deuda',
+				$metodo,
+				$moneda,
+				$cambio,
+				$id_caja
+			));
 
 			$this->pdo->commit();
 			return true;
@@ -646,7 +671,7 @@ class deuda
 			$id_usuario = $_SESSION['user_id'];
 
 			// Registrar el detalle del pago en la tabla pagos_detalle
-			$fecha_hoy=date('Y-m-d h:i');
+			$fecha_hoy = date('Y-m-d H:i:s');
 			$stm = $this->pdo->prepare("
 				INSERT INTO pagos_detalle (grupo_pago_id, id_deuda, id_cliente, monto_aplicado, fecha, id_usuario, nro_recibo) 
 				VALUES (?, ?, ?, ?,?, ?, ?) 
@@ -670,7 +695,7 @@ class deuda
 				$id_usuario = $_SESSION['user_id'];
 				
 				// Determinar id_caja según el método de pago
-				$id_caja = ($metodo_pago['metodo'] == 'Efectivo') ? 1 : 3;
+				$id_caja = ($metodo_pago['metodo'] == 'Efectivo') ? 1 : 2;
 				
 				// Registrar el ingreso con los campos exactos de la tabla
 				$stm = $this->pdo->prepare("
