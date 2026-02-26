@@ -1,5 +1,12 @@
 
 <table id="tabla1" class="table table-striped table-bordered display responsive nowrap" width="100%">
+    <style>
+        /* Resaltar ventas anuladas */
+        tr.venta-anulada > td {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+        }
+    </style>
     <div style="height: 45px;"></div>
     <thead>
         <tr style="background-color: black; color:#fff">
@@ -189,12 +196,14 @@ if (!isset($_SESSION)) session_start();
                         botones += '</div>'; // Cierra grid
                         return botones;
                     }
-                },
-
-
-
-
+                }
             ],
+
+            "createdRow": function(row, data, dataIndex) {
+                if (data && (data.anulado == 1 || data.anulado === '1')) {
+                    $(row).addClass('venta-anulada');
+                }
+            }
 
         });
     });
