@@ -511,12 +511,13 @@ class deuda
 					c.id as id_cliente,
 					c.nombre,
 					c.ruc,
-					COUNT(DISTINCT pd.grupo_pago_id) as cantidad_recibos,
-					COALESCE(SUM(pd.monto_aplicado), 0) as total_pagado,
-					MAX(pd.fecha) as ultima_fecha
-				FROM pagos_detalle pd
-				INNER JOIN clientes c ON pd.id_cliente = c.id
-				WHERE pd.grupo_pago_id IS NOT NULL AND pd.grupo_pago_id != ''
+					COUNT(DISTINCT i.pago_deuda) as cantidad_recibos,
+					COALESCE(SUM(i.monto * COALESCE(i.cambio, 1)), 0) as total_pagado,
+					MAX(i.fecha) as ultima_fecha
+				FROM ingresos i
+				INNER JOIN clientes c ON i.id_cliente = c.id
+				WHERE i.pago_deuda IS NOT NULL AND i.pago_deuda != ''
+				AND COALESCE(i.anulado, 0) = 0
 				GROUP BY c.id, c.nombre, c.ruc
 				ORDER BY ultima_fecha DESC
 			");
@@ -524,6 +525,50 @@ class deuda
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
 			die($e->getMessage());
+		}
+	}
+
+	public function obtenerDetalleReciboDinero($grupo_pago_id, $permitir_anulado = false)
+	{
+		try {
+			$sql = "
+				SELECT
+					i.id as id_ingreso,
+					i.concepto,
+					i.monto,
+					i.fecha,
+					i.id_cliente,
+					i.id_usuario,
+					i.forma_pago,
+					i.moneda,
+					i.cambio,
+					i.anulado,
+					c.nombre as cliente_nombre,
+					c.ruc as cliente_documento,
+					u.user as usuario_nombre
+				FROM ingresos i
+				LEFT JOIN clientes c ON i.id_cliente = c.id
+				LEFT JOIN usuario u ON i.id_usuario = u.id
+				WHERE i.pago_deuda = ?
+			";
+
+			$params = [$grupo_pago_id];
+			if (!$permitir_anulado) {
+				$sql .= " AND COALESCE(i.anulado, 0) = 0";
+			}
+
+			$sql .= " ORDER BY i.id ASC";
+
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute($params);
+			$ingresos = $stm->fetchAll(PDO::FETCH_OBJ);
+
+			return [
+				'grupo_pago_id' => $grupo_pago_id,
+				'ingresos' => $ingresos
+			];
+		} catch (Exception $e) {
+			throw $e;
 		}
 	}
 
@@ -646,10 +691,12 @@ class deuda
 		}
 	}
 
-	public function registrarPagoMultiple($id_deuda, $metodos_pago, $tipos_cambio)
+	public function registrarPagoMultiple($id_deuda, $metodos_pago, $tipos_cambio, $emitir_recibo_contable = true, $nro_recibo_manual = '')
 	{
 		try {
-			// Verificar que el campo nro_recibo existe
+			$emitir_recibo_contable = (bool)$emitir_recibo_contable;
+			$nro_recibo_manual = trim((string)$nro_recibo_manual);
+			// Verificar que el campo nro_recibo existe (se usa también con nro_recibo vacío)
 			$this->verificarCampoNroRecibo();
 			
 			$this->pdo->beginTransaction();
@@ -657,8 +704,12 @@ class deuda
 			// Generar ID único para este grupo de pagos
 			$grupo_pago_id = 'PM_' . date('YmdHis') . '_' . uniqid();
 
-			// Generar número de recibo incremental
-			$nro_recibo = $this->obtenerSiguienteNumeroRecibo();
+			// Generar número de recibo incremental (si no se emite recibo contable, se guarda vacío)
+			if ($emitir_recibo_contable) {
+				$nro_recibo = $nro_recibo_manual !== '' ? $nro_recibo_manual : $this->obtenerSiguienteNumeroRecibo();
+			} else {
+				$nro_recibo = '';
+			}
 
 			// Obtener la deuda actual y el cliente
 			$stm = $this->pdo->prepare("
@@ -694,7 +745,7 @@ class deuda
 			if (!isset($_SESSION)) session_start();
 			$id_usuario = $_SESSION['user_id'];
 
-			// Registrar el detalle del pago en la tabla pagos_detalle
+			// Registrar el detalle del pago en la tabla pagos_detalle (si no es contable, nro_recibo queda vacío)
 			$fecha_hoy = date('Y-m-d H:i:s');
 			$stm = $this->pdo->prepare("
 				INSERT INTO pagos_detalle (grupo_pago_id, id_deuda, id_cliente, monto_aplicado, fecha, id_usuario, nro_recibo) 
@@ -750,7 +801,8 @@ class deuda
 			return array(
 				'success' => true,
 				'grupo_pago_id' => $grupo_pago_id,
-				'nro_recibo' => $nro_recibo
+				'nro_recibo' => $nro_recibo,
+				'emitir_recibo_contable' => $emitir_recibo_contable
 			);
 
 		} catch (Exception $e) {
@@ -760,17 +812,25 @@ class deuda
 		}
 	}
 
-	public function registrarPagoMultipleDeuda($id_deuda, $metodos_pago, $tipos_cambio, $pago_deuda, $total_pago)
+	public function registrarPagoMultipleDeuda($id_deuda, $metodos_pago, $tipos_cambio, $pago_deuda, $total_pago, $emitir_recibo_contable = true, $nro_recibo_manual = '')
 	{
 		try {
+			$emitir_recibo_contable = (bool)$emitir_recibo_contable;
+			$nro_recibo_manual = trim((string)$nro_recibo_manual);
+			$this->verificarCampoNroRecibo();
 			$this->pdo->beginTransaction();
 
-			// Obtener o generar número de recibo
 			$grupo_pago_id = $metodos_pago[0]['grupo_pago_id'];
-			$nro_recibo = $this->obtenerNumeroReciboPorGrupo($grupo_pago_id);
-			
-			if (!$nro_recibo) {
-				$nro_recibo = $this->obtenerSiguienteNumeroRecibo();
+			$nro_recibo = '';
+			if ($emitir_recibo_contable) {
+				if ($nro_recibo_manual !== '') {
+					$nro_recibo = $nro_recibo_manual;
+				} else {
+					$nro_recibo = $this->obtenerNumeroReciboPorGrupo($grupo_pago_id);
+					if (!$nro_recibo) {
+						$nro_recibo = $this->obtenerSiguienteNumeroRecibo();
+					}
+				}
 			}
 
 			// Obtener la deuda actual y el cliente
@@ -800,13 +860,13 @@ class deuda
 			if (!isset($_SESSION)) session_start();
 			$id_usuario = $_SESSION['user_id'];
 
-			// Registrar el detalle del pago en la tabla pagos_detalle
+			// Registrar el detalle del pago en la tabla pagos_detalle (si no es contable, nro_recibo queda vacío)
 			$stm = $this->pdo->prepare("
 				INSERT INTO pagos_detalle (grupo_pago_id, id_deuda, id_cliente, monto_aplicado, fecha, id_usuario, nro_recibo) 
 				VALUES (?, ?, ?, ?, NOW(), ?, ?)
 			");
 			$stm->execute(array(
-				$metodos_pago[0]['grupo_pago_id'], // Usar el grupo_pago_id del primer método
+				$metodos_pago[0]['grupo_pago_id'],
 				$id_deuda,
 				$deuda->id_cliente,
 				$pago_deuda,
@@ -1136,6 +1196,7 @@ class deuda
 				FROM pagos_detalle pd
 				LEFT JOIN usuario u ON pd.id_usuario = u.id
 				WHERE pd.id_cliente = ?
+				AND COALESCE(pd.nro_recibo, '') != ''
 				AND pd.grupo_pago_id IN (
 					SELECT DISTINCT pago_deuda 
 					FROM ingresos 
@@ -1171,6 +1232,7 @@ class deuda
 				FROM pagos_detalle pd
 				LEFT JOIN usuario u ON pd.id_usuario = u.id
 				WHERE pd.id_cliente = ?
+				AND COALESCE(pd.nro_recibo, '') != ''
 				AND pd.grupo_pago_id IN (
 					SELECT DISTINCT pago_deuda 
 					FROM ingresos 

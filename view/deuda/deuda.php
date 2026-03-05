@@ -422,6 +422,46 @@
             window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no');
         }
 
+        function verReciboDinero(grupoPagoId) {
+            var url = '?c=deuda&a=generarReciboDineroPDF&grupo_pago_id=' + grupoPagoId;
+            window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no');
+        }
+
+        function cargarSiguienteNumeroRecibo($input, $checkbox) {
+            if (!$input || $input.length === 0) return;
+            if ($checkbox && $checkbox.length && !$checkbox.is(':checked')) {
+                $input.prop('disabled', true);
+                return;
+            }
+
+            // Si ya tiene valor, no lo pisamos (para respetar cambios manuales)
+            var actual = ($input.val() || '').trim();
+            if (actual !== '') {
+                $input.prop('disabled', false);
+                return;
+            }
+
+            $.ajax({
+                url: '?c=deuda&a=obtenerSiguienteNumeroRecibo',
+                method: 'GET',
+                cache: false,
+                success: function(response) {
+                    try {
+                        var resultado = JSON.parse(response);
+                        if (resultado && resultado.success && resultado.nro_recibo) {
+                            $input.val(resultado.nro_recibo);
+                        }
+                    } catch (e) {
+                        // No bloqueamos el flujo si falla el parseo
+                    }
+                    $input.prop('disabled', false);
+                },
+                error: function() {
+                    $input.prop('disabled', false);
+                }
+            });
+        }
+
         function imprimirRecibo(grupoPagoId) {
             var url = '?c=deuda&a=generarReciboPDF&grupo_pago_id=' + grupoPagoId;
             var ventana = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no');
@@ -714,6 +754,7 @@
                             html += '<div class="btn-group" role="group">';
                             html += '<button class="btn btn-xs btn-primary ver-recibo-btn" ';
                             html += 'data-grupo-id="' + pago.grupo_id + '" ';
+                            html += 'data-tiene-recibo="' + (pago.nro_recibo ? 1 : 0) + '" ';
                             html += 'title="Ver recibo PDF">';
                             html += '<i class="fa fa-file-pdf-o"></i> PDF';
                             html += '</button>';
@@ -868,6 +909,7 @@
                             html += '<div class="btn-group" role="group">';
                             html += '<button class="btn btn-xs btn-primary ver-recibo-btn" ';
                             html += 'data-grupo-id="' + pago.grupo_id + '" ';
+                            html += 'data-tiene-recibo="' + (pago.nro_recibo ? 1 : 0) + '" ';
                             html += 'title="Ver recibo PDF">';
                             html += '<i class="fa fa-file-pdf-o"></i> PDF';
                             html += '</button>';
@@ -954,7 +996,12 @@
         // Manejar ver recibo desde pagos múltiples
         $(document).on('click', '.ver-recibo-btn', function() {
             var grupoId = $(this).data('grupo-id');
-            verRecibo(grupoId);
+            var tieneRecibo = parseInt($(this).data('tiene-recibo') || 0, 10);
+            if (tieneRecibo === 1) {
+                verRecibo(grupoId);
+            } else {
+                verReciboDinero(grupoId);
+            }
         });
 
         // Manejar imprimir recibo desde pagos múltiples
@@ -1191,6 +1238,15 @@
                     </div>
                     
                     <div class="text-right">
+                        <div class="checkbox" style="float:left; margin-top: 8px;">
+                            <label>
+                                <input type="checkbox" id="emitir-recibo-contable-especifico" checked>
+                                Emitir recibo contable
+                            </label>
+                        </div>
+                        <div style="float:left; margin-left: 15px; width: 240px;">
+                            <input type="text" class="form-control input-sm" id="nro-recibo-especifico" placeholder="Nro. Recibo (editable)">
+                        </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success" id="btn-realizar-pago" disabled>Realizar Pago</button>
                     </div>
@@ -1199,6 +1255,22 @@
 
             $('#cobro-especifico-content').html(formulario);
             $('#cobroEspecificoModal').modal('show');
+
+            // Precargar nro de recibo contable (editable)
+            var $chkReciboEsp = $('#emitir-recibo-contable-especifico');
+            var $nroReciboEsp = $('#nro-recibo-especifico');
+            $nroReciboEsp.prop('disabled', !$chkReciboEsp.is(':checked'));
+            cargarSiguienteNumeroRecibo($nroReciboEsp, $chkReciboEsp);
+            $chkReciboEsp.off('change.cargarRecibo').on('change.cargarRecibo', function() {
+                if ($(this).is(':checked')) {
+                    $nroReciboEsp.prop('disabled', false);
+                    // Si estaba vacío, cargar el siguiente
+                    cargarSiguienteNumeroRecibo($nroReciboEsp, $chkReciboEsp);
+                } else {
+                    $nroReciboEsp.val('');
+                    $nroReciboEsp.prop('disabled', true);
+                }
+            });
 
             // Variables para el control de métodos de pago
             var contadorMetodos = 1;
@@ -1316,6 +1388,8 @@
         function realizarCobroEspecificoMultiple(idDeuda) {
             var metodosPago = [];
             var totalPagar = 0;
+            var emitirReciboContable = $('#emitir-recibo-contable-especifico').is(':checked') ? 1 : 0;
+            var nroRecibo = ($('#nro-recibo-especifico').val() || '').trim();
 
             $('.metodo-pago-item').each(function() {
                 var metodo = $(this).find('.metodo-select').val();
@@ -1347,13 +1421,20 @@
                 data: {
                     id_deuda: idDeuda,
                     metodos_pago: JSON.stringify(metodosPago),
-                    total_pagar: totalPagar
+                    total_pagar: totalPagar,
+                    emitir_recibo_contable: emitirReciboContable,
+                    nro_recibo: emitirReciboContable === 1 ? nroRecibo : ''
                 },
                 success: function(response) {
                     var resultado = JSON.parse(response);
                     if (resultado.success) {
                         alert('Pago realizado correctamente');
                         $('#cobroEspecificoModal').modal('hide');
+
+                        if (emitirReciboContable === 0 && resultado.grupo_pago_id) {
+                            verReciboDinero(resultado.grupo_pago_id);
+                        }
+
                         // Recargar las deudas del cliente
                         if (clienteSeleccionado) {
                             var nombreCliente = $('#cliente-seleccionado-titulo').text().replace('Deudas de: ', '');
@@ -1472,6 +1553,15 @@
                     </div>
                     
                     <div class="text-right">
+                        <div class="checkbox" style="float:left; margin-top: 8px;">
+                            <label>
+                                <input type="checkbox" id="emitir-recibo-contable-total" checked>
+                                Emitir recibo contable
+                            </label>
+                        </div>
+                        <div style="float:left; margin-left: 15px; width: 240px;">
+                            <input type="text" class="form-control input-sm" id="nro-recibo-total" placeholder="Nro. Recibo (editable)">
+                        </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success" id="btn-realizar-pago-total" disabled>Realizar Pago Total</button>
                     </div>
@@ -1480,6 +1570,21 @@
 
             $('#pago-total-multiple-content').html(formulario);
             $('#pagoTotalMultipleModal').modal('show');
+
+            // Precargar nro de recibo contable (editable)
+            var $chkReciboTot = $('#emitir-recibo-contable-total');
+            var $nroReciboTot = $('#nro-recibo-total');
+            $nroReciboTot.prop('disabled', !$chkReciboTot.is(':checked'));
+            cargarSiguienteNumeroRecibo($nroReciboTot, $chkReciboTot);
+            $chkReciboTot.off('change.cargarRecibo').on('change.cargarRecibo', function() {
+                if ($(this).is(':checked')) {
+                    $nroReciboTot.prop('disabled', false);
+                    cargarSiguienteNumeroRecibo($nroReciboTot, $chkReciboTot);
+                } else {
+                    $nroReciboTot.val('');
+                    $nroReciboTot.prop('disabled', true);
+                }
+            });
 
             // Variables para el control de métodos de pago total
             var contadorMetodosTotal = 1;
@@ -1585,6 +1690,8 @@
         function realizarPagoTotalMultiple() {
             var metodosPago = [];
             var totalPagar = 0;
+            var emitirReciboContable = $('#emitir-recibo-contable-total').is(':checked') ? 1 : 0;
+            var nroRecibo = ($('#nro-recibo-total').val() || '').trim();
 
             $('.metodo-pago-total-item').each(function() {
                 var metodo = $(this).find('.metodo-total-select').val();
@@ -1616,13 +1723,20 @@
                 data: {
                     id_cliente: clienteSeleccionado,
                     metodos_pago: JSON.stringify(metodosPago),
-                    total_pagar: totalPagar
+                    total_pagar: totalPagar,
+                    emitir_recibo_contable: emitirReciboContable,
+                    nro_recibo: emitirReciboContable === 1 ? nroRecibo : ''
                 },
                 success: function(response) {
                     var resultado = JSON.parse(response);
                     if (resultado.success) {
                         alert('Pago realizado correctamente');
                         $('#pagoTotalMultipleModal').modal('hide');
+
+                        if (emitirReciboContable === 0 && resultado.grupo_pago_id) {
+                            verReciboDinero(resultado.grupo_pago_id);
+                        }
+
                         if (clienteSeleccionado) {
                             var nombreCliente = $('#cliente-seleccionado-titulo').text().replace('Deudas de: ', '');
                             seleccionarCliente(clienteSeleccionado, nombreCliente);
