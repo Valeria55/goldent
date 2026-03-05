@@ -95,7 +95,7 @@
     </tbody>
  </table>
 
- <?php if($subtotal>0){ ?>
+ <?php if($subtotal>=0){ ?>
     <div align="center">
         <a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="venta">Finalizar (F4)</a>
         <a  class="btn btn-lg btn-danger delete" href="?c=venta_tmp&a=CancelarVenta">Cancelar Todo</a>
