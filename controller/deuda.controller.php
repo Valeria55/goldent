@@ -416,6 +416,8 @@ class deudaController
             $id_deuda = $_POST['id_deuda'];
             $metodos_pago = json_decode($_POST['metodos_pago'], true);
             $total_pagar = floatval($_POST['total_pagar']);
+			$emitir_recibo_contable = isset($_POST['emitir_recibo_contable']) ? (int)$_POST['emitir_recibo_contable'] : 1;
+			$nro_recibo = isset($_POST['nro_recibo']) ? trim((string)$_POST['nro_recibo']) : '';
             
             if (empty($metodos_pago)) {
                 echo json_encode(['success' => false, 'message' => 'Debe proporcionar al menos un método de pago']);
@@ -444,12 +446,14 @@ class deudaController
             $tipos_cambio = $this->model->obtenerTiposCambioActuales($_SESSION['user_id']);
             
             // Registrar el pago múltiple
-            $resultado = $this->model->registrarPagoMultiple($id_deuda, $metodos_pago, $tipos_cambio);
+			$resultado = $this->model->registrarPagoMultiple($id_deuda, $metodos_pago, $tipos_cambio, $emitir_recibo_contable == 1, $nro_recibo);
             
             echo json_encode([
                 'success' => true, 
                 'message' => 'Pago registrado correctamente',
-                'grupo_pago_id' => $resultado['grupo_pago_id']
+				'grupo_pago_id' => $resultado['grupo_pago_id'],
+				'emitir_recibo_contable' => $resultado['emitir_recibo_contable'] ?? ($emitir_recibo_contable == 1),
+				'nro_recibo' => $resultado['nro_recibo'] ?? null
             ]);
             
         } catch (Exception $e) {
@@ -463,6 +467,8 @@ class deudaController
             $id_cliente = $_POST['id_cliente'];
             $metodos_pago = json_decode($_POST['metodos_pago'], true);
             $total_pagar = floatval($_POST['total_pagar']);
+			$emitir_recibo_contable = isset($_POST['emitir_recibo_contable']) ? (int)$_POST['emitir_recibo_contable'] : 1;
+			$nro_recibo = isset($_POST['nro_recibo']) ? trim((string)$_POST['nro_recibo']) : '';
             
             if (empty($metodos_pago)) {
                 echo json_encode(['success' => false, 'message' => 'Debe proporcionar al menos un método de pago']);
@@ -503,7 +509,7 @@ class deudaController
                     $pago_deuda = min($cantidad_restante, $deuda->saldo);
                     
                     // Registrar el pago múltiple para esta deuda específica
-                    $this->model->registrarPagoMultipleDeuda($deuda->id, $metodos_pago, $tipos_cambio, $pago_deuda, $total_pagar);
+					$this->model->registrarPagoMultipleDeuda($deuda->id, $metodos_pago, $tipos_cambio, $pago_deuda, $total_pagar, $emitir_recibo_contable == 1, $nro_recibo);
                     
                     $deudas_procesadas[] = [
                         'id' => $deuda->id,
@@ -519,12 +525,54 @@ class deudaController
                 'success' => true, 
                 'message' => 'Pago procesado correctamente',
                 'grupo_pago_id' => $grupo_pago_id,
+                'emitir_recibo_contable' => ($emitir_recibo_contable == 1),
                 'deudas_procesadas' => $deudas_procesadas,
                 'cantidad_restante' => $cantidad_restante
             ]);
             
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al procesar el pago: ' . $e->getMessage()]);
+        }
+    }
+
+    public function obtenerSiguienteNumeroRecibo()
+    {
+        try {
+            $nro = $this->model->obtenerSiguienteNumeroRecibo();
+            echo json_encode([
+                'success' => true,
+                'nro_recibo' => $nro,
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al obtener el siguiente número de recibo',
+            ]);
+        }
+    }
+
+    public function generarReciboDineroPDF()
+    {
+        try {
+            $grupo_pago_id = $_GET['grupo_pago_id'] ?? $_POST['grupo_pago_id'] ?? '';
+            $download = $_GET['download'] ?? '';
+            $anulado = $_GET['anulado'] ?? '';
+            if (empty($grupo_pago_id)) {
+                die('ID de grupo de pago requerido');
+            }
+
+            $url = 'view/deuda/recibo_dinero_tcpdf.php?grupo_pago_id=' . urlencode($grupo_pago_id);
+            if ($download) {
+                $url .= '&download=1';
+            }
+            if ($anulado) {
+                $url .= '&anulado=1';
+            }
+
+            header('Location: ' . $url);
+            exit;
+        } catch (Exception $e) {
+            die('Error al generar recibo de dinero PDF: ' . $e->getMessage());
         }
     }
 
