@@ -32,6 +32,43 @@ class cliente
         }
     }
 
+    private function NormalizarRuc($ruc)
+    {
+        $ruc = trim((string)$ruc);
+        if ($ruc === '') {
+            return '';
+        }
+        // Deja solo caracteres alfanuméricos (ej: "1234567-CI" -> "1234567CI")
+        return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $ruc));
+    }
+
+    public function BuscarPorRuc($ruc, $excluirId = null)
+    {
+        try {
+            $norm = $this->NormalizarRuc($ruc);
+            if ($norm === '') {
+                return null;
+            }
+
+            // Normalización simple en SQL (sin regex) para comparar con el valor normalizado.
+            $expr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(UPPER(ruc),' ',''),'-',''),'.',''),'/',''),'_','')";
+            $sql = "SELECT id, ruc, nombre FROM clientes WHERE $expr = ?";
+            $params = array($norm);
+
+            if (!empty($excluirId)) {
+                $sql .= " AND id <> ?";
+                $params[] = $excluirId;
+            }
+
+            $sql .= " LIMIT 1";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute($params);
+            return $stm->fetch(PDO::FETCH_OBJ);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+    }
+
     public function Listar()
     {
         try

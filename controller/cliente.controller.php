@@ -95,6 +95,33 @@ class clienteController{
         
     }
 
+    public function VerificarRuc()
+    {
+        $ruc = trim((string)($_REQUEST['ruc'] ?? ''));
+        $id = $_REQUEST['id'] ?? null;
+        $id = (is_numeric($id) && (int)$id > 0) ? (int)$id : null;
+
+        if ($ruc === '') {
+            echo json_encode(array('exists' => false), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $encontrado = $this->model->BuscarPorRuc($ruc, $id);
+        if ($encontrado) {
+            echo json_encode(array(
+                'exists' => true,
+                'cliente' => array(
+                    'id' => $encontrado->id,
+                    'ruc' => $encontrado->ruc,
+                    'nombre' => $encontrado->nombre,
+                ),
+            ), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(array('exists' => false), JSON_UNESCAPED_UNICODE);
+    }
+
      public function guardarCliente(){
         $cliente = new cliente();
 

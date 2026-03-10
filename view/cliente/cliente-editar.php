@@ -172,4 +172,53 @@
         });
         event.preventDefault();
     })
+
+    // Verificación opcional de RUC/CI duplicado antes de guardar
+    $('#crud-frm').on('submit', function (event) {
+        var $form = $(this);
+        if ($form.data('ruc-check-bypass') === 1) {
+            return true;
+        }
+
+        var ruc = String($('#ruc').val() || '').trim();
+        var id = String($('#id').val() || '').trim();
+
+        if (ruc === '') {
+            return true; // el required del input se encarga
+        }
+
+        event.preventDefault();
+
+        $.ajax({
+            url: 'index.php',
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                c: 'cliente',
+                a: 'VerificarRuc',
+                ruc: ruc,
+                id: id
+            },
+            success: function (resp) {
+                var existe = resp && resp.exists === true;
+                if (existe) {
+                    var cli = resp.cliente || {};
+                    var nombre = cli.nombre ? ('"' + cli.nombre + '"') : 'otro cliente';
+                    var rucExistente = cli.ruc ? (' (' + cli.ruc + ')') : '';
+                    var msg = 'Ya existe un cliente con este CI/RUC: ' + nombre + rucExistente + '.\n\n¿Querés registrar igual?';
+                    if (!confirm(msg)) {
+                        return;
+                    }
+                }
+
+                $form.data('ruc-check-bypass', 1);
+                $form[0].submit();
+            },
+            error: function () {
+                // Si falla la verificación, no bloqueamos el guardado
+                $form.data('ruc-check-bypass', 1);
+                $form[0].submit();
+            }
+        });
+    });
 </script>
