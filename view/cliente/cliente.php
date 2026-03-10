@@ -45,7 +45,7 @@
             <?php if($_SESSION['nivel']<=1){ ?>
             
             <td>
-                <!-- <a  class="btn btn-danger delete" href="?c=cliente&a=Eliminar&id=<?php //echo $r->id; ?>">Eliminar</a> -->
+                <a  class="btn btn-danger delete" href="?c=cliente&a=Eliminar&id=<?php //echo $r->id; ?>">Eliminar</a>
             </td>
             <?php } ?>
         </tr>

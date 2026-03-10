@@ -75,7 +75,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -90,7 +90,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE DAY(cumple) = ? AND MONTH(cumple) = ? ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' AND DAY(cumple) = ? AND MONTH(cumple) = ? ORDER BY id DESC");
             $stm->execute(array($dia, $mes));
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -105,7 +105,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE cliente = 1 ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' AND cliente = 1 ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -120,7 +120,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE mayorista = 'SI' ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' AND mayorista = 'SI' ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -135,7 +135,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE proveedor = 1 ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' AND proveedor = 1 ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -150,7 +150,7 @@ class cliente
         {
             $result = array();
 
-            $stm = $this->pdo->prepare("SELECT * FROM clientes ORDER BY id DESC");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE activo='SI' ORDER BY id DESC");
             $stm->execute();
 
             return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -163,7 +163,7 @@ class cliente
     {
         try
         {
-            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE id = ?");
+            $stm = $this->pdo->prepare("SELECT * FROM clientes WHERE id = ? AND activo='SI'");
             $stm->execute(array($id));
 
             return $stm->fetch(PDO::FETCH_OBJ);
@@ -176,7 +176,7 @@ class cliente
         try {
             $pdo_tienda = Database::StartUp_taller();
     
-            $stm = $pdo_tienda->prepare("SELECT id FROM clientes WHERE ruc = ?");
+            $stm = $pdo_tienda->prepare("SELECT id FROM clientes WHERE ruc = ? AND activo='SI'");
             $stm->execute(array($ruc));
     
             $result = $stm->fetch(PDO::FETCH_OBJ);
@@ -199,7 +199,7 @@ class cliente
         try
         {
             $stm = $this->pdo
-                ->prepare("DELETE FROM clientes WHERE id = ?");
+                ->prepare("UPDATE clientes SET activo='NO' WHERE id = ?");
 
             $stm->execute(array($id));
         } catch (Exception $e) {
