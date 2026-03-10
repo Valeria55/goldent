@@ -184,6 +184,7 @@ class ventaController
         $desde = trim((string)($_REQUEST["desde"] ?? ''));
         $hasta = trim((string)($_REQUEST["hasta"] ?? ''));
         $id_cliente = $_REQUEST['id_cliente'] ?? null;
+        $paciente = trim((string)($_REQUEST['paciente'] ?? ''));
 
         $desde = ($desde === '') ? null : $desde;
         $hasta = ($hasta === '') ? null : $hasta;
@@ -196,7 +197,7 @@ class ventaController
             $desde = '1900-01-01';
         }
 
-        $venta = $this->model->ListarFiltros($desde, $hasta, $id_cliente);
+        $venta = $this->model->ListarFiltros($desde, $hasta, $id_cliente, $paciente);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
     public function ListarFiltrosAprobar()

@@ -125,7 +125,12 @@
                         </select>
                     </div>
 
-                    <div class="form-group col-md-2">
+                    <div class="form-group col-md-3">
+                        <label>Paciente</label>
+                        <input type="text" name="paciente" value="<?php echo htmlspecialchars($_GET['paciente'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" class="form-control" placeholder="Nombre / apellido">
+                    </div>
+
+                    <div class="form-group col-md-1">
                         <label></label>
                         <input type="submit" value="Filtrar" class="form-control btn btn-success">
                     </div>

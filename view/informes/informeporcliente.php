@@ -5,6 +5,7 @@ require_once('plugins/tcpdf2/tcpdf.php');
 $id_cliente = $_REQUEST['id'] ?? $_REQUEST['id_cliente'] ?? null;
 $desde_req = $_REQUEST['desde'] ?? null;
 $hasta_req = $_REQUEST['hasta'] ?? null;
+$paciente_req = trim((string)($_REQUEST['paciente'] ?? ''));
 
 if (!$id_cliente || !$desde_req || !$hasta_req) {
     die('Faltan parámetros: id (cliente), desde, hasta');
@@ -113,7 +114,7 @@ EOF;
 
 $pdf->writeHTML($html, false, false, false, false, '');
 
-$items = $this->model->ListarDetallePorClienteRango($id_cliente, $desde_req, $hasta_req, 'DESC');
+$items = $this->model->ListarDetallePorClienteRango($id_cliente, $desde_req, $hasta_req, 'DESC', $paciente_req);
 
 if (!$items || count($items) === 0) {
     $pdf->writeHTML('<p style="font-size:9px;">Sin registros en el rango seleccionado.</p>', false, false, false, false, '');

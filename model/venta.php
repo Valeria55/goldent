@@ -747,7 +747,7 @@ class venta
 		}
 	}
 
-	public function ListarFiltros($desde, $hasta, $id_cliente = null)
+	public function ListarFiltros($desde, $hasta, $id_cliente = null, $paciente = null)
 	{
 		try {
 			$condiciones = array();
@@ -764,6 +764,10 @@ class venta
 			if (!empty($id_cliente)) {
 				$condiciones[] = 'v.id_cliente = ?';
 				$params[] = $id_cliente;
+			}
+			if (!empty($paciente)) {
+				$condiciones[] = 'v.paciente LIKE ?';
+				$params[] = '%' . $paciente . '%';
 			}
 
 			$where = '';
@@ -850,7 +854,7 @@ class venta
 		try {
 
 
-			$stm = $this->pdo->prepare("SELECT v.condicion_factura, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE id_cliente = ? GROUP BY v.id_venta ORDER BY v.id_venta DESC");
+			$stm = $this->pdo->prepare("SELECT v.id_venta, v.condicion_factura, v.paciente, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado, p.producto, (subtotal) as subtotal, descuento, (total) as total,fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto, (SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, (SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon FROM ventas v LEFT JOIN productos p ON v.id_producto = p.id LEFT JOIN clientes c ON v.id_cliente = c.id WHERE id_cliente = ? ORDER BY v.id_venta DESC");
 			$stm->execute(array($id_cliente));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
@@ -859,13 +863,57 @@ class venta
 		}
 	}
 
-	public function ListarDetallePorClienteRango($id_cliente, $desde, $hasta, $orden = 'DESC')
+	public function ListarClienteFiltros($id_cliente, $desde = null, $hasta = null, $paciente = null)
+	{
+		try {
+			$condiciones = array();
+			$params = array();
+
+			$condiciones[] = 'v.id_cliente = ?';
+			$params[] = $id_cliente;
+
+			if (!empty($desde)) {
+				$condiciones[] = 'CAST(v.fecha_venta AS date) >= ?';
+				$params[] = $desde;
+			}
+			if (!empty($hasta)) {
+				$condiciones[] = 'CAST(v.fecha_venta AS date) <= ?';
+				$params[] = $hasta;
+			}
+			if (!empty($paciente)) {
+				$condiciones[] = 'v.paciente LIKE ?';
+				$params[] = '%' . $paciente . '%';
+			}
+
+			$where = 'WHERE ' . implode(' AND ', $condiciones);
+
+			$stm = $this->pdo->prepare("SELECT v.id_venta,v.condicion_factura, v.id, v.id_venta, v.comprobante, v.metodo, v.anulado, contado,
+				p.producto, (subtotal) as subtotal, descuento, (total) as total, 
+				fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto,
+				(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor, v.paciente,
+				(SELECT user FROM usuario WHERE id = v.vendedor_salon) as vendedor_salon
+				FROM ventas v
+				LEFT JOIN productos p ON v.id_producto = p.id
+				LEFT JOIN clientes c ON v.id_cliente = c.id
+				$where
+				 ORDER BY v.id_venta DESC");
+			$stm->execute($params);
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarDetallePorClienteRango($id_cliente, $desde, $hasta, $orden = 'DESC', $paciente = null)
 	{
 		try {
 			// $orden = strtoupper(trim((string)$orden));
 			// $orden = ($orden === 'ASC') ? 'ASC' : 'DESC';
+			$orden = strtoupper(trim((string)$orden));
+			$orden = ($orden === 'ASC') ? 'ASC' : 'DESC';
 
-			$stm = $this->pdo->prepare("SELECT 
+			$sql = "SELECT 
 				v.id,
 				v.fecha_venta,
 				v.comprobante,
@@ -882,8 +930,17 @@ class venta
 				AND v.anulado = 0
 				AND CAST(v.fecha_venta AS date) >= ?
 				AND CAST(v.fecha_venta AS date) <= ?
-				ORDER BY v.fecha_venta DESC");
-			$stm->execute(array($id_cliente, $desde, $hasta));
+			";
+
+			$params = array($id_cliente, $desde, $hasta);
+			if (!empty($paciente)) {
+				$sql .= " AND v.paciente LIKE ?";
+				$params[] = '%' . $paciente . '%';
+			}
+			$sql .= " ORDER BY v.fecha_venta $orden";
+
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute($params);
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {

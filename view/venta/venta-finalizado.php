@@ -73,10 +73,12 @@ if (!isset($_SESSION)) session_start();
             $filtroDesde = $_GET['desde'] ?? '';
             $filtroHasta = $_GET['hasta'] ?? '';
             $filtroCliente = $_GET['id_cliente'] ?? '';
+                $filtroPaciente = $_GET['paciente'] ?? '';
             $extraCliente = (!empty($filtroCliente)) ? '&id_cliente=' . urlencode($filtroCliente) : '';
-            if (isset($_GET['desde']) || isset($_GET['hasta']) || isset($_GET['id_cliente'])) {
+                $extraPaciente = (!empty($filtroPaciente)) ? '&paciente=' . urlencode($filtroPaciente) : '';
+                if (isset($_GET['desde']) || isset($_GET['hasta']) || isset($_GET['id_cliente']) || isset($_GET['paciente'])) {
             ?> "ajax": {
-                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $filtroDesde ?>&hasta=<?php echo $filtroHasta ?><?php echo $extraCliente; ?>",
+                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $filtroDesde ?>&hasta=<?php echo $filtroHasta ?><?php echo $extraCliente; ?><?php echo $extraPaciente; ?>",
                     "dataSrc": ""
                 },
             <?php } else { ?>
