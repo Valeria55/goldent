@@ -180,6 +180,18 @@
             return true;
         }
 
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, function (c) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[c];
+            });
+        }
+
         var ruc = String($('#ruc').val() || '').trim();
         var id = String($('#id').val() || '').trim();
 
@@ -205,6 +217,29 @@
                     var cli = resp.cliente || {};
                     var nombre = cli.nombre ? ('"' + cli.nombre + '"') : 'otro cliente';
                     var rucExistente = cli.ruc ? (' (' + cli.ruc + ')') : '';
+
+                    // Preferir SweetAlert2 si está disponible
+                    if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'CI/RUC duplicado',
+                            html: 'Ya existe un cliente con este CI/RUC: <b>' + escapeHtml(nombre.replace(/"/g, '')) + '</b>' + escapeHtml(rucExistente) + '<br><br>¿Querés registrar igual?',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, registrar igual',
+                            cancelButtonText: 'Cancelar',
+                            reverseButtons: true,
+                            allowOutsideClick: false
+                        }).then(function (result) {
+                            if (!result || !result.isConfirmed) {
+                                return;
+                            }
+                            $form.data('ruc-check-bypass', 1);
+                            $form[0].submit();
+                        });
+                        return;
+                    }
+
+                    // Fallback a confirm() si no hay Swal
                     var msg = 'Ya existe un cliente con este CI/RUC: ' + nombre + rucExistente + '.\n\n¿Querés registrar igual?';
                     if (!confirm(msg)) {
                         return;
