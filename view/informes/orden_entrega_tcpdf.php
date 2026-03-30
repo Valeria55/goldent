@@ -23,7 +23,8 @@ $pdf->AddPage();
 $pdf->SetFont('helvetica', '', 11);
 
 // Función para crear el contenido de la orden
-function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL') {
+function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL', $pagina_actual = 1, $total_paginas = 1)
+{
     $contenido = '<table border="0" cellpadding="3" style="width: 100%;">
     <tr>
         <td style="width: 30%; font-weight: bold; font-size: 10px;">GOLDENT S.A</td>
@@ -85,13 +86,16 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
     <tbody>';
 
     // Agregar items reales
+    $total_pagina = 0;
     foreach ($items as $item) {
+        $subtotal = $item->precio_venta * $item->cantidad;
+        $total_pagina += $subtotal;
         $contenido .= '<tr>
         <td style="width: 10%; text-align: center; font-size: 8px;">' . $item->cantidad . '</td>
-        <td style="width: 40%; font-size: 8px;">' . $item->producto . '</td>
+        <td style="width: 40%; font-size: 6px;">' . $item->producto . '</td>
         <td style="width: 20%; font-size: 8px;">' . $item->paciente . '</td>
         <td style="width: 10%; text-align: right; font-size: 8px;">' . number_format($item->precio_venta, 0, ',', '.') . '</td>
-        <td style="width: 20%; text-align: right; font-size: 8px;">' . number_format($item->precio_venta * $item->cantidad, 0, ',', '.') . '</td>
+        <td style="width: 20%; text-align: right; font-size: 8px;">' . number_format($subtotal, 0, ',', '.') . '</td>
         </tr>';
     }
 
@@ -110,6 +114,13 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
     }
 
     $contenido .= '</tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" style="text-align: left; font-size: 8px; font-weight: bold;">Página ' . $pagina_actual . ' de ' . $total_paginas . '</td>
+            <td style="text-align: right; font-size: 8px; font-weight: bold;">SUBTOTAL PÁG.:</td>
+            <td style="text-align: right; font-size: 8px; font-weight: bold;">' . number_format($total_pagina, 0, ',', '.') . '</td>
+        </tr>
+    </tfoot>
     </table>
 
     <table border="0" cellpadding="3" style="width: 100%;">
@@ -130,13 +141,24 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
         <td style="width: 100%; padding: 1px; font-size: 9px;">ACLARACION: ______________________________________________________</td>
     </tr>
     </table>';
-    
+
     return $contenido;
 }
 
 // Preparar datos
 $meses_espanol = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre"
 ];
 $mes = $meses_espanol[date("n") - 1];
 $fecha = date("d") . ' de ' . $mes . ' del ' . date("Y");
@@ -148,16 +170,32 @@ foreach ($items as $item) {
 }
 $valor_letra = NumeroALetras::convertir($total_general, '', '');
 
-// Crear contenido completo con ORIGINAL y COPIA
-$html = crearContenidoOrden($fecha, $items, $total_general, $valor_letra, 'ORIGINAL');
-// $html .= '<hr style="border: 1px dashed #000; margin: 30px 0;">';
-$html .= '<p style="text-align: center; font-size: 10px; margin: 20px 0;">---------------------------------------------------------------------------------------------------------------------------------------------------------</p>';
-// $html .= '<hr style="border: 1px dashed #000; margin: 30px 0;">';
-$html .= '<br><br><br>';
-$html .= crearContenidoOrden($fecha, $items, $total_general, $valor_letra, 'COPIA');
+$chunks = array_chunk($items, 25);
+$total_paginas = count($chunks);
 
-// Escribir el contenido en el PDF
-$pdf->writeHTML($html, true, false, true, false, '');
+foreach ($chunks as $index => $chunk) {
+    $pagina_actual = $index + 1;
+    if ($index > 0) {
+        $pdf->AddPage();
+    }
+
+    // ORIGINAL
+    $htmlOriginal = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'ORIGINAL', $pagina_actual, $total_paginas);
+    $pdf->writeHTML($htmlOriginal, true, false, true, false, '');
+
+    // Verificamos si cabe en la misma hoja (<= 12 items) o si necesitamos salto de página
+    if (count($chunk) > 12) {
+        $pdf->AddPage();
+    } else {
+        $separador = '<p style="text-align: center; font-size: 10px; margin: 20px 0;">---------------------------------------------------------------------------------------------------------------------------------------------------------</p><br><br><br>';
+        $pdf->writeHTML($separador, true, false, true, false, '');
+    }
+
+    // COPIA
+    $htmlCopia = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'COPIA', $pagina_actual, $total_paginas);
+    $pdf->writeHTML($htmlCopia, true, false, true, false, '');
+}
+
 ob_end_clean();
 // Salida del PDF
 $pdf->Output('orden_entrega.pdf', 'I');
