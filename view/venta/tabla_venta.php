@@ -46,9 +46,9 @@
             <td></td>
             <td>Total Gs: <div id="total" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Paraguay.png"></i><?php echo number_format($subtotal, 0, ",", ".") ?></div>
             </td>
-            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Brazil.png"></i><?php echo number_format(($subtotal / $cierre->cot_real), 2, ",", ".") ?></div>
+            <td>Total Rs: <div id="totalrs" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/Brazil.png"></i><?php echo ($cierre && $cierre->cot_real > 0 ? ($cierre && $cierre->cot_real > 0 ? number_format(($subtotal/$cierre->cot_real), 2, "," , ".") : "---") : "---") ?></div>
             </td>
-            <td>Total Us: <div id="totalus" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/USA.png"></i><?php echo number_format(($subtotal / $cierre->cot_dolar), 2, ",", ".") ?></div>
+            <td>Total Us: <div id="totalus" style="font-size: 30px"><img src="http://www.customicondesign.com/images/freeicons/flag/round-flag/48/USA.png"></i><?php echo ($cierre && $cierre->cot_dolar > 0 ? ($cierre && $cierre->cot_dolar > 0 ? number_format(($subtotal/$cierre->cot_dolar), 2, "," , ".") : "---") : "---") ?></div>
             </td>
             <td></td>
             <td></td>

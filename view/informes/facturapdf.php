@@ -241,7 +241,7 @@ class FacturaGenerator
             // Si la descripción supera este límite → cuenta como 2 líneas
             // ► Si los productos saltan muy rápido a 2 líneas → AUMENTAR (ej: 45, 50)
             // ► Si no saltan cuando deberían → REDUCIR (ej: 35, 30)
-            'chars_por_linea' => 60,
+            'chars_por_linea' => 80,
 
             // ► subtotal_y_offset: Donde aparece la línea de SUBTOTAL
             //   - Si el subtotal está muy arriba → AUMENTAR (ej: 85, 88)
@@ -492,8 +492,8 @@ class FacturaGenerator
             $this->acumularTotalesIVA($r);
 
             $producto = $r->producto;
-            if (!empty($this->datosFactura['paciente'])) {
-                $producto .= " PACIENTE: " . $this->datosFactura['paciente'];
+           if (!empty($r->paciente)) {
+                $producto .= " PACIENTE: " . $r->paciente;
             }
 
             $colExenta = '';

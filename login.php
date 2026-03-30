@@ -11,7 +11,7 @@ if (isset($_POST['user'])) {
 	if ($stmt->rowCount() > 0) {
 		if (!isset($_SESSION)) session_start();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		extract($row);
+		if (is_array($row)) extract($row);
 		$_SESSION["validar"] = true;
 		$_SESSION["user_id"] = $id;
 		$_SESSION["username"] = $user;
@@ -21,7 +21,7 @@ if (isset($_POST['user'])) {
 		$caja = $DB_con->prepare("SELECT * FROM cajas WHERE id_usuario = '$id'");
 		$caja->execute();
 		$row = $caja->fetch(PDO::FETCH_ASSOC);
-		//extract($row);
+		//if (is_array($row)) extract($row);
 		$_SESSION["id_caja"] = $id;
 		header("Location: index.php?c=presupuesto");
 	} else {

@@ -876,17 +876,19 @@ class deuda
 			// Obtener id_usuario de la sesión
 			if (!isset($_SESSION)) session_start();
 			$id_usuario = $_SESSION['user_id'];
+			$fecha_hoy = date('Y-m-d H:i:s');
 
 			// Registrar el detalle del pago en la tabla pagos_detalle (si no es contable, nro_recibo queda vacío)
 			$stm = $this->pdo->prepare("
 				INSERT INTO pagos_detalle (grupo_pago_id, id_deuda, id_cliente, monto_aplicado, fecha, id_usuario, nro_recibo) 
-				VALUES (?, ?, ?, ?, NOW(), ?, ?)
+				VALUES (?, ?, ?, ?, ?, ?, ?)
 			");
 			$stm->execute(array(
 				$metodos_pago[0]['grupo_pago_id'],
 				$id_deuda,
 				$deuda->id_cliente,
 				$pago_deuda,
+				$fecha_hoy,
 				$id_usuario,
 				$nro_recibo
 			));
@@ -907,11 +909,11 @@ class deuda
 					
 					// Determinar id_caja según el método de pago
 					$id_caja = ($metodo_pago['metodo'] == 'Efectivo') ? 1 : 3;
-					
+					$fecha_hoy = date('Y-m-d H:i:s');
 					// Registrar el ingreso con el monto original del método de pago
 					$stm = $this->pdo->prepare("
 						INSERT INTO ingresos (concepto, monto, fecha, id_deuda, id_cliente, id_usuario, categoria, forma_pago, moneda, cambio, pago_deuda, id_caja) 
-						VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					");
 					
 					$observacion = trim((string)($metodo_pago['observaciones'] ?? ''));
@@ -920,6 +922,7 @@ class deuda
 					$stm->execute(array(
 						$concepto_ingreso,
 						$metodo_pago['cantidad'], // Usar la cantidad original, no proporcional
+						$fecha_hoy,
 						$id_deuda,
 						$deuda->id_cliente,
 						$id_usuario,

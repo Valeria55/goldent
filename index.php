@@ -8,7 +8,7 @@ if($_SESSION["validar"] != "true" || $sistema != $_SESSION['sistema']){
     exit();  
 }
 require_once 'model/database.php';
-date_default_timezone_set('America/Asuncion');
+date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 $controller = 'venta_tmp';
 // error_reporting(0);
