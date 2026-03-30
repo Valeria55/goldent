@@ -257,7 +257,7 @@ if (!isset($_SESSION)) session_start();
                 <?php } ?> {
                     "defaultContent": "",
                     render: function(data, type, row) {
-                        let link = "?c=presupuesto&a=Presupuestopdf&id=" + row.id_presupuesto;
+                        let link = "?c=presupuesto&a=OrdenDelivery&id=" + row.id_presupuesto;
                         return '<a href="' + link + '" class="btn btn-warning">Imprimir</a>';
                     }
                 },
