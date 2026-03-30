@@ -1,6 +1,6 @@
 <?php
 
-// require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+// require_once('plugins/tcpdf2/tcpdf.php');
 require_once('plugins/tcpdf2/tcpdf.php');
 
 
@@ -10,30 +10,30 @@ $pdf->AddPage('P', 'A4');
 $fechahoy = date("d/m/Y");
 $horahoy = date("H:i");
 
-    function mostrarFecha($fecha)
-    {
-        if (is_null($fecha)) return '';
-        $match_date = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
-    
-        if ($match_date) {
-            $horastr = $match_date->format('H:i');
-        } else {
-            $match_date = DateTime::createFromFormat('Y-m-d', $fecha);
-            $horastr = false;
-        }
-        $today = date_create_from_format('Y-m-d', date('Y-m-d'));
-    
-        $diff = $today->diff($match_date);
-    
-        $diffDays = (int)$diff->format("%R%a"); // Extract days count in interval
-    
-        $hora = "";
-        switch ($diffDays) {
-            default:
-                if ($horastr) $hora = ", a las " . $horastr;
-                return date("d/m/Y", strtotime($fecha)) . $hora;
-        }
-    }
+function mostrarFecha($fecha)
+{
+	if (is_null($fecha)) return '';
+	$match_date = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
+
+	if ($match_date) {
+		$horastr = $match_date->format('H:i');
+	} else {
+		$match_date = DateTime::createFromFormat('Y-m-d', $fecha);
+		$horastr = false;
+	}
+	$today = date_create_from_format('Y-m-d', date('Y-m-d'));
+
+	$diff = $today->diff($match_date);
+
+	$diffDays = (int)$diff->format("%R%a"); // Extract days count in interval
+
+	$hora = "";
+	switch ($diffDays) {
+		default:
+			if ($horastr) $hora = ", a las " . $horastr;
+			return date("d/m/Y", strtotime($fecha)) . $hora;
+	}
+}
 
 $fech_apert = mostrarFecha($cierre_inventario->fecha_apertura);
 $fech_cierre = mostrarFecha($cierre_inventario->fecha_cierre);
@@ -88,28 +88,28 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 // $totalDepo = 0;
 $total_faltante = 0;
 
-foreach($this->model->ListarInventario($id_c) as $r):
+foreach ($this->model->ListarInventario($id_c) as $r):
 
-// $totalStock1 =number_format(($r->precio_costo*$r->stock),2,",",".");
-// $totalStock2 =number_format(($r->precio_costo*$r->stock2),2,",",".");
-// $suma = number_format(($r->precio_costo*$r->stock + $r->precio_costo*$r->stock2),2,",",".");
-$categoria = $r->categoria_hijo ?? '(sin especificar)';
-$stock_real = $r->stock_real ?? 0;
-$cantidad_faltante = $r->faltante ?? $r->stock_actual;
+	// $totalStock1 =number_format(($r->precio_costo*$r->stock),2,",",".");
+	// $totalStock2 =number_format(($r->precio_costo*$r->stock2),2,",",".");
+	// $suma = number_format(($r->precio_costo*$r->stock + $r->precio_costo*$r->stock2),2,",",".");
+	$categoria = $r->categoria_hijo ?? '(sin especificar)';
+	$stock_real = $r->stock_real ?? 0;
+	$cantidad_faltante = $r->faltante ?? $r->stock_actual;
 
 
-$costo=number_format($r->precio_costo,0,",",".");
-$minorista=number_format($r->precio_minorista,0,",",".");
-$faltante = ($r->precio_minorista *$cantidad_faltante);
-if (
+	$costo = number_format($r->precio_costo, 0, ",", ".");
+	$minorista = number_format($r->precio_minorista, 0, ",", ".");
+	$faltante = ($r->precio_minorista * $cantidad_faltante);
+	if (
 		// (is_null($r->faltante)) || 
 		$faltante >= 0
 	) { //faltan mercaderias
-	
-	$total_faltante += $faltante;
-	$monto_faltante = number_format(($faltante), 0, ",",".");
 
-	$html1 = <<<EOF
+		$total_faltante += $faltante;
+		$monto_faltante = number_format(($faltante), 0, ",", ".");
+
+		$html1 = <<<EOF
 			
 			<table width"100%" style="border: 1px solid #333; font-size:7px">
 				<tr align="center">
@@ -128,11 +128,11 @@ if (
 
 	EOF;
 
-	$pdf->writeHTML($html1, false, false, false, false, '');
+		$pdf->writeHTML($html1, false, false, false, false, '');
 
 		// $totalLocal += $r->precio_costo*$r->stock;
 		// $totalDepo += $r->precio_costo*$r->stock2;
-}
+	}
 
 endforeach;
 
@@ -205,13 +205,13 @@ foreach ($this->model->ListarInventario($id_c) as $r) :
 
 	$costo = number_format($r->precio_costo, 0, ",", ".");
 	$minorista = number_format($r->precio_minorista, 0, ",", ".");
-	$sobrante = ($r->precio_minorista *$cantidad_sobrante);
+	$sobrante = ($r->precio_minorista * $cantidad_sobrante);
 	if ($sobrante < 0) { //sobran mercaderias
 
-			$total_sobrante += $sobrante;
-			$monto_sobrante = number_format(($sobrante), 0, ",", ".");
+		$total_sobrante += $sobrante;
+		$monto_sobrante = number_format(($sobrante), 0, ",", ".");
 
-			$html1 = <<<EOF
+		$html1 = <<<EOF
 				
 				<table width"100%" style="border: 1px solid #333; font-size:7px">
 					<tr align="center">
@@ -230,7 +230,7 @@ foreach ($this->model->ListarInventario($id_c) as $r) :
 
 		EOF;
 
-			$pdf->writeHTML($html1, false, false, false, false, '');
+		$pdf->writeHTML($html1, false, false, false, false, '');
 	}
 
 // $totalLocal += $r->precio_costo*$r->stock;

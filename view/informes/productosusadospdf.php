@@ -1,6 +1,6 @@
 <?php
 
-require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+require_once('plugins/tcpdf2/tcpdf.php');
 
 $moneda = $this->venta_tmp->ObtenerMoneda();
 
@@ -14,10 +14,10 @@ $fechadesde = date("d/m/Y", strtotime($_REQUEST['desde']));
 $fechahasta = date("d/m/Y", strtotime($_REQUEST['hasta']));
 $horahoy = date("H:i", strtotime("-4 HOUR"));
 
-$inicial=number_format($moneda->monto_inicial,0,",",".");
+$inicial = number_format($moneda->monto_inicial, 0, ",", ".");
 $caja_inicial = $moneda->monto_inicial;
-$real=number_format($moneda->reales,0,",",".");
-$dolar=number_format($moneda->dolares,0,",",".");
+$real = number_format($moneda->reales, 0, ",", ".");
+$dolar = number_format($moneda->dolares, 0, ",", ".");
 
 $html1 = <<<EOF
 		<h2 align="center">Informe productos usados desde de la fecha $fechadesde hasta $fechahasta</h2>
@@ -64,12 +64,12 @@ $totalContado = 0;
 $totalCosto = 0;
 $totalVenta = 0;
 
-foreach($this->model->ListarUsados($_REQUEST['desde'], $_REQUEST['hasta']) as $r):
+foreach ($this->model->ListarUsados($_REQUEST['desde'], $_REQUEST['hasta']) as $r):
 
-$total=number_format($r->total,0,",",".");
-$costo=number_format($r->precio_costo,0,",",".");
-$hora = date("d/m/Y", strtotime($r->fecha_venta));
-$html1 = <<<EOF
+	$total = number_format($r->total, 0, ",", ".");
+	$costo = number_format($r->precio_costo, 0, ",", ".");
+	$hora = date("d/m/Y", strtotime($r->fecha_venta));
+	$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:10px">
 			<tr align="right">
@@ -83,21 +83,21 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
+	$pdf->writeHTML($html1, false, false, false, false, '');
 
-$totalCosto += $r->costo;
-$totalVenta += $r->total;
+	$totalCosto += $r->costo;
+	$totalVenta += $r->total;
 
-if($r->contado=='Contado'){
-    $totalContado += $r->total;
-}else{
-    $totalCredito += $r->total;
-}
+	if ($r->contado == 'Contado') {
+		$totalContado += $r->total;
+	} else {
+		$totalCredito += $r->total;
+	}
 endforeach;
 
-$totalCostoV = number_format($totalCosto,0,",",".");
-$totalVentaV = number_format($totalVenta,0,",",".");
-$totalGananciaV = number_format(($totalVenta - $totalCosto),0,",",".");
+$totalCostoV = number_format($totalCosto, 0, ",", ".");
+$totalVentaV = number_format($totalVenta, 0, ",", ".");
+$totalGananciaV = number_format(($totalVenta - $totalCosto), 0, ",", ".");
 
 $html1 = <<<EOF
 		
@@ -112,10 +112,10 @@ EOF;
 
 //$pdf->writeHTML($html1, false, false, false, false, '');
 
-$margen = number_format((((($totalVenta - $totalCosto)*100)/$totalCosto)),2,",",".");  
+$margen = number_format((((($totalVenta - $totalCosto) * 100) / $totalCosto)), 2, ",", ".");
 
-$totalContadoV=number_format($totalContado,0,",",".");
-$totalCreditoV=number_format($totalCredito,0,",",".");
+$totalContadoV = number_format($totalContado, 0, ",", ".");
+$totalCreditoV = number_format($totalCredito, 0, ",", ".");
 
 $html1 = <<<EOF
 		<table width"100%" style="border: 1px solid #333">
@@ -136,4 +136,3 @@ $pdf->Output('cierre.pdf', 'I');
 //============================================================+
 // END OF FILE
 //============================================================+
-  ?>

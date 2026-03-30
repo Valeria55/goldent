@@ -113,6 +113,23 @@ class deuda
 		}
 	}
 
+	public function ListarRango($desde, $hasta)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT d.fecha, d.concepto, d.monto, d.saldo, c.nombre 
+									FROM deudas d 
+									LEFT JOIN clientes c ON d.id_cliente = c.id 
+									WHERE CAST(d.fecha AS date) >= ? AND CAST(d.fecha AS date) <= ? AND d.saldo > 0
+									ORDER BY d.fecha ASC");
+
+
+			$stm->execute(array($desde, $hasta));
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function Obtener($id)
 	{
 		try {
@@ -990,9 +1007,8 @@ class deuda
 					MIN(i.fecha) as fecha_pago,
 					GROUP_CONCAT(DISTINCT i.id_deuda) as deudas_afectadas,
 					GROUP_CONCAT(CONCAT(i.forma_pago, ' (', i.moneda, ')') SEPARATOR ' | ') as metodos,
-					MIN(pd.nro_recibo) as nro_recibo
+					(SELECT MIN(nro_recibo) FROM pagos_detalle WHERE grupo_pago_id = i.pago_deuda) as nro_recibo
 				FROM ingresos i
-				LEFT JOIN pagos_detalle pd ON i.pago_deuda = pd.grupo_pago_id
 				WHERE i.pago_deuda IS NOT NULL AND i.pago_deuda != '' AND COALESCE(i.anulado, 0) = 0
 			";
 			
@@ -1029,9 +1045,8 @@ class deuda
 					MIN(i.fecha) as fecha_pago,
 					GROUP_CONCAT(DISTINCT i.id_deuda) as deudas_afectadas,
 					GROUP_CONCAT(CONCAT(i.forma_pago, ' (', i.moneda, ')') SEPARATOR ' | ') as metodos,
-					MIN(pd.nro_recibo) as nro_recibo
+					(SELECT MIN(nro_recibo) FROM pagos_detalle WHERE grupo_pago_id = i.pago_deuda) as nro_recibo
 				FROM ingresos i
-				LEFT JOIN pagos_detalle pd ON i.pago_deuda = pd.grupo_pago_id
 				WHERE i.pago_deuda IS NOT NULL 
 				AND i.pago_deuda != ''
 				AND COALESCE(i.anulado, 0) = 0

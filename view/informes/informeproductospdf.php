@@ -1,6 +1,6 @@
 <?php
 
-require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+require_once('plugins/tcpdf2/tcpdf.php');
 
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -47,13 +47,13 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 $totalLocal = 0;
 $totalDepo = 0;
 
-foreach($this->model->Listar() as $r):
+foreach ($this->model->Listar() as $r):
 
-$totalStock1 =number_format(($r->precio_costo*$r->stock),2,",",".");
-$totalStock2 =number_format(($r->precio_costo*$r->stock2),2,",",".");
-$suma = number_format(($r->precio_costo*$r->stock + $r->precio_costo*$r->stock2),2,",",".");
-$costo=number_format($r->precio_costo,2,",",".");
-$html1 = <<<EOF
+	$totalStock1 = number_format(($r->precio_costo * $r->stock), 2, ",", ".");
+	$totalStock2 = number_format(($r->precio_costo * $r->stock2), 2, ",", ".");
+	$suma = number_format(($r->precio_costo * $r->stock + $r->precio_costo * $r->stock2), 2, ",", ".");
+	$costo = number_format($r->precio_costo, 2, ",", ".");
+	$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:9px">
 			<tr align="center">
@@ -70,16 +70,16 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
+	$pdf->writeHTML($html1, false, false, false, false, '');
 
-$totalLocal += $r->precio_costo*$r->stock;
-$totalDepo += $r->precio_costo*$r->stock2;
+	$totalLocal += $r->precio_costo * $r->stock;
+	$totalDepo += $r->precio_costo * $r->stock2;
 
 endforeach;
 
-$totalLocalV = number_format($totalLocal,2,",",".");
-$totalDepoV = number_format($totalDepo,2,",",".");
-$SumaV = number_format(($totalLocal + $totalDepo),2,",",".");
+$totalLocalV = number_format($totalLocal, 2, ",", ".");
+$totalDepoV = number_format($totalDepo, 2, ",", ".");
+$SumaV = number_format(($totalLocal + $totalDepo), 2, ",", ".");
 
 $html1 = <<<EOF
 		
@@ -109,4 +109,3 @@ $pdf->Output('productos.pdf', 'I');
 //============================================================+
 // END OF FILE
 //============================================================+
-  ?>

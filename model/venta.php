@@ -498,6 +498,24 @@ class venta
 		}
 	}
 
+	public function ListarVentasPorComprobante($desde, $hasta, $esFactura)
+	{
+		try {
+			$condicion = $esFactura ? "comprobante = 'Factura'" : "comprobante != 'Factura'";
+			$stm = $this->pdo->prepare("SELECT v.*, c.nombre as cliente_nombre 
+										FROM ventas v 
+										LEFT JOIN clientes c ON v.id_cliente = c.id 
+										WHERE CAST(v.fecha_venta AS date) >= ? AND CAST(v.fecha_venta AS date) <= ? 
+										AND $condicion AND v.anulado = 0 
+										GROUP BY v.id_venta ORDER BY v.fecha_venta ASC");
+			$stm->execute(array($desde, $hasta));
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function AgrupadoVenta($desde, $hasta)
 	{
 		try {

@@ -68,6 +68,24 @@ class acreedor
 		}
 	}
 
+	public function ListarRango($desde, $hasta)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT a.fecha, a.concepto, a.monto, a.saldo, c.nombre 
+									FROM acreedores a 
+									LEFT JOIN clientes c ON a.id_cliente = c.id 
+									WHERE CAST(a.fecha AS date) >= ? AND CAST(a.fecha AS date) <= ? AND a.saldo > 0
+									AND (a.anulado IS NULL OR a.anulado = 0)
+									ORDER BY a.fecha ASC");
+
+
+			$stm->execute(array($desde, $hasta));
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 	public function Obtener($id)
 	{
 		try {

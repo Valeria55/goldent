@@ -1,6 +1,6 @@
 <?php
 
-// require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+// require_once('plugins/tcpdf2/tcpdf.php');
 require_once('plugins/tcpdf2/tcpdf.php');
 require_once('plugins/tcpdf2/tcpdf_barcodes_1d.php');
 // require_once(dirname(__FILE__) . '/tcpdf_barcodes_1d_include.php');
@@ -16,8 +16,8 @@ $pdf->SetMargins(0, 0, 0, true);
 $pdf->SetAutoPageBreak(TRUE, 0);
 
 $pdf->AddPage();
-$producto=$this->model->obtener($_GET['id']);
-$descripcion=substr($producto->producto,0,17);
+$producto = $this->model->obtener($_GET['id']);
+$descripcion = substr($producto->producto, 0, 17);
 $html1 = <<<EOF
 		<table width="100%" style="font-size:6px;">
 			<tr align="left">
