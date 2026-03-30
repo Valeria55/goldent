@@ -100,7 +100,7 @@
     <?php include("view/presupuesto/finalizar-modal.php"); ?>
     <?php if ($subtotal > 0) { ?>
         <div align="center">
-            <a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto">Finalizar</a>
+            <a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">Finalizar</a>
             <a class="btn btn-lg btn-danger delete" href="?c=presupuesto_tmp&a=CancelarPresupuesto">Cancelar Todo</a>
         </div>
     <?php } ?>
