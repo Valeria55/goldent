@@ -1,12 +1,24 @@
 <?php
 
-// require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+// require_once('plugins/tcpdf2/tcpdf.php');
 require_once('plugins/tcpdf2/tcpdf.php');
 
 // $moneda = $this->venta_tmp->ObtenerMoneda();
-$Meses = array('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-       
+$Meses = array(
+	'Enero',
+	'Febrero',
+	'Marzo',
+	'Abril',
+	'Mayo',
+	'Junio',
+	'Julio',
+	'Agosto',
+	'Septiembre',
+	'Octubre',
+	'Noviembre',
+	'Diciembre'
+);
+
 $desde = date("d-m-Y", strtotime($_REQUEST["desde"]));
 $hasta = date("d-m-Y", strtotime($_REQUEST["hasta"]));
 

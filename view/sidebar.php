@@ -193,6 +193,9 @@
                     <li <?php if ($_GET['c'] == 'metodo') echo "class='active'"; ?>>
                         <a href="?c=metodo">Metodos de pago</a>
                     </li>
+                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe') echo "class='active'"; ?>>
+                <a href="?c=informe"><i class="fas fa-file-alt"></i> Informes</a>
+            </li>
                     <!-- <li <?php //if(isset($_GET['a']) && $_GET['a']=='EstadoResultado') echo "class='active'"; 
                                 ?>>
                     <a href="?c=venta&a=EstadoResultado">Estado de Resultado</a>
@@ -298,6 +301,8 @@
                     </li>
                 </ul>
             </li>
+
+            
 
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp') echo "class='active'"; ?>>
                 <a href="?c=venta_tmp">

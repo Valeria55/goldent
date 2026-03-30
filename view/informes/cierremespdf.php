@@ -1,25 +1,37 @@
 <?php
 
-require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+require_once('plugins/tcpdf2/tcpdf.php');
 
 $moneda = $this->venta_tmp->ObtenerMoneda();
-$Meses = array('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-       
+$Meses = array(
+	'Enero',
+	'Febrero',
+	'Marzo',
+	'Abril',
+	'Mayo',
+	'Junio',
+	'Julio',
+	'Agosto',
+	'Septiembre',
+	'Octubre',
+	'Noviembre',
+	'Diciembre'
+);
+
 
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 $pdf->AddPage('P', 'A4');
 $_REQUEST['fecha'] .= '-01';
 //$mes = date("m", strtotime($_REQUEST['fecha']));
-$mes = $Meses[intval(date("m", strtotime($_REQUEST['fecha'])))-1];
+$mes = $Meses[intval(date("m", strtotime($_REQUEST['fecha']))) - 1];
 $ano = date("Y", strtotime($_REQUEST['fecha']));
 $fechaHoraHoy = date("d/m/Y H:i", strtotime("-4 HOURS"));
 
-$inicial=number_format($moneda->monto_inicial,0,",",".");
+$inicial = number_format($moneda->monto_inicial, 0, ",", ".");
 $caja_inicial = $moneda->monto_inicial;
-$real=number_format($moneda->reales,0,",",".");
-$dolar=number_format($moneda->dolares,0,",",".");
+$real = number_format($moneda->reales, 0, ",", ".");
+$dolar = number_format($moneda->dolares, 0, ",", ".");
 
 $html1 = <<<EOF
 		<h1 align="center">Informe del mes de $mes del año $ano</h1>
@@ -60,14 +72,14 @@ $totalContado = 0;
 $totalCosto = 0;
 $totalVenta = 0;
 
-foreach($this->model->ListarMesSinAnular($_REQUEST['fecha']) as $r):
+foreach ($this->model->ListarMesSinAnular($_REQUEST['fecha']) as $r):
 
-$total=number_format($r->total,0,",",".");
-$costo=number_format($r->costo,0,",",".");
-$ganancia=number_format(($r->total - $r->costo),0,",",".");
-$hora = date("d", strtotime($r->fecha_venta));
-if($r->id_cliente != 14){
-$html1 = <<<EOF
+	$total = number_format($r->total, 0, ",", ".");
+	$costo = number_format($r->costo, 0, ",", ".");
+	$ganancia = number_format(($r->total - $r->costo), 0, ",", ".");
+	$hora = date("d", strtotime($r->fecha_venta));
+	if ($r->id_cliente != 14) {
+		$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:10px">
 			<tr align="center">
@@ -84,21 +96,21 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
-}
-$totalCosto += $r->costo;
-$totalVenta += $r->total;
+		$pdf->writeHTML($html1, false, false, false, false, '');
+	}
+	$totalCosto += $r->costo;
+	$totalVenta += $r->total;
 
-if($r->contado=='Contado'){
-    $totalContado += $r->total;
-}else{
-    $totalCredito += $r->total;
-}
+	if ($r->contado == 'Contado') {
+		$totalContado += $r->total;
+	} else {
+		$totalCredito += $r->total;
+	}
 endforeach;
 
-$totalCostoV = number_format($totalCosto,0,",",".");
-$totalVentaV = number_format($totalVenta,0,",",".");
-$totalGananciaV = number_format(($totalVenta - $totalCosto),0,",",".");
+$totalCostoV = number_format($totalCosto, 0, ",", ".");
+$totalVentaV = number_format($totalVenta, 0, ",", ".");
+$totalGananciaV = number_format(($totalVenta - $totalCosto), 0, ",", ".");
 
 $html1 = <<<EOF
 		
@@ -118,10 +130,10 @@ EOF;
 
 $pdf->writeHTML($html1, false, false, false, false, '');
 
-$margen = number_format((((($totalVenta - $totalCosto)*100)/$totalCosto)),2,",",".");  
+$margen = number_format((((($totalVenta - $totalCosto) * 100) / $totalCosto)), 2, ",", ".");
 
-$totalContadoV=number_format($totalContado,0,",",".");
-$totalCreditoV=number_format($totalCredito,0,",",".");
+$totalContadoV = number_format($totalContado, 0, ",", ".");
+$totalCreditoV = number_format($totalCredito, 0, ",", ".");
 
 $html1 = <<<EOF
 		<table width"100%" style="border: 1px solid #333">
@@ -166,11 +178,11 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 
 $totalIngreso = 0;
 
-foreach($this->ingreso->ListarMesSinVenta($_REQUEST['fecha']) as $i):
-$dia = date("d", strtotime($i->fecha));
-$monto=number_format($i->monto,0,",",".");
-if($i->categoria != "Transferencia"){
-$html1 = <<<EOF
+foreach ($this->ingreso->ListarMesSinVenta($_REQUEST['fecha']) as $i):
+	$dia = date("d", strtotime($i->fecha));
+	$monto = number_format($i->monto, 0, ",", ".");
+	if ($i->categoria != "Transferencia") {
+		$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:10px">
 			<tr align="center">
@@ -182,12 +194,11 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
-$totalIngreso += $i->monto;
-    
-}
+		$pdf->writeHTML($html1, false, false, false, false, '');
+		$totalIngreso += $i->monto;
+	}
 endforeach;
-$ingreso=number_format($totalIngreso,0,",",".");
+$ingreso = number_format($totalIngreso, 0, ",", ".");
 $html1 = <<<EOF
 		<table width"100%" style="border: 1px solid #333">
 			<tr align="center">
@@ -220,10 +231,10 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 $totalCreditoCompra = 0;
 $totalContadoCompra = 0;
 
-foreach($this->compra->ListarMesSinAnular($_REQUEST['fecha']) as $r):
+foreach ($this->compra->ListarMesSinAnular($_REQUEST['fecha']) as $r):
 
-$total=number_format($r->subtotal,0,",",".");
-$html1 = <<<EOF
+	$total = number_format($r->subtotal, 0, ",", ".");
+	$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:10px">
 			<tr align="center">
@@ -237,19 +248,19 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
+	$pdf->writeHTML($html1, false, false, false, false, '');
 
 
 
-if($r->contado=='Contado'){
-    $totalContadoCompra += $r->total;
-}else{
-    $totalCreditoCompra += $r->total;
-}
+	if ($r->contado == 'Contado') {
+		$totalContadoCompra += $r->total;
+	} else {
+		$totalCreditoCompra += $r->total;
+	}
 endforeach;
 
-$totalContadoCompraV=number_format($totalContadoCompra,0,",",".");
-$totalCreditoCompraV=number_format($totalCreditoCompra,0,",",".");
+$totalContadoCompraV = number_format($totalContadoCompra, 0, ",", ".");
+$totalCreditoCompraV = number_format($totalCreditoCompra, 0, ",", ".");
 
 $html1 = <<<EOF
 		<table width"100%" style="border: 1px solid #333">
@@ -284,11 +295,11 @@ $pdf->writeHTML($html1, false, false, false, false, '');
 
 $totalEgreso = 0;
 
-foreach($this->egreso->ListarSinCompraMes($_REQUEST['fecha']) as $e):
-if($e->categoria != "Transferencia"){
-$monto=number_format($e->monto,0,",",".");
-$dia = date("d", strtotime($e->fecha));
-$html1 = <<<EOF
+foreach ($this->egreso->ListarSinCompraMes($_REQUEST['fecha']) as $e):
+	if ($e->categoria != "Transferencia") {
+		$monto = number_format($e->monto, 0, ",", ".");
+		$dia = date("d", strtotime($e->fecha));
+		$html1 = <<<EOF
 		
 		<table width"100%" style="border: 1px solid #333; font-size:10px">
 			<tr align="center">
@@ -300,12 +311,12 @@ $html1 = <<<EOF
 
 EOF;
 
-$pdf->writeHTML($html1, false, false, false, false, '');
-$totalEgreso += $e->monto;
-}
+		$pdf->writeHTML($html1, false, false, false, false, '');
+		$totalEgreso += $e->monto;
+	}
 endforeach;
 
-$egreso=number_format($totalEgreso,0,",",".");
+$egreso = number_format($totalEgreso, 0, ",", ".");
 $html1 = <<<EOF
 		<table width"100%" style="border: 1px solid #333">
 			<tr align="center">
@@ -357,4 +368,3 @@ $pdf->Output('cierremes.pdf', 'I');
 //============================================================+
 // END OF FILE
 //============================================================+
-  ?>

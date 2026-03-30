@@ -73,18 +73,17 @@ class NumeroALetras
             return 'No es posible convertir el numero a letras';
         }
 
-        $div_decimales = explode('.',$number);
+        $div_decimales = explode('.', $number);
 
-        if(count($div_decimales) > 1){
+        if (count($div_decimales) > 1) {
             $number = $div_decimales[0];
             $decNumberStr = (string) $div_decimales[1];
-            if(strlen($decNumberStr) == 2){
+            if (strlen($decNumberStr) == 2) {
                 $decNumberStrFill = str_pad($decNumberStr, 9, '0', STR_PAD_LEFT);
                 $decCientos = substr($decNumberStrFill, 6);
                 $decimales = self::convertGroup($decCientos);
             }
-        }
-        else if (count($div_decimales) == 1 && $forzarCentimos){
+        } else if (count($div_decimales) == 1 && $forzarCentimos) {
             $decimales = 'CERO ';
         }
 
@@ -118,7 +117,7 @@ class NumeroALetras
             }
         }
 
-        if(empty($decimales)){
+        if (empty($decimales)) {
             $valor_convertido = $converted . strtoupper($moneda);
         } else {
             $valor_convertido = $converted . strtoupper($moneda) . ' CON ' . $decimales . ' ' . strtoupper($centimos);
@@ -134,15 +133,15 @@ class NumeroALetras
         if ($n == '100') {
             $output = "CIEN ";
         } else if ($n[0] !== '0') {
-            $output = self::$CENTENAS[$n[0] - 1];   
+            $output = self::$CENTENAS[$n[0] - 1];
         }
 
-        $k = intval(substr($n,1));
+        $k = intval(substr($n, 1));
 
         if ($k <= 20) {
             $output .= self::$UNIDADES[$k];
         } else {
-            if(($k > 30) && ($n[2] !== '0')) {
+            if (($k > 30) && ($n[2] !== '0')) {
                 $output .= sprintf('%sY %s', self::$DECENAS[intval($n[1]) - 2], self::$UNIDADES[intval($n[2])]);
             } else {
                 $output .= sprintf('%s%s', self::$DECENAS[intval($n[1]) - 2], self::$UNIDADES[intval($n[2])]);
@@ -158,12 +157,12 @@ class NumeroALetras
 // FIN  PRUEBA 
 
 
-require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+require_once('plugins/tcpdf2/tcpdf.php');
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 $medidas = array(210, 340); // Ajustar aqui segun los milimetros necesarios;
-$pdf = new TCPDF('P', 'mm', $medidas, true, 'UTF-8', false); 
+$pdf = new TCPDF('P', 'mm', $medidas, true, 'UTF-8', false);
 $pdf->SetPrintHeader(false);
 $pdf->SetPrintFooter(false);
 $pdf->SetHeaderMargin(0);
@@ -175,30 +174,42 @@ $id = $_GET['id'];
 
 $ingreso = $this->model->ListarVenta($id);
 
-$meses = array('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
+$meses = array(
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre'
+);
 
 $dia = date("d", strtotime($ingreso->fecha));
 $mes = date("m", strtotime($ingreso->fecha));
 $anho = date("Y", strtotime($ingreso->fecha));
 
-$monto = number_format($ingreso->monto, 0,",",".");
+$monto = number_format($ingreso->monto, 0, ",", ".");
 
 $letras = NumeroALetras::convertir($ingreso->monto);
 
-if($ingreso->forma_pago == "Efectivo "){
+if ($ingreso->forma_pago == "Efectivo ") {
     $efectivo = "X";
     $cheque = "";
     $nroCheque = "";
     $banco = "";
-}elseif($ingreso->forma_pago == "Cheque"){
+} elseif ($ingreso->forma_pago == "Cheque") {
     $efectivo = "";
     $cheque = "X";
     $nroCheque = $ingreso->comprobante;
     $banco = $ingreso->banco;
 }
 
-$mes = $meses[$mes-1];
+$mes = $meses[$mes - 1];
 
 $header = <<<EOF
     <p> </p>
@@ -301,4 +312,3 @@ $pdf->Output('uin.pdf', 'I');
 //============================================================+
 // END OF FILE
 //============================================================+
-  ?>

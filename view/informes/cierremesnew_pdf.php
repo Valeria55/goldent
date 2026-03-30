@@ -1,6 +1,6 @@
 <?php
 
-// require_once('plugins/tcpdf/pdf/tcpdf_include.php');
+// require_once('plugins/tcpdf2/tcpdf.php');
 require_once('plugins/tcpdf2/tcpdf.php');
 
 // $moneda = $this->venta_tmp->ObtenerMoneda();
@@ -676,7 +676,7 @@ foreach ($this->venta->UsuariosPresupuesto($_REQUEST['desde'], $_REQUEST['hasta'
 		</table>
 
 EOF;
-if (isset($_REQUEST['items_informe']['vent_vend'])) $pdf->writeHTML($html1, false, false, false, false, '');
+	if (isset($_REQUEST['items_informe']['vent_vend'])) $pdf->writeHTML($html1, false, false, false, false, '');
 
 	$indice++;
 endforeach;
