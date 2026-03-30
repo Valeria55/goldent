@@ -50,7 +50,7 @@
     </tbody>
 </table>
 
-<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto">Finalizar (F4)</a></div>
+<div align="center"><a class="btn btn-lg btn-primary " href="#finalizarModal" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal" data-c="presupuesto" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">Finalizar (F4)</a></div>
 
 </div>
 </div>
