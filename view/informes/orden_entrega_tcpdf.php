@@ -140,6 +140,9 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
     <tr>
         <td style="width: 100%; padding: 1px; font-size: 9px;">ACLARACION: ______________________________________________________</td>
     </tr>
+    <tr>
+        <td style="width: 100%; padding: 10px 1px 1px; font-size: 7px; text-align: center;"><i>Desarrollado por Trinity technologies E.A.S</i></td>
+    </tr>
     </table>';
 
     return $contenido;
