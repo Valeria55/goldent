@@ -23,7 +23,7 @@ $pdf->AddPage();
 $pdf->SetFont('helvetica', '', 11);
 
 // Función para crear el contenido de la orden
-function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL', $pagina_actual = 1, $total_paginas = 1)
+function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL', $pagina_actual = 1, $total_paginas = 1, $total_items = 0)
 {
     $contenido = '<table border="0" cellpadding="3" style="width: 100%;">
     <tr>
@@ -116,7 +116,7 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
     $contenido .= '</tbody>
     <tfoot>
         <tr>
-            <td colspan="3" style="text-align: left; font-size: 8px; font-weight: bold;">Página ' . $pagina_actual . ' de ' . $total_paginas . '</td>
+            <td colspan="3" style="text-align: left; font-size: 8px; font-weight: bold;">Artículos: ' . $total_items . ' | Página ' . $pagina_actual . ' de ' . $total_paginas . '</td>
             <td style="text-align: right; font-size: 8px; font-weight: bold;">SUBTOTAL PÁG.:</td>
             <td style="text-align: right; font-size: 8px; font-weight: bold;">' . number_format($total_pagina, 0, ',', '.') . '</td>
         </tr>
@@ -166,8 +166,9 @@ $meses_espanol = [
 $mes = $meses_espanol[date("n") - 1];
 $fecha = date("d") . ' de ' . $mes . ' del ' . date("Y");
 
-// Calcular total
+// Calcular total y cantidad de items
 $total_general = 0;
+$total_items_count = count($items);
 foreach ($items as $item) {
     $total_general += ($item->precio_venta * $item->cantidad);
 }
@@ -183,7 +184,7 @@ foreach ($chunks as $index => $chunk) {
     }
 
     // ORIGINAL
-    $htmlOriginal = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'ORIGINAL', $pagina_actual, $total_paginas);
+    $htmlOriginal = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'ORIGINAL', $pagina_actual, $total_paginas, $total_items_count);
     $pdf->writeHTML($htmlOriginal, true, false, true, false, '');
 
     // Verificamos si cabe en la misma hoja (<= 12 items) o si necesitamos salto de página
@@ -195,7 +196,7 @@ foreach ($chunks as $index => $chunk) {
     }
 
     // COPIA
-    $htmlCopia = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'COPIA', $pagina_actual, $total_paginas);
+    $htmlCopia = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'COPIA', $pagina_actual, $total_paginas, $total_items_count);
     $pdf->writeHTML($htmlCopia, true, false, true, false, '');
 }
 
