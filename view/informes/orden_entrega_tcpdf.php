@@ -93,7 +93,7 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
         $contenido .= '<tr>
         <td style="width: 10%; text-align: center; font-size: 8px;">' . $item->cantidad . '</td>
         <td style="width: 40%; font-size: 6px;">' . $item->producto . '</td>
-        <td style="width: 20%; font-size: 8px;">' . $item->paciente . '</td>
+        <td style="width: 20%; font-size: 6px;">' . $item->paciente . '</td>
         <td style="width: 10%; text-align: right; font-size: 8px;">' . number_format($item->precio_venta, 0, ',', '.') . '</td>
         <td style="width: 20%; text-align: right; font-size: 8px;">' . number_format($subtotal, 0, ',', '.') . '</td>
         </tr>';
