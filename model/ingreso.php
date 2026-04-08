@@ -23,6 +23,7 @@ class ingreso
 	public $moneda;
 	public $cambio;
 	public $id_transferencia;
+	public $id_adelanto;
 
 	public function __CONSTRUCT()
 	{
@@ -556,6 +557,95 @@ class ingreso
 						$data->id_transferencia
 					)
 				);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ActualizarPorAdelanto($adelanto)
+	{
+		try {
+			$sql = "UPDATE ingresos SET 
+						id_cliente   = ?,
+						fecha        = ?,
+						concepto     = ?,
+						comprobante  = ?,
+						monto        = ?,
+						forma_pago   = ?,
+						id_caja      = ?
+					WHERE id_adelanto = ? AND anulado IS NULL";
+
+			$this->pdo->prepare($sql)->execute(array(
+				$adelanto->id_cliente,
+				$adelanto->fecha,
+				'Adelanto #' . $adelanto->id . ($adelanto->descripcion ? ' - ' . $adelanto->descripcion : ''),
+				$adelanto->comprobante,
+				$adelanto->monto,
+				$adelanto->forma_pago,
+				($adelanto->forma_pago === 'Efectivo') ? 1 : 2,
+				$adelanto->id
+			));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function RegistrarAdelanto($data)
+	{
+		try {
+			if (!isset($_SESSION)) session_start();
+			$id_usuario = $_SESSION['user_id'];
+			$sql = "INSERT INTO ingresos (id_cliente, id_usuario, id_caja, id_venta, id_deuda, fecha, categoria, concepto, comprobante, monto, moneda, cambio, forma_pago, sucursal, id_gift, id_usuario_transferencia, id_compra, id_transferencia, id_adelanto) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+			$this->pdo->prepare($sql)
+				->execute(
+					array(
+						$data->id_cliente,
+						$id_usuario,
+						$data->id_caja,
+						$data->id_venta,
+						$data->id_deuda,
+						$data->fecha,
+						$data->categoria,
+						$data->concepto,
+						$data->comprobante,
+						$data->monto,
+						$data->moneda,
+						$data->cambio,
+						$data->forma_pago,
+						$data->sucursal,
+						$data->id_gift,
+						$data->id_usuario_transferencia,
+						$data->id_compra,
+						$data->id_transferencia,
+						$data->id_adelanto
+					)
+				);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function AnularPorAdelanto($id_adelanto)
+	{
+		try {
+			$stm = $this->pdo
+				->prepare("UPDATE ingresos SET anulado = 1 WHERE id_adelanto = ?");
+
+			$stm->execute(array($id_adelanto));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function EliminarPorAdelanto($id_adelanto)
+	{
+		try {
+			$stm = $this->pdo
+				->prepare("UPDATE ingresos SET anulado = 1 WHERE id_adelanto = ?");
+
+			$stm->execute(array($id_adelanto));
 		} catch (Exception $e) {
 			die($e->getMessage());
 		}

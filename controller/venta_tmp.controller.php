@@ -14,6 +14,8 @@ require_once 'model/metodo.php';
 require_once 'model/gift_card.php';
 require_once 'model/presupuesto.php';
 require_once 'model/devolucion_ventas.php';
+require_once 'model/adelanto.php';
+
 
 class venta_tmpController
 {
@@ -34,6 +36,7 @@ class venta_tmpController
     private $gift_card;
     private $presupuesto;
     private $devolucion_ventas;
+    private $adelanto;
 
 
     public function __CONSTRUCT()
@@ -54,6 +57,7 @@ class venta_tmpController
         $this->gift_card = new gift_card();
         $this->presupuesto = new presupuesto();
         $this->devolucion_ventas = new devolucion_ventas();
+        $this->adelanto = new adelanto();
     }
 
     public function Index()

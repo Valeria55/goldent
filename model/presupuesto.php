@@ -16,6 +16,7 @@ class presupuesto
 	public $estado;
 	public $aprobado;
 	public $paciente;
+	public $id_adelanto;
 
 	public function __CONSTRUCT()
 	{
@@ -374,8 +375,8 @@ class presupuesto
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado, paciente) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado, paciente, id_adelanto) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -390,7 +391,8 @@ class presupuesto
 						$data->descuento,
 						$data->aprobado,
 						$data->estado,
-						$data->paciente
+						$data->paciente,
+						$data->id_adelanto
 
 					)
 				);
@@ -486,6 +488,30 @@ class presupuesto
 			$stm = $this->pdo
 				->prepare("UPDATE presupuestos SET anulado=1 WHERE id_presupuesto = ? ");
 			$stm->execute(array($id_presupuesto));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ObtenerIdAdelanto($id_presupuesto)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT id_adelanto FROM presupuestos WHERE id_presupuesto = ? AND id_adelanto IS NOT NULL LIMIT 1");
+			$stm->execute(array($id_presupuesto));
+			$res = $stm->fetch(PDO::FETCH_OBJ);
+			return $res ? $res->id_adelanto : null;
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ObtenerIdAdelantoPorId($id)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT id_adelanto FROM presupuestos WHERE id = ? AND id_adelanto IS NOT NULL LIMIT 1");
+			$stm->execute(array($id));
+			$res = $stm->fetch(PDO::FETCH_OBJ);
+			return $res ? $res->id_adelanto : null;
 		} catch (Exception $e) {
 			die($e->getMessage());
 		}

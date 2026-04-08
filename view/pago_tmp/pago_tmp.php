@@ -25,6 +25,19 @@ endforeach;
 // El saldo está en Guaraníes (monto_venta->monto ya está en GS)
 $saldo = $monto_venta->monto - $pagototal;
 
+// Si viene de un presupuesto, descontar el adelanto
+$adelanto_monto = 0;
+if ($monto_venta->id_presupuesto > 0) {
+    $presu = $this->presupuesto->ObtenerId_presupuesto($monto_venta->id_presupuesto);
+    if ($presu && $presu->id_adelanto) {
+        $ade = $this->adelanto->Obtener($presu->id_adelanto);
+        if ($ade) {
+            $adelanto_monto = $ade->monto;
+        }
+    }
+}
+$saldo = $saldo - $adelanto_monto;
+
 if ($saldo < 0.5) {
     $saldo = 0;
 }
@@ -58,6 +71,12 @@ if ($saldo < 0.5) {
         </tbody>
     </table>
 </div>
+
+<?php if ($adelanto_monto > 0) : ?>
+    <div class="alert alert-info" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+        <i class="fa fa-info-circle"></i> <strong>Adelanto aplicado:</strong> GS <?php echo number_format($adelanto_monto, 0, ".", "."); ?> (Deducido del saldo total)
+    </div>
+<?php endif; ?>
 
 <?php if ($saldo == 0) : ?>
     <div align="center">

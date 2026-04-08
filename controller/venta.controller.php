@@ -20,6 +20,7 @@ require_once 'model/devolucion_compras.php';
 require_once 'model/inventario.php';
 require_once 'model/devolucion.php';
 require_once 'model/transferencia_producto.php';
+require_once 'model/adelanto.php';
 
 
 class ventaController
@@ -47,6 +48,7 @@ class ventaController
     private $inventario;
     private $devolucion;
     private $transferencia_producto;
+    private $adelanto;
 
     public function __CONSTRUCT()
     {
@@ -72,6 +74,7 @@ class ventaController
         $this->inventario = new inventario();
         $this->devolucion = new devolucion();
         $this->transferencia_producto = new transferencia_producto();
+        $this->adelanto = new adelanto();
     }
 
     public function Index()
@@ -535,6 +538,21 @@ class ventaController
             $sumaTotal += $venta->total;
         }
         $error = 0;
+        $adelanto_total = 0;
+        $items_tmp = $this->venta_tmp->Listar();
+        if (count($items_tmp) > 0) {
+            $primer_item = $items_tmp[0];
+            if ($primer_item->id_presupuesto > 0) {
+                $presu = $this->presupuesto->ObtenerId_presupuesto($primer_item->id_presupuesto);
+                if ($presu && $presu->id_adelanto) {
+                    $ade = $this->adelanto->Obtener($presu->id_adelanto);
+                    if ($ade) {
+                        $adelanto_total = $ade->monto;
+                    }
+                }
+            }
+        }
+
         if ($venta->contado == 'Credito') {
 
             $deuda = new deuda();
@@ -544,8 +562,8 @@ class ventaController
             $deuda->fecha = $_REQUEST["fecha_venta"];
             //$deuda->vencimiento = $_REQUEST['vencimiento'];
             $deuda->concepto = 'Venta a crédito';
-            $deuda->monto = $sumaTotal;
-            $deuda->saldo = $sumaTotal - $_REQUEST['entrega'];
+            $deuda->monto = $sumaTotal - $adelanto_total;
+            $deuda->saldo = ($sumaTotal - $adelanto_total) - $_REQUEST['entrega'];
             $deuda->sucursal = 1;
 
             $this->deuda->Registrar($deuda);

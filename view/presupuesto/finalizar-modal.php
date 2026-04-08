@@ -21,6 +21,13 @@
                         </select>
 				    </div>
 				    
+				    <div class="form-group col-sm-12" id="div-adelantos" style="display:none;">
+						<label>Adelanto disponible</label>
+                        <select name="id_adelanto" id="id_adelanto" class="form-control">
+                            <option value="">-- No usar adelanto --</option>
+                        </select>
+				    </div>
+
 				    <div class="form-group col-sm-12">
 						<label>Descuento Global (%) </label>
                         <input type="number" name="descuento_global" class="form-control" value="0" min="0" max="100" step="0.01" id="descuento_global">
@@ -39,3 +46,27 @@
         </div>
     </div>
 </div>
+
+<script>
+    $('#cliente').on('change', function() {
+        var id_cliente = $(this).val();
+        if (id_cliente > 0) {
+            $.post('?c=adelanto&a=ListarPendientes', {id_cliente: id_cliente}, function(data) {
+                var adelantos = JSON.parse(data);
+                var $select = $('#id_adelanto');
+                $select.empty();
+                $select.append('<option value="">-- No usar adelanto --</option>');
+                if (adelantos.length > 0) {
+                    $('#div-adelantos').show();
+                    adelantos.forEach(function(a) {
+                        $select.append('<option value="' + a.id + '">Adelanto #' + a.id + ' - GS ' + parseFloat(a.monto).toLocaleString('es-PY') + '</option>');
+                    });
+                } else {
+                    $('#div-adelantos').hide();
+                }
+            });
+        } else {
+            $('#div-adelantos').hide();
+        }
+    });
+</script>

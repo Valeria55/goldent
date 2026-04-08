@@ -6,12 +6,21 @@ require_once 'model/venta_tmp.php';
 require_once 'model/producto.php';
 require_once 'model/cierre.php';
 require_once 'model/cliente.php';
+require_once 'model/adelanto.php';
 
 
 class presupuestoController
 {
 
     private $model;
+    private $presupuesto;
+    private $usuario;
+    private $presupuesto_tmp;
+    private $venta_tmp;
+    private $producto;
+    private $cierre;
+    private $cliente;
+    private $adelanto;
 
     public function __CONSTRUCT()
     {
@@ -23,6 +32,7 @@ class presupuestoController
         $this->producto = new producto();
         $this->cierre = new cierre();
         $this->cliente = new cliente();
+        $this->adelanto = new adelanto();
     }
 
     public function Index()
@@ -320,8 +330,9 @@ class presupuestoController
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
         
-        // Obtener descuento global del formulario
+        // Obtener descuento global y adelanto del formulario
         $descuento_global = isset($_REQUEST['descuento_global']) ? floatval($_REQUEST['descuento_global']) : 0;
+        $id_adelanto = isset($_REQUEST['id_adelanto']) ? $_REQUEST['id_adelanto'] : null;
         
         // Determinar si requiere aprobación (descuento > 10%)
         $requiere_aprobacion = $descuento_global > 10;
@@ -354,11 +365,16 @@ class presupuestoController
             $presupuesto->fecha_presupuesto = $_REQUEST["fecha_presupuesto"]; //date("Y-m-d H:i");
             $presupuesto->aprobado = $aprobado; // Nuevo campo para aprobación
             $presupuesto->estado = $estado; // Establecer estado
+            $presupuesto->id_adelanto = $id_adelanto; // Vincular adelanto
 
             //Registrar presupuesto
             $this->model->Registrar($presupuesto);
 
             $sumaTotal += $presupuesto->presupuesto;
+        }
+
+        if ($id_adelanto) {
+            $this->adelanto->CambiarEstado($id_adelanto, 'UTILIZADO');
         }
 
 
@@ -406,14 +422,20 @@ class presupuestoController
 
     public function Eliminar()
     {
-
+        $id_adelanto = $this->model->ObtenerIdAdelantoPorId($_REQUEST['id']);
+        if ($id_adelanto) {
+            $this->adelanto->CambiarEstado($id_adelanto, 'PENDIENTE');
+        }
         $this->model->Eliminar($_REQUEST['id']);
         header('Location: index.php?c=presupuesto');
     }
 
     public function Anular()
     {
-
+        $id_adelanto = $this->model->ObtenerIdAdelanto($_REQUEST['id']);
+        if ($id_adelanto) {
+            $this->adelanto->CambiarEstado($id_adelanto, 'PENDIENTE');
+        }
         $this->model->Anular($_REQUEST['id']);
         header('Location: index.php?c=presupuesto');
     }

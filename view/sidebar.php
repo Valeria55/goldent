@@ -51,6 +51,9 @@
             <li <?php if ($_GET['c'] == 'deuda') echo "class='active'"; ?>>
                 <a href="?c=deuda">Deudores</a>
             </li>
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
 
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto') echo "class='active'"; ?>>
                 <a href="?c=presupuesto">Presupuesto</a>
@@ -184,6 +187,9 @@
                     </li>
                     <li <?php if ($_GET['c'] == 'acreedor') echo "class='active'"; ?>>
                         <a href="?c=acreedor">Acreedores</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                        <a href="?c=adelanto">Adelantos</a>
                     </li>
                     <?php if (($_SESSION['nivel'] == 1)) : ?>
                         <li <?php if (isset($_GET['a']) && $_GET['a'] == 'balance') echo "class='active'"; ?>>
@@ -387,6 +393,9 @@
                     </li>
                     <li <?php if ($_GET['c'] == 'acreedor') echo "class='active'"; ?>>
                         <a href="?c=acreedor">Acreedores</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                        <a href="?c=adelanto">Adelantos</a>
                     </li>
                     <li <?php if ($_GET['c'] == 'metodo') echo "class='active'"; ?>>
                         <a href="?c=metodo">Metodos de pago</a>

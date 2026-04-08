@@ -9,6 +9,7 @@ require_once 'model/devolucion_compras.php';
 require_once 'model/compra_tmp.php';
 require_once 'model/deuda.php';
 require_once 'model/cierre.php';
+require_once 'model/adelanto.php';
 
 class pago_tmpController
 {
@@ -22,6 +23,7 @@ class pago_tmpController
     private $compra_tmp;
     private $deuda;
     private $cierre;
+    private $adelanto;
 
     public function __CONSTRUCT()
     {
@@ -35,6 +37,7 @@ class pago_tmpController
         $this->compra_tmp = new compra_tmp();
         $this->deuda = new deuda();
         $this->cierre = new cierre();
+        $this->adelanto = new adelanto();
     }
 
     public function Index()
