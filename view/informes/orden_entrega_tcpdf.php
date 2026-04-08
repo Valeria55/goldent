@@ -188,7 +188,7 @@ foreach ($chunks as $index => $chunk) {
     $pdf->writeHTML($htmlOriginal, true, false, true, false, '');
 
     // Verificamos si cabe en la misma hoja (<= 12 items) o si necesitamos salto de página
-    if (count($chunk) > 12) {
+    if (count($chunk) >= 6) {
         $pdf->AddPage();
     } else {
         $separador = '<p style="text-align: center; font-size: 10px; margin: 20px 0;">---------------------------------------------------------------------------------------------------------------------------------------------------------</p><br><br><br>';
