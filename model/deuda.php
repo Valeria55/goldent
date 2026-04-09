@@ -174,6 +174,10 @@ class deuda
 	{
 		try {
 			$stm = $this->pdo
+				->prepare("DELETE FROM pagos_detalle WHERE id_deuda = ?");
+			$stm->execute(array($id));
+
+			$stm = $this->pdo
 				->prepare("DELETE FROM deudas WHERE id = ?");
 
 			$stm->execute(array($id));
@@ -185,6 +189,10 @@ class deuda
 	public function AnularVenta($id)
 	{
 		try {
+			$stm = $this->pdo
+				->prepare("DELETE FROM pagos_detalle WHERE id_deuda IN (SELECT id FROM deudas WHERE id_venta = ?)");
+			$stm->execute(array($id));
+
 			$stm = $this->pdo
 				->prepare("DELETE FROM deudas WHERE id_venta = ?");
 

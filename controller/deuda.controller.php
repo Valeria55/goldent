@@ -281,6 +281,7 @@ class deudaController
         $html .= '<th>Comprobante</th>';
         $html .= '<th>Fecha</th>';
         $html .= '<th>Vencimiento</th>';
+        $html .= '<th>Venta</th>';
         $html .= '<th>Monto</th>';
         $html .= '<th>Saldo</th>';
         $html .= '<th>Acciones</th>';
@@ -295,6 +296,7 @@ class deudaController
             $html .= '<td>' . ($deuda->nro_comprobante ? htmlspecialchars($deuda->nro_comprobante) : '-') . '</td>';
             $html .= '<td>' . date("d/m/Y", strtotime($deuda->fecha)) . '</td>';
             $html .= '<td>' . (date("Y", strtotime($deuda->vencimiento)) > 2000 ? date("d/m/Y", strtotime($deuda->vencimiento)) : '') . '</td>';
+            $html .= '<td>' . $deuda->id_venta . '</td>';
             $html .= '<td class="text-right">' . number_format($deuda->monto, 0, ',', '.') . '</td>';
             $html .= '<td class="text-right">' . number_format($deuda->saldo, 0, ',', '.') . '</td>';
             $html .= '<td>';

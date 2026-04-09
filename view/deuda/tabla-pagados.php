@@ -7,6 +7,7 @@
             <th>Saldo</th>
             <th>Fecha</th>
             <th>Vencimiento</th>
+            <th>Venta</th>
             <th></th>
         </tr>
     </thead>
@@ -24,6 +25,7 @@
                 <td style="padding-right:3px" align="right"><?php echo number_format($s->saldo, 0, ",", ","); ?></td>
                 <td><?php echo date("d/m/Y H:i", strtotime($s->fecha)); ?></td>
                 <td><?php echo (date("Y", strtotime($s->vencimiento)) > 2000) ? date("d/m/Y", strtotime($s->vencimiento)) : ""; ?></td>
+                <td><?php echo $s->id_venta; ?></td>
                 <?php if ($s->id_venta) : ?>
                     <td>
                         <a href="#cobrosModal" class="btn btn-success" data-toggle="modal" data-target="#cobrosModal" data-id="<?php echo $s->id; ?>">Cobros</a>
@@ -44,6 +46,7 @@
             <td></td>
             <td></td>
             <td style="padding-right:3px" align="right">TOTAL: <?php echo number_format($suma,0,".",","); ?></td>
+            <td></td>
             <td></td>
             <td></td>
             <td></td>
