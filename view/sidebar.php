@@ -31,6 +31,9 @@
                     </li>
                 </ul>
             </li>
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
 
         <?php endif; ?>
 
@@ -84,6 +87,10 @@
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
                 <a href="?c=cliente">Clientes</a>
             </li>
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
+
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto') echo "class='active'"; ?>>
                 <a href="?c=presupuesto">Presupuesto</a>
             </li>
@@ -159,7 +166,7 @@
                     <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
                         <a href="?c=devolucion">Ajustes de stock</a>
                     </li>
-                   
+
                 </ul>
             </li>
             <li>
@@ -200,8 +207,8 @@
                         <a href="?c=metodo">Metodos de pago</a>
                     </li>
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe') echo "class='active'"; ?>>
-                <a href="?c=informe"><i class="fas fa-file-alt"></i> Informes</a>
-            </li>
+                        <a href="?c=informe"><i class="fas fa-file-alt"></i> Informes</a>
+                    </li>
                     <!-- <li <?php //if(isset($_GET['a']) && $_GET['a']=='EstadoResultado') echo "class='active'"; 
                                 ?>>
                     <a href="?c=venta&a=EstadoResultado">Estado de Resultado</a>
@@ -235,6 +242,10 @@
                     </li>
                 </ul>
             </li>
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
+
             <li>
                 <a href="#presupuestoSubmenu" data-toggle="collapse" aria-expanded="false">Presupuesto</a>
                 <ul class="collapse list-unstyled 
@@ -308,7 +319,7 @@
                 </ul>
             </li>
 
-            
+
 
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp') echo "class='active'"; ?>>
                 <a href="?c=venta_tmp">
@@ -430,6 +441,10 @@
                     </li>
                 </ul>
             </li>
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
+
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto') echo "class='active'"; ?>>
                 <a href="?c=presupuesto">Presupuesto</a>
             </li>
@@ -495,7 +510,7 @@
             </li>
 
         <?php } ?>
-         <?php //NIVEL 5 SALA DE INSUMOS  
+        <?php //NIVEL 5 SALA DE INSUMOS  
         ?>
         <?php if ($_SESSION['nivel'] == 5) { ?>
             <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
@@ -508,8 +523,8 @@
                 <a href="?c=cliente">Personas</a>
             </li>
             <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'compra') echo "class='active'"; ?>>
-                        <a href="?c=compra">Compras</a>
-                    </li>
+                <a href="?c=compra">Compras</a>
+            </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'devolucion') echo "class='active'"; ?>>
                 <a href="?c=devolucion">Ajustes</a>
             </li>
