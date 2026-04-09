@@ -593,7 +593,7 @@ class deuda
 	{
 		try {
 			$stm = $this->pdo->prepare("
-				SELECT d.*, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta) as nro_comprobante
+				SELECT d.*, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante
 				FROM deudas d
 				WHERE d.id_cliente = ? AND d.saldo > 0 
 				ORDER BY d.fecha ASC
