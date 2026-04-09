@@ -1130,12 +1130,11 @@ class deuda
 					c.nombre as cliente_nombre,
 					c.ruc as cliente_documento,
 					u.user as usuario_nombre,
-					v.nro_comprobante
+					(SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante
 				FROM pagos_detalle pd
 				LEFT JOIN deudas d ON pd.id_deuda = d.id
 				LEFT JOIN clientes c ON pd.id_cliente = c.id
 				LEFT JOIN usuario u ON pd.id_usuario = u.id
-				LEFT JOIN ventas v ON d.id_venta = v.id
 				WHERE pd.grupo_pago_id = ?
 				ORDER BY d.fecha ASC
 			");
