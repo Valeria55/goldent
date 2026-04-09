@@ -113,9 +113,14 @@
                         </div>
 
                         <div class="row" style="margin-top: 30px;">
-                            <div class="col-md-12 text-center">
-                                <button type="submit" class="btn btn-primary btn-lg" style="background-color: #348993; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; width: 100%;">
-                                    <i class="fas fa-download"></i> GENERAR PDF
+                            <div class="col-md-6 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg" style="background-color: #348993; border: none; padding: 15px 10px; border-radius: 30px; font-weight: bold; width: 100%;">
+                                    <i class="fas fa-file-pdf"></i> GENERAR PDF
+                                </button>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <button type="button" onclick="this.form.action='?c=informe&a=GenerarExcel'; this.form.submit();" class="btn btn-success btn-lg" style="background-color: #27ae60; border: none; padding: 15px 10px; border-radius: 30px; font-weight: bold; width: 100%;">
+                                    <i class="fas fa-file-excel"></i> GENERAR EXCEL
                                 </button>
                             </div>
                         </div>

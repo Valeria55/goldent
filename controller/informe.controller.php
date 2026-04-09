@@ -67,4 +67,33 @@ class informeController {
                 break;
         }
     }
+    public function GenerarExcel(){
+        $tipo = $_REQUEST['tipo'];
+        $desde = $_REQUEST['desde'];
+        $hasta = $_REQUEST['hasta'];
+
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=reporte_" . $tipo . "_" . date('Y-m-d') . ".xls");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        switch ($tipo) {
+            case 'ingreso':
+                require_once 'view/informe/ingreso_rango_excel.php';
+                break;
+            case 'egreso':
+                $this->model = $this->egreso; 
+                require_once 'view/informe/egreso_rango_excel.php';
+                break;
+            case 'deuda':
+                require_once 'view/informe/deuda_rango_excel.php';
+                break;
+            case 'acreedor':
+                require_once 'view/informe/acreedor_rango_excel.php';
+                break;
+            default:
+                require_once 'view/informe/generico_excel.php';
+                break;
+        }
+    }
 }
