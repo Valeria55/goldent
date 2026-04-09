@@ -31,10 +31,7 @@
                     </li>
                 </ul>
             </li>
-            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
-                <a href="?c=adelanto">Adelantos</a>
-            </li>
-
+            
         <?php endif; ?>
 
         <?php if ($_SESSION['nivel'] == 2) { ?>
