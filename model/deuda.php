@@ -595,7 +595,7 @@ class deuda
 			$stm = $this->pdo->prepare("
 				SELECT d.*, v.nro_comprobante 
 				FROM deudas d
-				LEFT JOIN ventas v ON d.id_venta = v.id 
+				LEFT JOIN ventas v ON d.id_venta = v.id_venta
 				WHERE d.id_cliente = ? AND d.saldo > 0 
 				ORDER BY d.fecha ASC
 			");
