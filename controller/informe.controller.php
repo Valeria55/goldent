@@ -6,6 +6,7 @@ require_once 'model/deuda.php';
 require_once 'model/acreedor.php';
 require_once 'model/cliente.php';
 require_once 'model/cierre.php';
+require_once 'model/producto.php';
 
 class informeController {
     
@@ -15,6 +16,7 @@ class informeController {
     private $deuda;
     private $acreedor;
     private $cliente;
+    private $producto;
     public $model; // Propiedad para compatibilidad con vistas heredadas
     private $cierre;
 
@@ -26,12 +28,57 @@ class informeController {
         $this->acreedor = new acreedor();
         $this->cliente = new cliente();
         $this->cierre = new cierre();
+        $this->producto = new producto();
     }
 
     public function Index() {
         require_once 'view/header.php';
         require_once 'view/informe/index.php';
         require_once 'view/footer.php';
+    }
+
+    public function itemsFacturados() {
+        $desde = isset($_REQUEST['desde']) ? $_REQUEST['desde'] : date('Y-m-01');
+        $hasta = isset($_REQUEST['hasta']) ? $_REQUEST['hasta'] : date('Y-m-d');
+        $id_producto = isset($_REQUEST['id_producto']) ? $_REQUEST['id_producto'] : null;
+        $comprobante = isset($_REQUEST['comprobante']) ? $_REQUEST['comprobante'] : 'Todos';
+        $agrupado = isset($_REQUEST['agrupado']) ? (int)$_REQUEST['agrupado'] : 0;
+
+        $productos = $this->producto->ListarServicios();
+        $resultados = $this->venta->ObtenerItemsFacturados($desde, $hasta, $id_producto, $comprobante, $agrupado);
+
+        require_once 'view/header.php';
+        require_once 'view/informe/items_facturados.php';
+        require_once 'view/footer.php';
+    }
+
+    public function itemsFacturadosExcel() {
+        $desde = isset($_REQUEST['desde']) ? $_REQUEST['desde'] : date('Y-m-01');
+        $hasta = isset($_REQUEST['hasta']) ? $_REQUEST['hasta'] : date('Y-m-d');
+        $id_producto = isset($_REQUEST['id_producto']) ? $_REQUEST['id_producto'] : null;
+        $comprobante = isset($_REQUEST['comprobante']) ? $_REQUEST['comprobante'] : 'Todos';
+        $agrupado = isset($_REQUEST['agrupado']) ? (int)$_REQUEST['agrupado'] : 0;
+
+        $resultados = $this->venta->ObtenerItemsFacturados($desde, $hasta, $id_producto, $comprobante, $agrupado);
+
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=reporte_items_facturados_" . date('Y-m-d') . ".xls");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        require_once 'view/informe/items_facturados_excel.php';
+    }
+
+    public function itemsFacturadosPdf() {
+        $desde = isset($_REQUEST['desde']) ? $_REQUEST['desde'] : date('Y-m-01');
+        $hasta = isset($_REQUEST['hasta']) ? $_REQUEST['hasta'] : date('Y-m-d');
+        $id_producto = isset($_REQUEST['id_producto']) ? $_REQUEST['id_producto'] : null;
+        $comprobante = isset($_REQUEST['comprobante']) ? $_REQUEST['comprobante'] : 'Todos';
+        $agrupado = isset($_REQUEST['agrupado']) ? (int)$_REQUEST['agrupado'] : 0;
+
+        $resultados = $this->venta->ObtenerItemsFacturados($desde, $hasta, $id_producto, $comprobante, $agrupado);
+
+        require_once 'view/informe/items_facturados_pdf.php';
     }
 
     public function Generar() {

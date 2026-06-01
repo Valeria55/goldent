@@ -293,6 +293,9 @@
                     <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
                         <a href="?c=venta&a=listardia">Ventas del día</a>
                     </li>
+                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe' && $_GET['a'] == 'itemsFacturados') echo "class='active'"; ?>>
+                        <a href="?c=informe&a=itemsFacturados">Ítems Facturados</a>
+                    </li>
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp' && !isset($_GET['a'])) echo "class='active'"; ?>>
                         <a href="?c=venta_tmp">+ Nueva venta</a>
                     </li>
@@ -472,6 +475,9 @@
                     <!--<li class='active'><a href="#">Ventas no finalizadas</a></li>-->
                     <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
                         <a href="?c=venta&a=listardia">Ventas del día</a>
+                    </li>
+                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe' && $_GET['a'] == 'itemsFacturados') echo "class='active'"; ?>>
+                        <a href="?c=informe&a=itemsFacturados">Ítems Facturados</a>
                     </li>
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp' && !isset($_GET['a'])) echo "class='active'"; ?>>
                         <a href="?c=venta_tmp">+ Nueva venta</a>

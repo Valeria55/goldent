@@ -1895,4 +1895,73 @@ class venta
 			die($e->getMessage());
 		}
 	}
+
+	public function ObtenerItemsFacturados($desde, $hasta, $id_producto = null, $comprobante = null, $agrupado = 0)
+	{
+		try {
+			$condiciones = array();
+			$params = array();
+
+			$condiciones[] = "v.anulado = 0";
+			$condiciones[] = "p.tipo = 'servicio'";
+
+			if (!empty($desde)) {
+				$condiciones[] = "CAST(v.fecha_venta AS date) >= ?";
+				$params[] = $desde;
+			}
+			if (!empty($hasta)) {
+				$condiciones[] = "CAST(v.fecha_venta AS date) <= ?";
+				$params[] = $hasta;
+			}
+			if (!empty($id_producto)) {
+				$condiciones[] = "v.id_producto = ?";
+				$params[] = $id_producto;
+			}
+			if (!empty($comprobante) && $comprobante !== 'Todos') {
+				$condiciones[] = "v.comprobante = ?";
+				$params[] = $comprobante;
+			}
+
+			$where = "WHERE " . implode(" AND ", $condiciones);
+
+			if ($agrupado) {
+				$sql = "SELECT 
+							p.producto, 
+							p.codigo, 
+							SUM(v.cantidad) AS cantidad, 
+							AVG(v.precio_venta) AS precio_venta, 
+							SUM(v.total) AS total
+						FROM ventas v
+						LEFT JOIN productos p ON v.id_producto = p.id
+						$where
+						GROUP BY v.id_producto
+						ORDER BY cantidad DESC, p.producto ASC";
+			} else {
+				$sql = "SELECT 
+							v.id_venta, 
+							v.id_presupuesto, 
+							p.producto, 
+							p.codigo, 
+							v.fecha_venta, 
+							v.cantidad, 
+							v.precio_venta, 
+							v.total, 
+							v.comprobante,
+							c.nombre AS cliente,
+							v.paciente
+						FROM ventas v
+						LEFT JOIN productos p ON v.id_producto = p.id
+						LEFT JOIN clientes c ON v.id_cliente = c.id
+						$where
+						ORDER BY v.fecha_venta DESC, v.id_venta DESC";
+			}
+
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute($params);
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
 }
