@@ -65,6 +65,9 @@
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta') echo "class='active'"; ?>>
                 <a href="?c=venta">Ventas</a>
             </li>
+             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe' && $_GET['a'] == 'itemsFacturados') echo "class='active'"; ?>>
+                        <a href="?c=informe&a=itemsFacturados">Ítems Facturados</a>
+                    </li>
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cierre') echo "class='active'"; ?>>
                 <a href="?c=cierre">cierres</a>
             </li>
