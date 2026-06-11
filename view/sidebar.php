@@ -178,6 +178,7 @@
                     $_GET['c'] == 'ingreso' ||
                     $_GET['c'] == 'deuda'  ||
                     $_GET['c'] == 'metodo'  ||
+                    $_GET['c'] == 'timbrado' ||
                     $_GET['c'] == 'acreedor'
                 )
                     echo " in";
@@ -205,6 +206,9 @@
                     <?php endif; ?>
                     <li <?php if ($_GET['c'] == 'metodo') echo "class='active'"; ?>>
                         <a href="?c=metodo">Metodos de pago</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'timbrado') echo "class='active'"; ?>>
+                        <a href="?c=timbrado">Timbrados</a>
                     </li>
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe') echo "class='active'"; ?>>
                         <a href="?c=informe"><i class="fas fa-file-alt"></i> Informes</a>
@@ -391,6 +395,7 @@
                                 $_GET['c'] == 'ingreso' ||
                                 $_GET['c'] == 'deuda'  ||
                                 $_GET['c'] == 'metodo'  ||
+                                $_GET['c'] == 'timbrado' ||
                                 $_GET['c'] == 'acreedor'
                             )
                                 echo " in";
@@ -413,6 +418,9 @@
                     </li>
                     <li <?php if ($_GET['c'] == 'metodo') echo "class='active'"; ?>>
                         <a href="?c=metodo">Metodos de pago</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'timbrado') echo "class='active'"; ?>>
+                        <a href="?c=timbrado">Timbrados</a>
                     </li>
                     <!-- <li <?php //if(isset($_GET['a']) && $_GET['a']=='EstadoResultado') echo "class='active'"; 
                                 ?>>

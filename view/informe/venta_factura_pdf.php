@@ -59,7 +59,7 @@ foreach ($ventas as $v) {
     if ($v->anulado) continue;
     $totalVenta += $v->total;
     $total_f = number_format($v->total, 0, ",", ".");
-    $fecha_f = date("d/m/Y", strtotime($v->fecha_venta));
+    $fecha_f = date("d/m/Y", strtotime(!empty($v->fecha_factura) ? $v->fecha_factura : $v->fecha_venta));
     $cliente = htmlspecialchars($v->cliente_nombre ?? 'General');
     $nro = htmlspecialchars($v->nro_comprobante);
     $condicion = htmlspecialchars($v->contado);

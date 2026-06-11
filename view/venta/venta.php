@@ -96,9 +96,7 @@
                         <label>Hasta</label>
                         <input type="date" name="hasta" value="<?php echo (isset($_GET['hasta'])) ? $_GET['hasta'] : '';
                                                                 ?>" class="form-control">
-                    </div>
-
-                    <div class="form-group col-md-4">
+                    </div>                     <div class="form-group col-md-2">
                         <label>Cliente</label>
                         <select name="id_cliente" class="selectpicker" data-live-search="true" data-width="100%" title="Todos">
                             <?php
@@ -125,14 +123,27 @@
                         </select>
                     </div>
 
-                    <div class="form-group col-md-3">
+                    <div class="form-group col-md-2">
                         <label>Paciente</label>
                         <input type="text" name="paciente" value="<?php echo htmlspecialchars($_GET['paciente'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" class="form-control" placeholder="Nombre / apellido">
                     </div>
 
+                    <div class="form-group col-md-2">
+                        <label>Nro. Comprobante</label>
+                        <input type="text" name="nro_comprobante" value="<?php echo htmlspecialchars($_GET['nro_comprobante'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" class="form-control" placeholder="Número de comprobante">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Estado Factura</label>
+                        <select name="sin_facturar" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="1" <?php echo (isset($_GET['sin_facturar']) && $_GET['sin_facturar'] == '1') ? 'selected' : ''; ?>>Sin Facturar</option>
+                        </select>
+                    </div>
+
                     <div class="form-group col-md-1">
                         <label></label>
-                        <input type="submit" value="Filtrar" class="form-control btn btn-success">
+                        <input type="submit" value="Filtrar" class="form-control btn btn-success" style="padding: 6px 12px;">
                     </div>
 
                 </form>
@@ -229,6 +240,7 @@
         $('#tipo').val(id);
         $('#n').val(n);
         $('#co').val(co);
+        $('#co_hidden').val(co);
         //$('#cli').val(cli);
         $('#cli option[value="' + cli + '"]').prop("selected", true);
         
@@ -249,6 +261,215 @@
         $('.selectpicker').selectpicker('refresh');
 
     })
+</script>
+
+<!-- Modal de Facturación Masiva -->
+<div id="facturarMasivoModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #337ab7; color: white;">
+                <button type="button" class="close" data-dismiss="modal" style="color: white; opacity: 1;">&times;</button>
+                <h4 class="modal-title"><i class="fas fa-file-invoice"></i> Generar Factura de Ventas Seleccionadas</h4>
+            </div>
+            <form id="form-facturar-masivo">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Cliente:</label>
+                        <input type="text" id="fm-cliente" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Ventas Seleccionadas (IDs):</label>
+                        <input type="text" id="fm-ids-display" class="form-control" readonly>
+                        <input type="hidden" name="ids_ventas" id="fm-ids-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Monto Total:</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">Gs.</span>
+                            <input type="text" id="fm-total" class="form-control" readonly style="font-weight: bold; font-size: 16px;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Próximo Nro. Factura (Correlativo):</label>
+                        <?php
+                        $t_activo = $this->model->ObtenerTimbradoActivo();
+                        $next_auto = $this->model->UltimoAutoimpresor()->autoimpresor + 1;
+                        $nro_formateado = "No configurado";
+                        if ($t_activo) {
+                            $nro_formateado = str_pad($t_activo->establecimiento, 3, '0', STR_PAD_LEFT) . '-' .
+                                              str_pad($t_activo->punto_expedicion, 3, '0', STR_PAD_LEFT) . '-' .
+                                              str_pad($next_auto, 7, '0', STR_PAD_LEFT);
+                        }
+                        ?>
+                        <input type="text" class="form-control" value="<?php echo $nro_formateado; ?>" readonly style="font-weight: bold; color: #d9534f;">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Emisión (Factura): <span style="color: red;">*</span></label>
+                        <input type="datetime-local" name="fecha_factura" id="fm-fecha" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción para la Factura (Concepto): <span style="color: red;">*</span></label>
+                        <textarea name="factura_concepto" id="fm-concepto" class="form-control" rows="3" placeholder="Ej: Servicios de limpieza y mantenimiento del mes" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-factura"><i class="fas fa-check"></i> Generar Factura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mapa para almacenar ventas seleccionadas de forma persistente entre páginas
+    var checkedSalesMap = {};
+
+    // Función para actualizar la barra flotante de facturación
+    function updateMassiveInvoiceBar() {
+        var ids = Object.keys(checkedSalesMap);
+        var total = 0;
+        var clientName = "";
+
+        ids.forEach(function(id) {
+            var sale = checkedSalesMap[id];
+            total += sale.total;
+            clientName = sale.clienteNombre;
+        });
+
+        if (ids.length > 0) {
+            $('#selected-count').text(ids.length);
+            $('#selected-total').text(total.toLocaleString('es-ES'));
+            $('#massive-invoice-bar').slideDown();
+
+            // Rellenar campos del modal
+            $('#fm-cliente').val(clientName);
+            $('#fm-ids-display').val(ids.join(', '));
+            $('#fm-ids-input').val(ids.join(','));
+            $('#fm-total').val(total.toLocaleString('es-ES'));
+        } else {
+            $('#massive-invoice-bar').slideUp();
+        }
+    }
+
+    // Toggle de todos los checkboxes en la página actual
+    $(document).on('change', '#select-all-ventas', function() {
+        var isChecked = $(this).prop('checked');
+        $('.select-venta-chk').each(function() {
+            $(this).prop('checked', isChecked);
+            var id = $(this).data('id');
+            var saleTotal = parseFloat($(this).data('total'));
+            var cId = $(this).data('cliente');
+            var cName = $(this).data('cliente-nombre');
+
+            if (isChecked) {
+                checkedSalesMap[id] = { total: saleTotal, cliente: cId, clienteNombre: cName };
+            } else {
+                delete checkedSalesMap[id];
+            }
+        });
+        updateMassiveInvoiceBar();
+    });
+
+    // Checkbox individual
+    $(document).on('change', '.select-venta-chk', function() {
+        var isChecked = $(this).prop('checked');
+        var id = $(this).data('id');
+        var saleTotal = parseFloat($(this).data('total'));
+        var cId = $(this).data('cliente');
+        var cName = $(this).data('cliente-nombre');
+
+        if (isChecked) {
+            // Validar que pertenezca al mismo cliente (por seguridad adicional)
+            var currentClientId = null;
+            Object.keys(checkedSalesMap).forEach(function(key) {
+                currentClientId = checkedSalesMap[key].cliente;
+            });
+
+            if (currentClientId !== null && currentClientId !== cId) {
+                Swal.fire({
+                    title: 'Error de Cliente',
+                    text: 'No puedes facturar ventas de diferentes clientes juntas.',
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
+                $(this).prop('checked', false);
+                return;
+            }
+
+            checkedSalesMap[id] = { total: saleTotal, cliente: cId, clienteNombre: cName };
+        } else {
+            delete checkedSalesMap[id];
+        }
+
+        // Actualizar select-all
+        var allChecked = true;
+        $('.select-venta-chk').each(function() {
+            if (!$(this).prop('checked')) {
+                allChecked = false;
+            }
+        });
+        $('#select-all-ventas').prop('checked', allChecked && $('.select-venta-chk').length > 0);
+
+        updateMassiveInvoiceBar();
+    });
+
+    // Envío del formulario de facturación
+    $(document).on('submit', '#form-facturar-masivo', function(e) {
+        e.preventDefault();
+        
+        var concept = $('#fm-concepto').val().trim();
+        if (concept === '') {
+            Swal.fire('Atención', 'Por favor ingresa una descripción para la factura.', 'warning');
+            return;
+        }
+
+        var btn = $('#btn-submit-factura');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generando...');
+
+        $.ajax({
+            url: '?c=venta&a=FacturarMasivo',
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(response) {
+                btn.prop('disabled', false).html('<i class="fas fa-check"></i> Generar Factura');
+                if (response.success) {
+                    $('#facturarMasivoModal').modal('hide');
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: response.message,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#aaa',
+                        confirmButtonText: 'Ver PDF',
+                        cancelButtonText: 'Cerrar'
+                    }).then((result) => {
+                        // Recargar tabla DataTable
+                        if ($.fn.DataTable.isDataTable('#tabla1')) {
+                            $('#tabla1').DataTable().ajax.reload();
+                        }
+                        // Abrir PDF si se solicita
+                        if (result.value) {
+                            abrirVentanaFlotante(response.redirect, 'Factura');
+                        }
+                    });
+                    // Reset de selección
+                    checkedSalesMap = {};
+                    $('#select-all-ventas').prop('checked', false);
+                    updateMassiveInvoiceBar();
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false).html('<i class="fas fa-check"></i> Generar Factura');
+                Swal.fire('Error', 'Ocurrió un error inesperado al procesar la solicitud.', 'error');
+            }
+        });
+    });
 </script>
 
 

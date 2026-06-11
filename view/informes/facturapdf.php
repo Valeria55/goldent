@@ -308,12 +308,22 @@ class FacturaGenerator
 
     public function generarFactura($id_venta)
     {
-        $this->cargarDatosFactura($id_venta);
-        $this->procesarItems($id_venta);
+        $venta_primera = $this->venta->ObtenerUNO($id_venta);
+        $datos = [];
+        if ($venta_primera && isset($venta_primera->autoimpresor) && (int)$venta_primera->autoimpresor > 0) {
+            $datos = $this->venta->ListarPorAutoimpresor($venta_primera->autoimpresor);
+        }
+        
+        if (empty($datos)) {
+            $datos = $this->venta->Listar($id_venta);
+        }
+
+        $this->cargarDatosFactura($datos);
+        $this->procesarItems($datos);
         $this->generarOutputPDF();
     }
 
-    private function cargarDatosFactura($id_venta)
+    private function cargarDatosFactura($datos)
     {
         $this->datosFactura = [
             'cliente' => "Cliente ocasional",
@@ -326,13 +336,11 @@ class FacturaGenerator
             'tipo' => "Guaraníes",
             'paciente' => ""
         ];
-
-        $datos = $this->venta->Listar($id_venta);
         if (!empty($datos)) {
             foreach ($datos as $r) {
                 $this->datosFactura['cliente'] = $r->nombre_cli ?? "Cliente ocasional";
                 $this->datosFactura['ruc'] = $r->ruc ?? "X";
-                $this->datosFactura['fecha'] = date("d/m/Y", strtotime($r->fecha_venta));
+                 $this->datosFactura['fecha'] = date("d/m/Y", strtotime(!empty($r->fecha_factura) ? $r->fecha_factura : $r->fecha_venta));
                 $this->datosFactura['telefono'] = $r->telefono ?? "";
                 $this->datosFactura['vendedor'] = $r->vendedor ?? "";
 
@@ -483,40 +491,83 @@ class FacturaGenerator
     // PROCESAMIENTO DE ITEMS
     // ================================================================
 
-    private function procesarItems($id_venta)
+    private function procesarItems($datos)
     {
         $items = [];
-        $datos = $this->venta->Listar($id_venta);
+        $concept = (!empty($datos) && !empty($datos[0]->factura_concepto)) ? $datos[0]->factura_concepto : null;
 
-        foreach ($datos as $r) {
-            $this->acumularTotalesIVA($r);
+        if ($concept !== null) {
+            // Agrupar items por tasa de IVA para colapsarlos de forma consistente
+            $grouped = [];
+            foreach ($datos as $r) {
+                $this->acumularTotalesIVA($r);
+                $this->totales['cantidad_total'] += $r->cantidad;
+                $this->totales['sumaTotal'] += $r->total;
 
-            $producto = $r->producto;
-           if (!empty($r->paciente)) {
-                $producto .= " PACIENTE: " . $r->paciente;
+                $iva_rate = (int)($r->iva ?? 10);
+                if (!isset($grouped[$iva_rate])) {
+                    $grouped[$iva_rate] = 0;
+                }
+                $grouped[$iva_rate] += $r->total;
             }
 
-            $colExenta = '';
-            $col5 = '';
-            $col10 = '';
-            if ($r->iva == 5) $col5 = number_format($r->total, 0, ",", ".");
-            elseif ($r->iva == 10) $col10 = number_format($r->total, 0, ",", ".");
-            else $colExenta = number_format($r->total, 0, ",", ".");
+            foreach ($grouped as $iva_rate => $subtotal) {
+                $colExenta = '';
+                $col5 = '';
+                $col10 = '';
+                if ($iva_rate == 5) $col5 = number_format($subtotal, 0, ",", ".");
+                elseif ($iva_rate == 10) $col10 = number_format($subtotal, 0, ",", ".");
+                else $colExenta = number_format($subtotal, 0, ",", ".");
 
-            $items[] = [
-                'cantidad' => $r->cantidad,
-                'producto' => $producto,
-                'precio_unit' => number_format($r->precio_venta, 0, ",", "."),
-                'exenta' => $colExenta,
-                'iva5' => $col5,
-                'iva10' => $col10,
-                // Datos RAW para calcular subtotales por página
-                'raw_total' => $r->total,
-                'raw_iva' => $r->iva
-            ];
+                $display_concept = $concept;
+                if (count($grouped) > 1) {
+                    if ($iva_rate == 5) $display_concept .= " (IVA 5%)";
+                    elseif ($iva_rate == 10) $display_concept .= " (IVA 10%)";
+                    else $display_concept .= " (Exenta)";
+                }
 
-            $this->totales['cantidad_total'] += $r->cantidad;
-            $this->totales['sumaTotal'] += $r->total;
+                $items[] = [
+                    'cantidad' => 1,
+                    'producto' => $display_concept,
+                    'precio_unit' => number_format($subtotal, 0, ",", "."),
+                    'exenta' => $colExenta,
+                    'iva5' => $col5,
+                    'iva10' => $col10,
+                    'raw_total' => $subtotal,
+                    'raw_iva' => $iva_rate
+                ];
+            }
+        } else {
+            // Comportamiento normal/original
+            foreach ($datos as $r) {
+                $this->acumularTotalesIVA($r);
+
+                $producto = $r->producto;
+                if (!empty($r->paciente)) {
+                    $producto .= " PACIENTE: " . $r->paciente;
+                }
+
+                $colExenta = '';
+                $col5 = '';
+                $col10 = '';
+                if ($r->iva == 5) $col5 = number_format($r->total, 0, ",", ".");
+                elseif ($r->iva == 10) $col10 = number_format($r->total, 0, ",", ".");
+                else $colExenta = number_format($r->total, 0, ",", ".");
+
+                $items[] = [
+                    'cantidad' => $r->cantidad,
+                    'producto' => $producto,
+                    'precio_unit' => number_format($r->precio_venta, 0, ",", "."),
+                    'exenta' => $colExenta,
+                    'iva5' => $col5,
+                    'iva10' => $col10,
+                    'raw_total' => $r->total,
+                    'raw_iva' => $r->iva
+                ];
+
+                $this->totales['cantidad_total'] += $r->cantidad;
+                $this->totales['sumaTotal'] += $r->total;
+            }
         }
 
         // Preparar productos con información de líneas

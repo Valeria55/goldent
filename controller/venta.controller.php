@@ -188,6 +188,8 @@ class ventaController
         $hasta = trim((string)($_REQUEST["hasta"] ?? ''));
         $id_cliente = $_REQUEST['id_cliente'] ?? null;
         $paciente = trim((string)($_REQUEST['paciente'] ?? ''));
+        $sin_facturar = $_REQUEST['sin_facturar'] ?? null;
+        $nro_comprobante = trim((string)($_REQUEST['nro_comprobante'] ?? ''));
 
         $desde = ($desde === '') ? null : $desde;
         $hasta = ($hasta === '') ? null : $hasta;
@@ -200,8 +202,45 @@ class ventaController
             $desde = '1900-01-01';
         }
 
-        $venta = $this->model->ListarFiltros($desde, $hasta, $id_cliente, $paciente);
+        $venta = $this->model->ListarFiltros($desde, $hasta, $id_cliente, $paciente, $sin_facturar, $nro_comprobante);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
+    }
+
+    public function FacturarMasivo()
+    {
+        $ids = $_REQUEST['ids_ventas'] ?? [];
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+        $ids = array_filter(array_map('intval', $ids));
+        
+        $concepto = trim((string)($_REQUEST['factura_concepto'] ?? ''));
+        $fecha_factura = $_REQUEST['fecha_factura'] ?? null;
+        if (!empty($fecha_factura)) {
+            $fecha_factura = date('Y-m-d H:i:s', strtotime($fecha_factura));
+        }
+
+        if (empty($ids)) {
+            echo json_encode(['success' => false, 'message' => 'No se seleccionaron ventas.']);
+            return;
+        }
+
+        $timbradoActivo = $this->model->ObtenerTimbradoActivo();
+        $id_timbrado = $timbradoActivo ? $timbradoActivo->id : 1;
+        $autoimpresor = $this->model->UltimoAutoimpresor()->autoimpresor + 1;
+
+        $res = $this->model->FacturarMasivo($ids, $concepto, $autoimpresor, $id_timbrado, $fecha_factura);
+
+        if ($res) {
+            $first_id = $ids[0];
+            echo json_encode([
+                'success' => true,
+                'message' => 'Factura generada con éxito. Nro: ' . $autoimpresor,
+                'redirect' => "?c=venta&a=factura&id=$first_id"
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Ocurrió un error al generar la factura.']);
+        }
     }
     public function ListarFiltrosAprobar()
     {

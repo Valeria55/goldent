@@ -28,14 +28,18 @@ class venta
 	public $paciente;
 	public $pagare;
 	public $condicion_factura;
-
-	public $cot_usd;  // Nuevo campo
-	public $cot_real; // Nuevo campo
+	public $cot_usd;
+	public $cot_real;
+	public $fecha_factura;
 
 	public function __CONSTRUCT()
 	{
 		try {
 			$this->pdo = Database::StartUp();
+			try {
+				$this->pdo->exec("ALTER TABLE ventas ADD COLUMN fecha_factura DATETIME DEFAULT NULL");
+			} catch (Exception $dbEx) {
+			}
 		} catch (Exception $e) {
 			die($e->getMessage());
 		}
@@ -764,8 +768,7 @@ class venta
 			die($e->getMessage());
 		}
 	}
-
-	public function ListarFiltros($desde, $hasta, $id_cliente = null, $paciente = null)
+	public function ListarFiltros($desde, $hasta, $id_cliente = null, $paciente = null, $sin_facturar = null, $nro_comprobante = null)
 	{
 		try {
 			$condiciones = array();
@@ -786,6 +789,14 @@ class venta
 			if (!empty($paciente)) {
 				$condiciones[] = 'v.paciente LIKE ?';
 				$params[] = '%' . $paciente . '%';
+			}
+			if (!empty($sin_facturar)) {
+				$condiciones[] = "v.comprobante <> 'Factura'";
+				$condiciones[] = "v.anulado = 0";
+			}
+			if (!empty($nro_comprobante)) {
+				$condiciones[] = 'v.nro_comprobante LIKE ?';
+				$params[] = '%' . $nro_comprobante . '%';
 			}
 
 			$where = '';
@@ -810,6 +821,118 @@ class venta
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);
 		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ListarPorAutoimpresor($autoimpresor)
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT v.id_cliente, 
+				v.condicion_factura,
+				v.descuento AS descuentov, 
+				v.id_venta AS id_venta 
+				, v.id
+				, p.producto, v.comprobante
+				, v.metodo
+				, v.anulado
+				, v.pagare
+				, contado, 
+				p.codigo, p.iva
+				, v.cantidad
+				, v.precio_venta
+				, v.subtotal
+				, v.descuento
+				, v.total, 
+				v.id_presupuesto,
+				v.margen_ganancia
+				, fecha_venta, v.fecha_factura, nro_comprobante, 
+				c.nombre as nombre_cli
+				, c.ruc
+				, c.direccion
+				, c.telefono,
+				v.id_producto,
+				u.user as vendedor, 
+				id_gift,
+				t.timbrado,
+				t.fecha_inicio,
+				t.fecha_fin,
+				t.establecimiento,
+				t.punto_expedicion,
+				v.autoimpresor,
+				v.paciente,
+				v.factura_concepto,
+				10 AS iva
+					FROM ventas v 
+					LEFT JOIN usuario u ON v.id_vendedor = u.id
+					LEFT JOIN productos p ON v.id_producto = p.id 
+					LEFT JOIN clientes c ON v.id_cliente = c.id 
+					LEFT JOIN timbrados t ON t.id = v.id_timbrado
+					WHERE v.autoimpresor = ? AND v.anulado = 0
+					");
+			$stm->execute(array($autoimpresor));
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ObtenerTimbradoActivo()
+	{
+		try {
+			$stm = $this->pdo->prepare("SELECT * FROM timbrados WHERE estado = 1 LIMIT 1");
+			$stm->execute();
+			$t = $stm->fetch(PDO::FETCH_OBJ);
+			if (!$t) {
+				$stm2 = $this->pdo->prepare("SELECT * FROM timbrados LIMIT 1");
+				$stm2->execute();
+				$t = $stm2->fetch(PDO::FETCH_OBJ);
+			}
+			return $t;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
+	public function FacturarMasivo($ids, $concepto, $autoimpresor, $id_timbrado, $fecha_factura = null)
+	{
+		try {
+			$this->pdo->beginTransaction();
+
+			$nro_comprobante = '';
+			$stm_t = $this->pdo->prepare("SELECT establecimiento, punto_expedicion FROM timbrados WHERE id = ?");
+			$stm_t->execute([$id_timbrado]);
+			$t = $stm_t->fetch(PDO::FETCH_OBJ);
+			if ($t) {
+				$nro_comprobante = str_pad($t->establecimiento, 3, '0', STR_PAD_LEFT) . '-' .
+								   str_pad($t->punto_expedicion, 3, '0', STR_PAD_LEFT) . '-' .
+								   str_pad($autoimpresor, 7, '0', STR_PAD_LEFT);
+			} else {
+				$nro_comprobante = '001-003-' . str_pad($autoimpresor, 7, '0', STR_PAD_LEFT);
+			}
+
+			if (empty($fecha_factura)) {
+				$fecha_factura = date('Y-m-d H:i:s');
+			}
+
+			$placeholders = implode(',', array_fill(0, count($ids), '?'));
+			$sql = "UPDATE ventas 
+					SET comprobante = 'Factura', 
+						autoimpresor = ?, 
+						id_timbrado = ?,
+						factura_concepto = ?,
+						nro_comprobante = ?,
+						fecha_factura = ? 
+					WHERE id_venta IN ($placeholders)";
+
+			$params = array_merge([$autoimpresor, $id_timbrado, $concepto, $nro_comprobante, $fecha_factura], $ids);
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute($params);
+
+			$this->pdo->commit();
+			return true;
+		} catch (Exception $e) {
+			$this->pdo->rollBack();
 			die($e->getMessage());
 		}
 	}

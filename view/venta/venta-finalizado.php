@@ -1,4 +1,16 @@
 
+<!-- Barra flotante de facturación masiva -->
+<div id="massive-invoice-bar" style="display: none; margin-bottom: 15px; padding: 12px; background: linear-gradient(135deg, #337ab7, #285e8e); border-radius: 6px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s; width: 100%;">
+    <div>
+        <i class="fas fa-check-circle" style="font-size: 18px; margin-right: 8px; vertical-align: middle;"></i>
+        <span style="font-weight: 500; font-size: 15px;"><span id="selected-count" style="font-weight: bold; font-size: 17px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; margin-right: 5px;">0</span> ventas seleccionadas para facturar.</span>
+        <span style="margin-left: 20px; font-size: 15px;">Monto total: <strong>Gs. <span id="selected-total">0</span></strong></span>
+    </div>
+    <button type="button" class="btn btn-default" style="color: #337ab7; font-weight: bold; border-radius: 20px; padding: 6px 20px; transition: all 0.2s;" data-toggle="modal" data-target="#facturarMasivoModal">
+        <i class="fas fa-file-invoice" style="margin-right: 5px;"></i> Facturar
+    </button>
+</div>
+
 <table id="tabla1" class="table table-striped table-bordered display responsive nowrap" width="100%">
     <style>
         /* Resaltar ventas anuladas */
@@ -7,9 +19,14 @@
             color: #721c24 !important;
         }
     </style>
-    <div style="height: 45px;"></div>
+    <div style="height: 10px;"></div>
     <thead>
         <tr style="background-color: black; color:#fff">
+            <th style="width: 30px; text-align: center;">
+                <?php if (!empty($_GET['id_cliente']) && ($_GET['sin_facturar'] ?? '') === '1'): ?>
+                    <input type="checkbox" id="select-all-ventas">
+                <?php endif; ?>
+            </th>
             <th>ID</th>
             <th>Cliente</th>
             <th>Fecha y Hora</th>
@@ -19,15 +36,11 @@
             <th>Factura</th>
             <th>Total</th>
             <th>Acciones</th>
-            <?php if (!isset($_SESSION)) session_start();
-            if ($_SESSION['nivel'] == 1) { ?>
-                <!-- Columna extra eliminada, ahora todo esta en Acciones -->
-            <?php } ?>
+        </tr>
     </thead>
     <tbody>
         <?php  ?>
     </tbody>
-    </div>
 </table>
 
 
@@ -73,12 +86,17 @@ if (!isset($_SESSION)) session_start();
             $filtroDesde = $_GET['desde'] ?? '';
             $filtroHasta = $_GET['hasta'] ?? '';
             $filtroCliente = $_GET['id_cliente'] ?? '';
-                $filtroPaciente = $_GET['paciente'] ?? '';
+            $filtroPaciente = $_GET['paciente'] ?? '';
+            $filtroSinFacturar = $_GET['sin_facturar'] ?? '';
+            $filtroNroComprobante = $_GET['nro_comprobante'] ?? '';
             $extraCliente = (!empty($filtroCliente)) ? '&id_cliente=' . urlencode($filtroCliente) : '';
-                $extraPaciente = (!empty($filtroPaciente)) ? '&paciente=' . urlencode($filtroPaciente) : '';
-                if (isset($_GET['desde']) || isset($_GET['hasta']) || isset($_GET['id_cliente']) || isset($_GET['paciente'])) {
+            $extraPaciente = (!empty($filtroPaciente)) ? '&paciente=' . urlencode($filtroPaciente) : '';
+            $extraSinFacturar = (!empty($filtroSinFacturar)) ? '&sin_facturar=' . urlencode($filtroSinFacturar) : '';
+            $extraNroComprobante = (!empty($filtroNroComprobante)) ? '&nro_comprobante=' . urlencode($filtroNroComprobante) : '';
+            
+            if (isset($_GET['desde']) || isset($_GET['hasta']) || isset($_GET['id_cliente']) || isset($_GET['paciente']) || isset($_GET['sin_facturar']) || isset($_GET['nro_comprobante'])) {
             ?> "ajax": {
-                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $filtroDesde ?>&hasta=<?php echo $filtroHasta ?><?php echo $extraCliente; ?><?php echo $extraPaciente; ?>",
+                    "url": "?c=venta&a=ListarFiltros&desde=<?php echo $filtroDesde ?>&hasta=<?php echo $filtroHasta ?><?php echo $extraCliente; ?><?php echo $extraPaciente; ?><?php echo $extraSinFacturar; ?><?php echo $extraNroComprobante; ?>",
                     "dataSrc": ""
                 },
             <?php } else { ?>
@@ -89,7 +107,24 @@ if (!isset($_SESSION)) session_start();
                 },
             <?php } ?>
 
-            "columns": [{
+            "columns": [
+                {
+                    "data": null,
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "30px",
+                    render: function(data, type, row) {
+                        <?php if (empty($_GET['id_cliente']) || ($_GET['sin_facturar'] ?? '') !== '1') { ?>
+                            return '';
+                        <?php } ?>
+                        if (row.anulado == 1 || row.comprobante == 'Factura') {
+                            return '';
+                        }
+                        var isChecked = (typeof checkedSalesMap !== 'undefined' && checkedSalesMap[row.id_venta]) ? 'checked' : '';
+                        return '<div style="text-align: center;"><input type="checkbox" class="select-venta-chk" data-id="' + row.id_venta + '" data-total="' + row.total + '" data-cliente="' + row.id_cliente + '" data-cliente-nombre="' + escapeHtml(row.nombre_cli) + '" ' + isChecked + '></div>';
+                    }
+                },
+                {
                     "data": "id_venta"
                 },
                 {

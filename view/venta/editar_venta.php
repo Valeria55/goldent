@@ -69,11 +69,12 @@
                     </div>
                     <div class="form-group col-sm-6">
                         <label>Comprobante</label>
-                        <select name="comprobante" id="co" class="form-control" disabled>
+                        <select id="co" class="form-control" disabled>
                             <option value="Ticket">Ticket</option>
                             <option value="TicketSi">Sin impresión</option>
                             <option value="Factura">Factura</option>  
                         </select>
+                        <input type="hidden" name="comprobante" id="co_hidden">
                     </div>
 
                     <div class="form-group col-sm-6" id="div_pagare_edit">
