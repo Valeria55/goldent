@@ -500,6 +500,9 @@ class FacturaGenerator
             // Agrupar items por tasa de IVA para colapsarlos de forma consistente
             $grouped = [];
             foreach ($datos as $r) {
+                if ((float)$r->total == 0) {
+                    continue;
+                }
                 $this->acumularTotalesIVA($r);
                 $this->totales['cantidad_total'] += $r->cantidad;
                 $this->totales['sumaTotal'] += $r->total;
@@ -540,6 +543,9 @@ class FacturaGenerator
         } else {
             // Comportamiento normal/original
             foreach ($datos as $r) {
+                if ((float)$r->total == 0) {
+                    continue;
+                }
                 $this->acumularTotalesIVA($r);
 
                 $producto = $r->producto;

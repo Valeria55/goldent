@@ -126,6 +126,9 @@ foreach ($facturaArray as $item) {
     $precio_con_descuento = ROUND($item->precio_venta - ($item->precio_venta * $item->descuento / 100),0);
     $precio_sin_descuento = $item->precio_venta * $item->cantidad;
     $total = $item->cantidad * $precio_con_descuento;
+    if ((float)$total == 0) {
+        continue;
+    }
     $totalSinDescuento = $item->cantidad * $item->precio_venta;
     $subtotal += $total;
     $subtotalSinDescuento += $totalSinDescuento;
