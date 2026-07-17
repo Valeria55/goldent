@@ -1,5 +1,5 @@
 <?php
-error_reporting(0);
+// error_reporting(0);
 
 session_start();
 $sistema = $_SERVER['HTTP_HOST']."/".explode("/", $_SERVER['REQUEST_URI'])[1]; //direccion del sistema

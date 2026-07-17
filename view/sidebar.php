@@ -7,32 +7,7 @@
     <?php //NIVEL 2 CAJERO 
     ?>
     <ul class="list-unstyled components">
-        <?php if (($_SESSION['nivel'] == 1)) : ?>
-            <li>
-                <a href="#dashboardSubmenu" data-toggle="collapse" aria-expanded="false">Dashboards</a>
-                <ul class="collapse list-unstyled 
-    <?php
-            if (
-                $_GET['c'] == 'dashboardActual' ||
-                $_GET['c'] == 'dashboardOperativo' ||
-                $_GET['c'] == 'dashboardClientes'
-            )
-                echo " in";
-    ?>
-    " id="dashboardSubmenu">
-                    <li <?php if ($_GET['c'] == 'dashboardActual') echo "class='active'"; ?>>
-                        <a href="?c=dashboardActual">Actual</a>
-                    </li>
-                    <li <?php if ($_GET['c'] == 'dashboardOperativo') echo "class='active'"; ?>>
-                        <a href="?c=dashboardOperativo">Operativo</a>
-                    </li>
-                    <li <?php if ($_GET['c'] == 'dashboardClientes') echo "class='active'"; ?>>
-                        <a href="?c=dashboardClientes">Clientes</a>
-                    </li>
-                </ul>
-            </li>
-            
-        <?php endif; ?>
+       
 
         <?php if ($_SESSION['nivel'] == 2) { ?>
             <!-- <li <?php //if (isset($_GET['c']) && $_GET['c'] == 'caja') echo "class='active'"; 
@@ -105,6 +80,9 @@
         <?php if ($_SESSION['nivel'] == 1) { ?>
 
 
+            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
+                <a href="?c=adelanto">Adelantos</a>
+            </li>
 
             <li>
                 <a href="#cajasSubmenu" data-toggle="collapse" aria-expanded="false">Cajas</a>
@@ -129,46 +107,49 @@
                 </ul>
             </li>
 
-            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'usuario') echo "class='active'"; ?>>
-                <a href="?c=usuario">Usuarios</a>
+            <li>
+                <a href="#cierreSubmenu" data-toggle="collapse" aria-expanded="false">Cierres</a>
+                <ul class="collapse list-unstyled
+            <?php
+            if ($_GET['c'] == 'cierre')
+                echo " in";
+            ?>
+            " id="cierreSubmenu">
+                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cierre' && !isset($_GET['a'])) echo "class='active'"; ?>>
+                        <a href="?c=cierre">Sesiones</a>
+                    </li>
+                    <li <?php if (isset($_GET['a']) && $_GET['a'] == 'activas') echo "class='active'"; ?>>
+                        <a href="?c=cierre&a=activas">Sesiones activas</a>
+                    </li>
+                </ul>
             </li>
-            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
-                <a href="?c=cliente">Personas</a>
-            </li>
-
 
             <li>
-                <a href="#productoSubmenu" data-toggle="collapse" aria-expanded="false">Productos</a>
+                <a href="#compraSubmenu" data-toggle="collapse" aria-expanded="false">Compras</a>
                 <ul class="collapse list-unstyled 
             <?php
             if (
-                $_GET['c'] == 'producto' ||
-                $_GET['c'] == 'categoria' ||
-                $_GET['c'] == 'devolucion' ||
-                $_GET['c'] == 'devolucion_tmp' ||
-                $_GET['c'] == 'inventario'
+                $_GET['c'] == 'compra' ||
+                $_GET['c'] == 'compra_tmp'
             )
                 echo " in";
             ?>
-            " id="productoSubmenu">
-                    <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
-                        <a href="?c=producto">Productos</a>
+            " id="compraSubmenu">
+                    <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'compra') echo "class='active'"; ?>>
+                        <a href="?c=compra">Compras</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
-                        <a href="?c=producto&a=servicios">Servicios</a>
+                    <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'devolucion_compras') echo "class='active'"; ?>>
+                        <a href="?c=devolucion_compras">Devoluciones</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
-                        <a href="?c=categoria">Categorías</a>
+                    <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
+                        <a href="?c=compra&a=listardia">Compras del día</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'marca') echo "class='active'"; ?>>
-                        <a href="?c=marca">Marcas</a>
+                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'compra_tmp') echo "class='active'"; ?>>
+                        <a href="?c=compra_tmp">+ Nueva compra</a>
                     </li>
-                    <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
-                        <a href="?c=devolucion">Ajustes de stock</a>
-                    </li>
-
                 </ul>
             </li>
+
             <li>
                 <a href="#cajaSubmenu" data-toggle="collapse" aria-expanded="false">Control de caja</a>
                 <ul class="collapse list-unstyled 
@@ -213,41 +194,11 @@
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'informe') echo "class='active'"; ?>>
                         <a href="?c=informe"><i class="fas fa-file-alt"></i> Informes</a>
                     </li>
-                    <!-- <li <?php //if(isset($_GET['a']) && $_GET['a']=='EstadoResultado') echo "class='active'"; 
-                                ?>>
-                    <a href="?c=venta&a=EstadoResultado">Estado de Resultado</a>
-                </li>-->
                 </ul>
             </li>
 
-            <li>
-                <a href="#compraSubmenu" data-toggle="collapse" aria-expanded="false">Compras</a>
-                <ul class="collapse list-unstyled 
-            <?php
-            if (
-                $_GET['c'] == 'compra' ||
-                $_GET['c'] == 'compra_tmp'
-            )
-                echo " in";
-            ?>
-            " id="compraSubmenu">
-                    <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'compra') echo "class='active'"; ?>>
-                        <a href="?c=compra">Compras</a>
-                    </li>
-                    <li <?php if (!isset($_GET['a']) && $_GET['c'] == 'devolucion_compras') echo "class='active'"; ?>>
-                        <a href="?c=devolucion_compras">Devoluciones</a>
-                    </li>
-                    <!--<li class='active'><a href="#">Ventas no finalizadas</a></li>-->
-                    <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
-                        <a href="?c=compra&a=listardia">Compras del día</a>
-                    </li>
-                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'compra_tmp') echo "class='active'"; ?>>
-                        <a href="?c=compra_tmp">+ Nueva compra</a>
-                    </li>
-                </ul>
-            </li>
-            <li <?php if ($_GET['c'] == 'adelanto') echo "class='active'"; ?>>
-                <a href="?c=adelanto">Adelantos</a>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cliente') echo "class='active'"; ?>>
+                <a href="?c=cliente">Personas</a>
             </li>
 
             <li>
@@ -268,13 +219,50 @@
                     </li>
                 </ul>
             </li>
-            <!--<li <?php //if (isset($_GET['c']) && $_GET['c'] == 'presupuesto') echo "class='active'"; 
-                    ?>>-->
-            <!--    <a href="?c=presupuesto">Presupuesto</a>-->
-            <!--</li>-->
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'presupuesto_tmp' && !isset($_GET['a'])) echo "class='active'"; ?>>
                 <a href="?c=presupuesto_tmp">+ Nuevo presupuesto</a>
             </li>
+
+            <li>
+                <a href="#productoSubmenu" data-toggle="collapse" aria-expanded="false">Productos</a>
+                <ul class="collapse list-unstyled 
+            <?php
+            if (
+                $_GET['c'] == 'producto' ||
+                $_GET['c'] == 'categoria' ||
+                $_GET['c'] == 'devolucion' ||
+                $_GET['c'] == 'devolucion_tmp' ||
+                $_GET['c'] == 'inventario'
+            )
+                echo " in";
+            ?>
+            " id="productoSubmenu">
+                    <li <?php if ($_GET['c'] == 'producto') echo "class='active'"; ?>>
+                        <a href="?c=producto">Productos</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'producto' && $_GET['a'] == 'servicios') echo "class='active'"; ?>>
+                        <a href="?c=producto&a=servicios">Servicios</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
+                        <a href="?c=categoria">Categorías</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'marca') echo "class='active'"; ?>>
+                        <a href="?c=marca">Marcas</a>
+                    </li>
+                    <li <?php if ($_GET['c'] == 'categoria') echo "class='active'"; ?>>
+                        <a href="?c=devolucion">Ajustes de stock</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li <?php if ($_GET['c'] == 'transferencia_externa') echo "class='active'"; ?>>
+                <a href="?c=transferencia_externa">Transferencias a Central</a>
+            </li>
+
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'usuario') echo "class='active'"; ?>>
+                <a href="?c=usuario">Usuarios</a>
+            </li>
+
             <li>
                 <a href="#ventaSubmenu" data-toggle="collapse" aria-expanded="false">Ventas</a>
                 <ul class="collapse list-unstyled
@@ -296,7 +284,6 @@
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cierre') echo "class='active'"; ?>>
                         <a href="?c=cierre">Sesiones</a>
                     </li>
-                    <!--<li class='active'><a href="#">Ventas no finalizadas</a></li>-->
                     <li <?php if (isset($_GET['a']) && $_GET['a'] == 'listardia') echo "class='active'"; ?>>
                         <a href="?c=venta&a=listardia">Ventas del día</a>
                     </li>
@@ -306,27 +293,8 @@
                     <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp' && !isset($_GET['a'])) echo "class='active'"; ?>>
                         <a href="?c=venta_tmp">+ Nueva venta</a>
                     </li>
-
                 </ul>
             </li>
-            <li>
-                <a href="#cierreSubmenu" data-toggle="collapse" aria-expanded="false">Cierres</a>
-                <ul class="collapse list-unstyled
-            <?php
-            if ($_GET['c'] == 'cierre')
-                echo " in";
-            ?>
-            " id="cierreSubmenu">
-                    <li <?php if (isset($_GET['c']) && $_GET['c'] == 'cierre' && !isset($_GET['a'])) echo "class='active'"; ?>>
-                        <a href="?c=cierre">Sesiones</a>
-                    </li>
-                    <li <?php if (isset($_GET['a']) && $_GET['a'] == 'activas') echo "class='active'"; ?>>
-                        <a href="?c=cierre&a=activas">Sesiones activas</a>
-                    </li>
-                </ul>
-            </li>
-
-
 
             <li <?php if (isset($_GET['c']) && $_GET['c'] == 'venta_tmp') echo "class='active'"; ?>>
                 <a href="?c=venta_tmp">
