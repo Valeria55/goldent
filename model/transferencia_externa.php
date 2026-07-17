@@ -22,18 +22,18 @@ class transferencia_externa
      
         try {
             //HOST
-            define("USER", "u832567584_paseodelasonri");
-            define("PASS", "3LmF#J=h");
-            define("DB", "u832567584_paseodelasonri");
-            define("HOST", "localhost");
+            $user = "u832567584_paseodelasonri";
+            $pass = "3LmF#J=h";
+            $db = "u832567584_paseodelasonri";
+            $host = "localhost";
             
             //LOCAL
-            // define("USER", "root");
-            // define("PASS", "");
-            // define("DB", "paseodelasonrisa");
-            // define("HOST", "localhost");
+            // $user = "root";
+            // $pass = "";
+            // $db = "paseodelasonrisa";
+            // $host = "localhost";
 
-            $this->pdoCentral = new PDO('mysql:host=' . HOST . ';dbname=' . DB . ';charset=utf8', USER, PASS);
+            $this->pdoCentral = new PDO('mysql:host=' . $host . ';dbname=' . $db . ';charset=utf8', $user, $pass);
             $this->pdoCentral->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (Exception $e) {
             die($e->getMessage());
