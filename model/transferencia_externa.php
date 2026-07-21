@@ -74,4 +74,34 @@ class transferencia_externa
             die($e->getMessage());
         }
     }
+
+    public function Obtener($id)
+    {
+        try {
+            $stm = $this->pdoCentral->prepare("SELECT * FROM transferencias_externas WHERE id = ?");
+            $stm->execute(array($id));
+            return $stm->fetch(PDO::FETCH_OBJ);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+    }
+
+    public function Actualizar($data)
+    {
+        try {
+            $sql = "UPDATE transferencias_externas 
+                    SET monto = ?, concepto = ?, comprobante_url = ?
+                    WHERE id = ?";
+
+            $this->pdoCentral->prepare($sql)
+                 ->execute(array(
+                     $data->monto,
+                     $data->concepto,
+                     $data->comprobante_url,
+                     $data->id
+                 ));
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+    }
 }
