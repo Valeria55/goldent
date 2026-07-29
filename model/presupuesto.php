@@ -525,4 +525,55 @@ class presupuesto
 			die($e->getMessage());
 		}
 	}
+
+	public function EliminarItem($id)
+	{
+		try {
+			$stm = $this->pdo->prepare("DELETE FROM presupuestos WHERE id = ?");
+			$stm->execute(array($id));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ActualizarCabecera($id_presupuesto, $id_cliente, $descuento_global, $id_adelanto, $responsable_entrega_id, $observacion_presupuesto, $aprobado, $estado)
+	{
+		try {
+			$sql = "UPDATE presupuestos SET 
+						id_cliente = ?,
+						id_adelanto = ?,
+						responsable_entrega_id = ?,
+						observacion_presupuesto = ?,
+						aprobado = ?,
+						estado = ?
+					WHERE id_presupuesto = ?";
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute(array(
+				$id_cliente,
+				$id_adelanto,
+				$responsable_entrega_id,
+				$observacion_presupuesto,
+				$aprobado,
+				$estado,
+				$id_presupuesto
+			));
+
+			if ($descuento_global > 0) {
+				$sqlDesc = "UPDATE presupuestos SET descuento = ? WHERE id_presupuesto = ?";
+				$this->pdo->prepare($sqlDesc)->execute(array($descuento_global, $id_presupuesto));
+			}
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
+	public function ActualizarItem($id, $cantidad, $precio_venta, $descuento, $paciente)
+	{
+		try {
+			$sql = "UPDATE presupuestos SET cantidad = ?, precio_venta = ?, descuento = ?, paciente = ? WHERE id = ?";
+			$this->pdo->prepare($sql)->execute(array($cantidad, $precio_venta, $descuento, $paciente, $id));
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
 }

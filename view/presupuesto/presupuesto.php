@@ -66,13 +66,14 @@
             <th>Cliente</th>
             <th>Fecha y Hora</th>
             <th>Total</th>
-            <th>Estado</th>
+            <!-- <th>Estado</th> -->
             <?php if (!isset($_SESSION)) session_start();
             if (($_SESSION['nivel'] <> 3)) { ?>
-                <th></th>
+                <th>Venta</th>
             <?php } ?>
-            <th></th>
-            <th></th>
+            <th>Imprimir</th>
+            <th>Detalles</th>
+            <th>Editar</th>
 
 
     </thead>
@@ -223,21 +224,21 @@ if (!isset($_SESSION)) session_start();
                     "data": "total",
                     render: $.fn.dataTable.render.number(',', '.', 0)
                 },
-                {
-                    "data": "estado",
-                    render: function(data, type, row) {
-                        if (row.estado == 'Pendiente') {
-                            let aprobarLink = "?c=presupuesto&a=Aprobar&id_presupuesto=" + row.id_presupuesto;
-                            return '<span class="badge badge-warning">Pendiente aprobación</span><br><a href="' + aprobarLink + '" class="btn btn-sm btn-success mt-1">Aprobar</a>';
-                        } else if (row.estado == 'Vendido') {
-                            return '<span class="badge badge-success">Vendido</span>';
-                        } else if (row.estado == 'Aprobado') {
-                            return '<span class="badge badge-primary">Aprobado</span>';
-                        } else {
-                            return '<span class="badge badge-secondary">Sin estado</span>';
-                        }
-                    }
-                },
+                // {
+                //     "data": "estado",
+                //     render: function(data, type, row) {
+                //         if (row.estado == 'Pendiente') {
+                //             let aprobarLink = "?c=presupuesto&a=Aprobar&id_presupuesto=" + row.id_presupuesto;
+                //             return '<span class="badge badge-warning">Pendiente aprobación</span><br><a href="' + aprobarLink + '" class="btn btn-sm btn-success mt-1">Aprobar</a>';
+                //         } else if (row.estado == 'Vendido') {
+                //             return '<span class="badge badge-success">Vendido</span>';
+                //         } else if (row.estado == 'Aprobado') {
+                //             return '<span class="badge badge-primary">Aprobado</span>';
+                //         } else {
+                //             return '<span class="badge badge-secondary">Sin estado</span>';
+                //         }
+                //     }
+                // },
                 <?php
                 if (($_SESSION['nivel'] <> 3)) { ?> {
                         "defaultContent": "",
@@ -258,7 +259,7 @@ if (!isset($_SESSION)) session_start();
                     "defaultContent": "",
                     render: function(data, type, row) {
                         let link = "?c=presupuesto&a=OrdenDelivery&id=" + row.id_presupuesto;
-                        return '<a href="' + link + '" class="btn btn-warning">Imprimir</a>';
+                        return '<a href="' + link + '" class="btn btn-default">Nota de remisión</a>';
                     }
                 },
                 {
@@ -268,6 +269,17 @@ if (!isset($_SESSION)) session_start();
 
                         return "<a href='#presupuestoModal' class='btn btn-info' data-toggle='modal' data-target='#presupuestoModal' data-c='presupuesto' data-id='" + row.id_presupuesto + "'>Ver</a>";
 
+                    }
+                },
+                {
+                    "defaultContent": "",
+                    render: function(data, type, row) {
+                        if (row.estado != 'Vendido') {
+                            let editLink = "?c=presupuesto&a=Editar&id=" + row.id_presupuesto;
+                            return '<a href="' + editLink + '" class="btn btn-warning" onclick="return confirm(\'¿Desea editar este presupuesto? Sus ítems se cargarán en la pantalla para modificar.\');"><i class="fa fa-edit"></i> Editar</a>';
+                        } else {
+                            return '<span class="text-muted" style="font-size: 11px;">(Vendido)</span>';
+                        }
                     }
                 }
 

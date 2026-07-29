@@ -497,4 +497,126 @@ class presupuestoController
         $this->model->ActualizarEstado($_REQUEST['id_presupuesto'], 'Aprobado');
         header('Location: index.php?c=presupuesto');
     }
+
+    public function Editar()
+    {
+        $id_presupuesto = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        if ($id_presupuesto > 0) {
+            $items = $this->model->ListarDetalle($id_presupuesto);
+            if (!empty($items) && $items[0]->estado != 'Vendido') {
+                require_once 'view/header.php';
+                require_once 'view/presupuesto/editar-presupuesto.php';
+                require_once 'view/footer.php';
+                return;
+            }
+        }
+        header("Location: index.php?c=presupuesto");
+    }
+
+    public function AgregarItemEdicion()
+    {
+        $id_presupuesto = intval($_POST['id_presupuesto']);
+        if ($id_presupuesto > 0) {
+            $items = $this->model->ListarDetalle($id_presupuesto);
+            if (!empty($items)) {
+                $cab = $items[0];
+                if (!isset($_SESSION)) session_start();
+
+                $p = new presupuesto();
+                $p->id = 0;
+                $p->id_presupuesto = $id_presupuesto;
+                $p->id_cliente = $cab->id_cliente;
+                $p->id_vendedor = $_SESSION['user_id'];
+                $p->id_producto = $_POST['id_producto'];
+                $p->precio_venta = $_POST['precio_venta'];
+                $p->cantidad = $_POST['cantidad'];
+                $p->descuento = $_POST['descuento'];
+                $p->fecha_presupuesto = $cab->fecha_presupuesto;
+                $p->aprobado = $cab->aprobado;
+                $p->estado = $cab->estado;
+                $p->paciente = $_POST['paciente'];
+                $p->id_adelanto = $cab->id_adelanto;
+                $p->responsable_entrega_id = $cab->responsable_entrega_id;
+                $p->observacion_presupuesto = $cab->observacion_presupuesto;
+
+                $this->model->Registrar($p);
+            }
+            header("Location: index.php?c=presupuesto&a=Editar&id=" . $id_presupuesto);
+            exit();
+        }
+        header("Location: index.php?c=presupuesto");
+    }
+
+    public function EliminarItemEdicion()
+    {
+        $id_item = intval($_GET['id']);
+        $id_presupuesto = intval($_GET['id_presupuesto']);
+        if ($id_item > 0 && $id_presupuesto > 0) {
+            $this->model->EliminarItem($id_item);
+            header("Location: index.php?c=presupuesto&a=Editar&id=" . $id_presupuesto);
+            exit();
+        }
+        header("Location: index.php?c=presupuesto");
+    }
+
+    public function ActualizarPresupuesto()
+    {
+        $id_presupuesto = intval($_POST['id_presupuesto']);
+        if ($id_presupuesto > 0) {
+            $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
+            $descuento_global = isset($_POST['descuento_global']) ? floatval($_POST['descuento_global']) : 0;
+            $id_adelanto_raw = isset($_POST['id_adelanto']) ? $_POST['id_adelanto'] : null;
+            $responsable_entrega_id = isset($_POST['responsable_entrega_id']) ? intval($_POST['responsable_entrega_id']) : 0;
+            $observacion_presupuesto = isset($_POST['observacion_presupuesto']) ? trim($_POST['observacion_presupuesto']) : '';
+
+            $id_adelanto_str = null;
+            $nuevos_adelantos = array();
+            if (is_array($id_adelanto_raw)) {
+                $nuevos_adelantos = array_filter($id_adelanto_raw);
+                if (!empty($nuevos_adelantos)) {
+                    $id_adelanto_str = implode(',', $nuevos_adelantos);
+                }
+            } else if (!empty($id_adelanto_raw)) {
+                $id_adelanto_str = $id_adelanto_raw;
+                $nuevos_adelantos = array($id_adelanto_raw);
+            }
+
+            // Gestionar estado de adelantos (liberar previos y marcar nuevos)
+            $adelanto_previo_str = $this->model->ObtenerIdAdelanto($id_presupuesto);
+            $viejos_adelantos = !empty($adelanto_previo_str) ? array_map('trim', explode(',', $adelanto_previo_str)) : array();
+
+            // Liberar adelantos desmarcados
+            foreach ($viejos_adelantos as $v_id) {
+                if (!empty($v_id) && !in_array($v_id, $nuevos_adelantos)) {
+                    $this->adelanto->CambiarEstado($v_id, 'PENDIENTE');
+                }
+            }
+            // Marcar nuevos adelantos seleccionados
+            foreach ($nuevos_adelantos as $n_id) {
+                if (!empty($n_id)) {
+                    $this->adelanto->CambiarEstado($n_id, 'UTILIZADO');
+                }
+            }
+
+            $requiere_aprobacion = $descuento_global > 10;
+            $aprobado = $requiere_aprobacion ? 'no' : 'si';
+            $estado = $requiere_aprobacion ? 'Pendiente' : 'Aprobado';
+
+            // Actualizar la cabecera en todas las filas del presupuesto
+            $this->model->ActualizarCabecera($id_presupuesto, $id_cliente, $descuento_global, $id_adelanto_str, $responsable_entrega_id, $observacion_presupuesto, $aprobado, $estado);
+
+            // Registrar/Actualizar entrega
+            if ($responsable_entrega_id > 0) {
+                if (!isset($_SESSION)) session_start();
+                require_once 'model/entrega.php';
+                $modelEntrega = new entrega();
+                $user_asigno = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 1;
+                $modelEntrega->Registrar($id_presupuesto, $id_cliente, $user_asigno, $responsable_entrega_id, $observacion_presupuesto);
+            }
+
+            header("Location: index.php?c=presupuesto&success=Presupuesto+#" . $id_presupuesto . "+actualizado+exitosamente");
+            exit();
+        }
+        header("Location: index.php?c=presupuesto");
+    }
 }
