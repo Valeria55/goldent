@@ -566,6 +566,13 @@ class ventaController
             $this->model->Registrar($venta);
             $this->presupuesto->CambiarEstado($venta);
 
+            // Vincular ID de venta a la entrega registrada previamente en el presupuesto
+            if (!empty($venta->id_presupuesto) && $venta->id_presupuesto > 0) {
+                require_once 'model/entrega.php';
+                $modelEntrega = new entrega();
+                $modelEntrega->VincularVenta($venta->id_presupuesto, $venta->id_venta);
+            }
+
             if ($_REQUEST['id_gift'] != '') {
                 $this->gift_card->Retirado($venta->id_gift);
             }

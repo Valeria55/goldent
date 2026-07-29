@@ -17,11 +17,19 @@ class presupuesto
 	public $aprobado;
 	public $paciente;
 	public $id_adelanto;
+	public $responsable_entrega_id;
+	public $observacion_presupuesto;
 
 	public function __CONSTRUCT()
 	{
 		try {
 			$this->pdo = Database::StartUp();
+			try {
+				$this->pdo->exec("ALTER TABLE presupuestos ADD COLUMN responsable_entrega_id INT DEFAULT NULL");
+			} catch (Exception $ex) {}
+			try {
+				$this->pdo->exec("ALTER TABLE presupuestos ADD COLUMN observacion_presupuesto TEXT DEFAULT NULL");
+			} catch (Exception $ex) {}
 		} catch (Exception $e) {
 			die($e->getMessage());
 		}
@@ -375,8 +383,8 @@ class presupuesto
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado, paciente, id_adelanto) 
-		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO presupuestos (id_presupuesto, id_cliente, id_vendedor, id_producto, precio_venta, cantidad, fecha_presupuesto, descuento, aprobado, estado, paciente, id_adelanto, responsable_entrega_id, observacion_presupuesto) 
+		        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -392,8 +400,9 @@ class presupuesto
 						$data->aprobado,
 						$data->estado,
 						$data->paciente,
-						$data->id_adelanto
-
+						$data->id_adelanto,
+						$data->responsable_entrega_id,
+						$data->observacion_presupuesto
 					)
 				);
 		} catch (Exception $e) {

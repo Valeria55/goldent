@@ -22,16 +22,16 @@ class transferencia_externa
      
         try {
             //HOST
-            $user = "u832567584_paseodelasonri";
-            $pass = "3LmF#J=h";
-            $db = "u832567584_paseodelasonri";
-            $host = "localhost";
+            // $user = "u832567584_paseodelasonri";
+            // $pass = "3LmF#J=h";
+            // $db = "u832567584_paseodelasonri";
+            // $host = "localhost";
             
             //LOCAL
-            // $user = "root";
-            // $pass = "";
-            // $db = "paseodelasonrisa";
-            // $host = "localhost";
+            $user = "root";
+            $pass = "";
+            $db = "paseodelasonrisa";
+            $host = "localhost";
 
             $this->pdoCentral = new PDO('mysql:host=' . $host . ';dbname=' . $db . ';charset=utf8', $user, $pass);
             $this->pdoCentral->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

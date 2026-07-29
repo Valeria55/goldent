@@ -367,6 +367,12 @@ class presupuestoController
             $presupuesto->estado = $estado; // Establecer estado
             $presupuesto->id_adelanto = $id_adelanto; // Vincular adelanto
 
+            $responsable_entrega_id = isset($_REQUEST['responsable_entrega_id']) ? intval($_REQUEST['responsable_entrega_id']) : 0;
+            $observacion_presupuesto = isset($_REQUEST['observacion_presupuesto']) ? trim($_REQUEST['observacion_presupuesto']) : '';
+
+            $presupuesto->responsable_entrega_id = $responsable_entrega_id;
+            $presupuesto->observacion_presupuesto = $observacion_presupuesto;
+
             //Registrar presupuesto
             $this->model->Registrar($presupuesto);
 
@@ -380,6 +386,16 @@ class presupuestoController
 
         $this->presupuesto_tmp->Vaciar();
         $id = $ven->id_presupuesto + 1;
+
+        // Registrar asignación de entrega si se seleccionó responsable
+        if ($responsable_entrega_id > 0) {
+            if (!isset($_SESSION)) session_start();
+            require_once 'model/entrega.php';
+            $modelEntrega = new entrega();
+            $id_cli = isset($_REQUEST['id_cliente']) ? intval($_REQUEST['id_cliente']) : 0;
+            $user_asigno = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 1;
+            $modelEntrega->Registrar($id, $id_cli, $user_asigno, $responsable_entrega_id, $observacion_presupuesto);
+        }
 
         // Mostrar mensaje si requiere aprobación
         if ($requiere_aprobacion) {

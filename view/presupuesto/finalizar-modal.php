@@ -34,6 +34,21 @@
                         <small class="text-warning">* Si es mayor a 0, reemplazará los descuentos individuales. Si es mayor a 10%, el presupuesto requerirá aprobación.</small>
 				    </div>
 
+				    <div class="form-group col-sm-12">
+						<label><i class="fa fa-truck text-primary"></i> Responsable del Área de Entregas</label>
+                        <select name="responsable_entrega_id" id="responsable_entrega_id" class="form-control selectpicker" data-live-search="true" data-style="form-control" title="-- Seleccione el responsable de entrega --">
+                            <option value="0" selected>-- Sin asignar / No requiere entrega --</option>
+                            <?php foreach($this->usuario->ListarUsuarios() as $u): ?>
+                            <option value="<?php echo $u->id; ?>"><?php echo htmlspecialchars($u->user); ?> (<?php echo htmlspecialchars($u->sucursal ? $u->sucursal : 'General'); ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+				    </div>
+
+				    <div class="form-group col-sm-12">
+						<label><i class="fa fa-comment text-info"></i> Observaciones del Presupuesto (Orden de Entrega)</label>
+                        <textarea name="observacion_presupuesto" id="observacion_presupuesto" class="form-control" rows="3" placeholder="Ingrese notas o indicaciones especiales para la entrega..."></textarea>
+				    </div>
+
 				    <div align="center">
                         <input type="submit" class="btn btn-primary" value="Finalizar" onclick="this.disabled=true;this.value='Guardando, Espere...';this.form.submit();">
                     </div>
