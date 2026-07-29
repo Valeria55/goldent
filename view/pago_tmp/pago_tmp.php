@@ -25,14 +25,20 @@ endforeach;
 // El saldo está en Guaraníes (monto_venta->monto ya está en GS)
 $saldo = $monto_venta->monto - $pagototal;
 
-// Si viene de un presupuesto, descontar el adelanto
+// Si viene de un presupuesto, descontar el o los adelantos
 $adelanto_monto = 0;
 if ($monto_venta->id_presupuesto > 0) {
     $presu = $this->presupuesto->ObtenerId_presupuesto($monto_venta->id_presupuesto);
-    if ($presu && $presu->id_adelanto) {
-        $ade = $this->adelanto->Obtener($presu->id_adelanto);
-        if ($ade) {
-            $adelanto_monto = $ade->monto;
+    if ($presu && !empty($presu->id_adelanto)) {
+        $ids_ade = explode(',', $presu->id_adelanto);
+        foreach ($ids_ade as $id_ade) {
+            $id_ade = trim($id_ade);
+            if (!empty($id_ade)) {
+                $ade = $this->adelanto->Obtener($id_ade);
+                if ($ade) {
+                    $adelanto_monto += floatval($ade->monto);
+                }
+            }
         }
     }
 }

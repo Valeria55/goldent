@@ -22,10 +22,10 @@
 				    </div>
 				    
 				    <div class="form-group col-sm-12" id="div-adelantos" style="display:none;">
-						<label>Adelanto disponible</label>
-                        <select name="id_adelanto" id="id_adelanto" class="form-control">
-                            <option value="">-- No usar adelanto --</option>
+						<label>Adelantos disponibles (Selección múltiple)</label>
+                        <select name="id_adelanto[]" id="id_adelanto" class="form-control selectpicker" multiple data-actions-box="true" data-live-search="true" title="-- Seleccione adelanto(s) a descontar --">
                         </select>
+                        <small class="text-info">* Puede seleccionar 1 o varios adelantos del cliente.</small>
 				    </div>
 
 				    <div class="form-group col-sm-12">
@@ -78,18 +78,21 @@
                 var adelantos = JSON.parse(data);
                 var $select = $('#id_adelanto');
                 $select.empty();
-                $select.append('<option value="">-- No usar adelanto --</option>');
                 if (adelantos.length > 0) {
                     $('#div-adelantos').show();
                     adelantos.forEach(function(a) {
-                        $select.append('<option value="' + a.id + '">Adelanto #' + a.id + ' - GS ' + parseFloat(a.monto).toLocaleString('es-PY') + '</option>');
+                        var desc = a.descripcion ? ' (' + a.descripcion + ')' : '';
+                        $select.append('<option value="' + a.id + '">Adelanto #' + a.id + ' - Gs. ' + parseFloat(a.monto).toLocaleString('es-PY') + desc + '</option>');
                     });
+                    $select.selectpicker('refresh');
                 } else {
                     $('#div-adelantos').hide();
+                    $select.selectpicker('refresh');
                 }
             });
         } else {
             $('#div-adelantos').hide();
+            $('#id_adelanto').empty().selectpicker('refresh');
         }
     });
 </script>

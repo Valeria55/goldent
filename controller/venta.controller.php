@@ -590,10 +590,16 @@ class ventaController
             $primer_item = $items_tmp[0];
             if ($primer_item->id_presupuesto > 0) {
                 $presu = $this->presupuesto->ObtenerId_presupuesto($primer_item->id_presupuesto);
-                if ($presu && $presu->id_adelanto) {
-                    $ade = $this->adelanto->Obtener($presu->id_adelanto);
-                    if ($ade) {
-                        $adelanto_total = $ade->monto;
+                if ($presu && !empty($presu->id_adelanto)) {
+                    $ids_ade = explode(',', $presu->id_adelanto);
+                    foreach ($ids_ade as $id_ade) {
+                        $id_ade = trim($id_ade);
+                        if (!empty($id_ade)) {
+                            $ade = $this->adelanto->Obtener($id_ade);
+                            if ($ade) {
+                                $adelanto_total += floatval($ade->monto);
+                            }
+                        }
                     }
                 }
             }

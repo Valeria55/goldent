@@ -330,10 +330,23 @@ class presupuestoController
         $ven = $this->model->Ultimo();
         $sumaTotal = 0;
         
-        // Obtener descuento global y adelanto del formulario
+        // Obtener descuento global y adelantos del formulario
         $descuento_global = isset($_REQUEST['descuento_global']) ? floatval($_REQUEST['descuento_global']) : 0;
-        $id_adelanto = isset($_REQUEST['id_adelanto']) ? $_REQUEST['id_adelanto'] : null;
+        $id_adelanto_raw = isset($_REQUEST['id_adelanto']) ? $_REQUEST['id_adelanto'] : null;
         
+        $id_adelanto_str = null;
+        $ids_adelantos_array = array();
+
+        if (is_array($id_adelanto_raw)) {
+            $ids_adelantos_array = array_filter($id_adelanto_raw);
+            if (!empty($ids_adelantos_array)) {
+                $id_adelanto_str = implode(',', $ids_adelantos_array);
+            }
+        } else if (!empty($id_adelanto_raw)) {
+            $id_adelanto_str = $id_adelanto_raw;
+            $ids_adelantos_array = array($id_adelanto_raw);
+        }
+
         // Determinar si requiere aprobación (descuento > 10%)
         $requiere_aprobacion = $descuento_global > 10;
         $aprobado = $requiere_aprobacion ? 'no' : 'si';
@@ -359,13 +372,13 @@ class presupuestoController
             $presupuesto->id_vendedor = $v->id_vendedor;
             $presupuesto->id_producto = $v->id_producto;
             $presupuesto->precio_venta = $v->precio_venta;
-            $presupuesto->descuento = $descuento_aplicar; // Usar descuento calculado
+            $presupuesto->descuento = $descuento_aplicar; // Usar descuento calculated
             $presupuesto->cantidad = $v->cantidad;
             $presupuesto->paciente = $v->paciente;
             $presupuesto->fecha_presupuesto = $_REQUEST["fecha_presupuesto"]; //date("Y-m-d H:i");
             $presupuesto->aprobado = $aprobado; // Nuevo campo para aprobación
             $presupuesto->estado = $estado; // Establecer estado
-            $presupuesto->id_adelanto = $id_adelanto; // Vincular adelanto
+            $presupuesto->id_adelanto = $id_adelanto_str; // Vincular uno o múltiples adelantos
 
             $responsable_entrega_id = isset($_REQUEST['responsable_entrega_id']) ? intval($_REQUEST['responsable_entrega_id']) : 0;
             $observacion_presupuesto = isset($_REQUEST['observacion_presupuesto']) ? trim($_REQUEST['observacion_presupuesto']) : '';
@@ -379,8 +392,13 @@ class presupuestoController
             $sumaTotal += $presupuesto->presupuesto;
         }
 
-        if ($id_adelanto) {
-            $this->adelanto->CambiarEstado($id_adelanto, 'UTILIZADO');
+        if (!empty($ids_adelantos_array)) {
+            foreach ($ids_adelantos_array as $adel_id) {
+                $adel_id = trim($adel_id);
+                if (!empty($adel_id)) {
+                    $this->adelanto->CambiarEstado($adel_id, 'UTILIZADO');
+                }
+            }
         }
 
 
@@ -438,9 +456,15 @@ class presupuestoController
 
     public function Eliminar()
     {
-        $id_adelanto = $this->model->ObtenerIdAdelantoPorId($_REQUEST['id']);
-        if ($id_adelanto) {
-            $this->adelanto->CambiarEstado($id_adelanto, 'PENDIENTE');
+        $id_adelanto_val = $this->model->ObtenerIdAdelantoPorId($_REQUEST['id']);
+        if (!empty($id_adelanto_val)) {
+            $ids = explode(',', $id_adelanto_val);
+            foreach ($ids as $adel_id) {
+                $adel_id = trim($adel_id);
+                if (!empty($adel_id)) {
+                    $this->adelanto->CambiarEstado($adel_id, 'PENDIENTE');
+                }
+            }
         }
         $this->model->Eliminar($_REQUEST['id']);
         header('Location: index.php?c=presupuesto');
@@ -448,9 +472,15 @@ class presupuestoController
 
     public function Anular()
     {
-        $id_adelanto = $this->model->ObtenerIdAdelanto($_REQUEST['id']);
-        if ($id_adelanto) {
-            $this->adelanto->CambiarEstado($id_adelanto, 'PENDIENTE');
+        $id_adelanto_val = $this->model->ObtenerIdAdelanto($_REQUEST['id']);
+        if (!empty($id_adelanto_val)) {
+            $ids = explode(',', $id_adelanto_val);
+            foreach ($ids as $adel_id) {
+                $adel_id = trim($adel_id);
+                if (!empty($adel_id)) {
+                    $this->adelanto->CambiarEstado($adel_id, 'PENDIENTE');
+                }
+            }
         }
         $this->model->Anular($_REQUEST['id']);
         header('Location: index.php?c=presupuesto');
