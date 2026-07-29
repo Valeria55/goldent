@@ -12,6 +12,15 @@
     <input type="hidden" id="cot_real" value="<?php echo $cotizacion_rs ?>">
     
     <h3>Cobro por <?php echo $r->concepto ?></h3>
+    <?php 
+    if (!empty($r->id_cliente)) {
+        $cliObj = $this->cliente->Obtener($r->id_cliente);
+        $obsCli = !empty($cliObj->observacion_cliente) ? $cliObj->observacion_cliente : (!empty($cliObj->observacion) ? $cliObj->observacion : '');
+        if (!empty($obsCli)) {
+            echo '<div class="alert alert-warning" style="font-size: 14px; border-left: 5px solid #f0ad4e; margin-top: 10px;"><i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> ' . htmlspecialchars($obsCli) . '</div>';
+        }
+    }
+    ?>
     <br>
     
     <!-- Mostrar saldo en diferentes monedas -->

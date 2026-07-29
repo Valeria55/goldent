@@ -21,6 +21,12 @@
 						<input type="datetime-local" name="fecha_venta" class="form-control" value="<?php echo date("Y-m-d") ?>T<?php echo date("H:i") ?>">
 					</div>
 
+					<div class="form-group col-sm-12" id="div-obs-cliente-venta" style="display:none;">
+						<div class="alert alert-warning" style="margin-bottom: 0; border-left: 5px solid #f0ad4e;">
+							<i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> <span id="txt-obs-cliente-venta"></span>
+						</div>
+					</div>
+
 					<?php
 					$ultima_venta = $this->venta->UltimoAutoimpresor();
 
@@ -202,6 +208,31 @@
 			// Ocultar y resetear Pagaré
 			$("#div_pagare").hide();
 			$("#pagare").val("");
+		}
+	});
+
+	$('#cliente').on('change', function() {
+		var id_cliente = $(this).val();
+		if (id_cliente > 0) {
+			$.post('?c=cliente&a=Buscar', {id: id_cliente}, function(data) {
+				var c = typeof data === 'string' ? JSON.parse(data) : data;
+				var obs = (c && c.observacion_cliente && $.trim(c.observacion_cliente) !== '') ? c.observacion_cliente : (c && c.observacion ? c.observacion : '');
+				if (obs && $.trim(obs) !== '') {
+					$('#txt-obs-cliente-venta').text(obs);
+					$('#div-obs-cliente-venta').slideDown();
+				} else {
+					$('#div-obs-cliente-venta').slideUp();
+				}
+			});
+		} else {
+			$('#div-obs-cliente-venta').slideUp();
+		}
+	});
+
+	$(document).ready(function() {
+		var id_ini = $('#cliente').val();
+		if (id_ini > 0) {
+			$('#cliente').trigger('change');
 		}
 	});
 </script>

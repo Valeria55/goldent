@@ -176,6 +176,7 @@ class clienteController{
            $cliente->mayorista = $_REQUEST['mayorista'];
            $cliente->cliente = $_REQUEST['cliente'];
            $cliente->proveedor = $_REQUEST['proveedor'];
+           $cliente->observacion_cliente = isset($_REQUEST['observacion_cliente']) ? trim($_REQUEST['observacion_cliente']) : (isset($_REQUEST['observacion']) ? trim($_REQUEST['observacion']) : '');
             
             $cliente->id > 0 
                 ? $this->model->Actualizar($cliente)
@@ -243,6 +244,7 @@ class clienteController{
            $cliente->mayorista = $_REQUEST['mayorista'];
            $cliente->cliente = $_REQUEST['cliente'];
            $cliente->proveedor = $_REQUEST['proveedor'];
+           $cliente->observacion_cliente = isset($_REQUEST['observacion_cliente']) ? trim($_REQUEST['observacion_cliente']) : (isset($_REQUEST['observacion']) ? trim($_REQUEST['observacion']) : '');
             
             $cliente->id > 0 
                 ? $this->model->Actualizar($cliente)

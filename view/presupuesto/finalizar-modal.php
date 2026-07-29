@@ -21,6 +21,12 @@
                         </select>
 				    </div>
 				    
+				    <div class="form-group col-sm-12" id="div-obs-cliente-presu" style="display:none;">
+				        <div class="alert alert-warning" style="margin-bottom: 0; border-left: 5px solid #f0ad4e;">
+				            <i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> <span id="txt-obs-cliente-presu"></span>
+				        </div>
+				    </div>
+
 				    <div class="form-group col-sm-12" id="div-adelantos" style="display:none;">
 						<label>Adelantos disponibles (Selección múltiple)</label>
                         <select name="id_adelanto[]" id="id_adelanto" class="form-control selectpicker" multiple data-actions-box="true" data-live-search="true" title="-- Seleccione adelanto(s) a descontar --">
@@ -74,6 +80,17 @@
     $('#cliente').on('change', function() {
         var id_cliente = $(this).val();
         if (id_cliente > 0) {
+            $.post('?c=cliente&a=Buscar', {id: id_cliente}, function(data) {
+                var c = typeof data === 'string' ? JSON.parse(data) : data;
+                var obs = (c && c.observacion_cliente && $.trim(c.observacion_cliente) !== '') ? c.observacion_cliente : (c && c.observacion ? c.observacion : '');
+                if (obs && $.trim(obs) !== '') {
+                    $('#txt-obs-cliente-presu').text(obs);
+                    $('#div-obs-cliente-presu').slideDown();
+                } else {
+                    $('#div-obs-cliente-presu').slideUp();
+                }
+            });
+
             $.post('?c=adelanto&a=ListarPendientes', {id_cliente: id_cliente}, function(data) {
                 var adelantos = JSON.parse(data);
                 var $select = $('#id_adelanto');
@@ -91,8 +108,16 @@
                 }
             });
         } else {
+            $('#div-obs-cliente-presu').slideUp();
             $('#div-adelantos').hide();
             $('#id_adelanto').empty().selectpicker('refresh');
+        }
+    });
+
+    $('#finalizarModal').on('shown.bs.modal', function () {
+        var id_cli = $('#cliente').val();
+        if (id_cli > 0) {
+            $('#cliente').trigger('change');
         }
     });
 </script>

@@ -17,16 +17,22 @@ class cliente
     public $foto_perfil;
     public $sucursal;
     public $puntos;
-    public $gastado;
     public $mayorista;
     public $cliente;
     public $proveedor;
+    public $observacion_cliente;
 
     public function __CONSTRUCT()
     {
         try
         {
             $this->pdo = Database::StartUp();
+            try {
+                $this->pdo->exec("ALTER TABLE clientes ADD COLUMN observacion_cliente TEXT DEFAULT NULL");
+            } catch (Exception $ex) {}
+            try {
+                $this->pdo->exec("ALTER TABLE clientes CHANGE COLUMN observacion observacion_cliente TEXT DEFAULT NULL");
+            } catch (Exception $ex) {}
         } catch (Exception $e) {
             die($e->getMessage());
         }
@@ -251,7 +257,8 @@ class cliente
                         sucursal         = ?,
                         puntos           = ?,
                         gastado          = ?,
-                        mayorista        = ?
+                        mayorista        = ?,
+                        observacion_cliente = ?
 
                     WHERE id = ?";
 
@@ -271,6 +278,7 @@ class cliente
                             $data->puntos,
                             $data->gastado,
                             $data->mayorista,
+                            $data->observacion_cliente,
                             $data->id
                         )
                     );
@@ -289,7 +297,8 @@ class cliente
                         proveedor        = ?,
                         puntos           = ?,
                         gastado          = ?,
-                        mayorista        = ?
+                        mayorista        = ?,
+                        observacion_cliente = ?
 
                     WHERE id = ?";
 
@@ -310,6 +319,7 @@ class cliente
                             $data->puntos,
                             $data->gastado,
                             $data->mayorista,
+                            $data->observacion_cliente,
                             $data->id
                         )
                     );
@@ -329,8 +339,8 @@ class cliente
         try
         {   
             if ($data->foto_perfil!='') {
-                $sql = "INSERT INTO clientes (ruc, nombre, nick, correo, pass, telefono, cumple, direccion, fecha_registro, foto_perfil, sucursal,cliente, proveedor, puntos, gastado, mayorista)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO clientes (ruc, nombre, nick, correo, pass, telefono, cumple, direccion, fecha_registro, foto_perfil, sucursal,cliente, proveedor, puntos, gastado, mayorista, observacion_cliente)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 $this->pdo->prepare($sql)
                     ->execute(
@@ -350,12 +360,13 @@ class cliente
                             $data->proveedor,
                             $data->puntos,
                             $data->gastado,
-                            $data->mayorista
+                            $data->mayorista,
+                            $data->observacion_cliente
                         )
                     );
             }else{
-                $sql = "INSERT INTO clientes (ruc, nombre, nick, correo, pass, telefono, cumple, direccion, fecha_registro, sucursal, cliente, proveedor, puntos, gastado, mayorista)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO clientes (ruc, nombre, nick, correo, pass, telefono, cumple, direccion, fecha_registro, sucursal, cliente, proveedor, puntos, gastado, mayorista, observacion_cliente)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 $this->pdo->prepare($sql)
                     ->execute(
@@ -374,7 +385,8 @@ class cliente
                             $data->proveedor,
                             $data->puntos,
                             $data->gastado,
-                            $data->mayorista
+                            $data->mayorista,
+                            $data->observacion_cliente
                         )
                     );
             }

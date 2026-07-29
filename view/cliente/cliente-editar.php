@@ -85,9 +85,9 @@
         </div>
     <?php } ?>
 
-    <div class="form-group" style='display:none'>
-        <label>Foto</label>
-        <input type="file" name="foto_perfil" class="form-control">
+    <div class="form-group">
+        <label><i class="fa fa-comment text-info"></i> Observaciones del Cliente</label>
+        <textarea name="observacion_cliente" class="form-control" rows="3" placeholder="Observaciones, preferencias o notas del cliente..."><?php echo htmlspecialchars($cliente->observacion_cliente ?? ($cliente->observacion ?? '')); ?></textarea>
     </div>
 
     <hr />

@@ -129,6 +129,14 @@ $id_adelanto_actual = $cabecera->id_adelanto;
         <form method="post" action="?c=presupuesto&a=ActualizarPresupuesto">
             <input type="hidden" name="id_presupuesto" value="<?php echo $id_presupuesto; ?>">
 
+            <div class="row" id="div-obs-cliente-edit" style="display:none; margin-bottom: 15px;">
+                <div class="col-sm-12">
+                    <div class="alert alert-warning" style="margin-bottom: 0; border-left: 5px solid #f0ad4e;">
+                        <i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> <span id="txt-obs-cliente-edit"></span>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="form-group col-sm-6">
                     <label style="font-weight: 600;">Cliente:</label>
@@ -223,8 +231,26 @@ $id_adelanto_actual = $cabecera->id_adelanto;
 </div>
 
 <script>
+    function cargarObservacionClienteEdit(id_cliente) {
+        if (id_cliente > 0) {
+            $.post('?c=cliente&a=Buscar', {id: id_cliente}, function(data) {
+                var c = typeof data === 'string' ? JSON.parse(data) : data;
+                var obs = (c && c.observacion_cliente && $.trim(c.observacion_cliente) !== '') ? c.observacion_cliente : (c && c.observacion ? c.observacion : '');
+                if (obs && $.trim(obs) !== '') {
+                    $('#txt-obs-cliente-edit').text(obs);
+                    $('#div-obs-cliente-edit').slideDown();
+                } else {
+                    $('#div-obs-cliente-edit').slideUp();
+                }
+            });
+        } else {
+            $('#div-obs-cliente-edit').slideUp();
+        }
+    }
+
     $('#cliente_edit').on('change', function() {
         var id_cliente = $(this).val();
+        cargarObservacionClienteEdit(id_cliente);
         if (id_cliente > 0) {
             $.post('?c=adelanto&a=ListarPendientes', {id_cliente: id_cliente}, function(data) {
                 var adelantos = JSON.parse(data);
@@ -240,6 +266,14 @@ $id_adelanto_actual = $cabecera->id_adelanto;
             });
         } else {
             $('#id_adelanto_edit').empty().selectpicker('refresh');
+        }
+    });
+
+    // Cargar al iniciar si ya hay un cliente seleccionado
+    $(document).ready(function() {
+        var id_ini = $('#cliente_edit').val();
+        if (id_ini > 0) {
+            cargarObservacionClienteEdit(id_ini);
         }
     });
 
