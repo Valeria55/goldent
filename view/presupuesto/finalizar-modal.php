@@ -38,7 +38,15 @@
 						<label><i class="fa fa-truck text-primary"></i> Responsable del Área de Entregas</label>
                         <select name="responsable_entrega_id" id="responsable_entrega_id" class="form-control selectpicker" data-live-search="true" data-style="form-control" title="-- Seleccione el responsable de entrega --">
                             <option value="0" selected>-- Sin asignar / No requiere entrega --</option>
-                            <?php foreach($this->usuario->ListarUsuarios() as $u): ?>
+                            <?php 
+                            $entregadoresList = method_exists($this->usuario, 'ListarEntregadores') ? $this->usuario->ListarEntregadores() : array();
+                            if (empty($entregadoresList)) {
+                                foreach($this->usuario->ListarUsuarios() as $u) {
+                                    if ($u->nivel == 11) $entregadoresList[] = $u;
+                                }
+                            }
+                            foreach($entregadoresList as $u): 
+                            ?>
                             <option value="<?php echo $u->id; ?>"><?php echo htmlspecialchars($u->user); ?> (<?php echo htmlspecialchars($u->sucursal ? $u->sucursal : 'General'); ?>)</option>
                             <?php endforeach; ?>
                         </select>

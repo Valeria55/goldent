@@ -23,6 +23,8 @@
                 $nivel = 'Cajero';
             }elseif($r->nivel==4){
                 $nivel = 'Gerente';
+            }elseif($r->nivel==11){
+                $nivel = 'Entregador';
             }else{
                 $nivel = 'Vendedor';
             }

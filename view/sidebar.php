@@ -520,21 +520,36 @@
 
         <?php } ?>
 
+        <?php // NIVEL 11 ENTREGADOR 
+        ?>
+        <?php if (isset($_SESSION['nivel']) && $_SESSION['nivel'] == 11) { ?>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'entrega') echo "class='active'"; ?>>
+                <a href="?c=entrega" style="font-weight: 600; color: #5bc0de; font-size: 15px;">
+                    <i class="fa fa-truck"></i> Entregas de Pedidos
+                    <?php if ($cantPendientesSidebar > 0) : ?>
+                        <span class="badge pull-right" style="background-color: #f0ad4e; font-weight: bold;"><?php echo $cantPendientesSidebar; ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+        <?php } ?>
+
         <?php
         require_once 'model/entrega.php';
         $modelEntregaSidebar = new entrega();
         $user_id_sidebar = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
         $nivel_sidebar = isset($_SESSION['nivel']) ? $_SESSION['nivel'] : 0;
-        $cantPendientesSidebar = $modelEntregaSidebar->ContarPendientes(($nivel_sidebar == 3) ? $user_id_sidebar : null);
+        $cantPendientesSidebar = $modelEntregaSidebar->ContarPendientes(($nivel_sidebar == 3 || $nivel_sidebar == 11) ? $user_id_sidebar : null);
         ?>
-        <li <?php if (isset($_GET['c']) && $_GET['c'] == 'entrega') echo "class='active'"; ?> style="border-top: 1px solid #333; margin-top: 10px; padding-top: 5px;">
-            <a href="?c=entrega" style="font-weight: 600; color: #5bc0de;">
-                <i class="fa fa-truck"></i> Entregas de Pedidos
-                <?php if ($cantPendientesSidebar > 0) : ?>
-                    <span class="badge pull-right" style="background-color: #f0ad4e; font-weight: bold;"><?php echo $cantPendientesSidebar; ?></span>
-                <?php endif; ?>
-            </a>
-        </li>
+        <?php if ($nivel_sidebar != 11) { ?>
+            <li <?php if (isset($_GET['c']) && $_GET['c'] == 'entrega') echo "class='active'"; ?> style="border-top: 1px solid #333; margin-top: 10px; padding-top: 5px;">
+                <a href="?c=entrega" style="font-weight: 600; color: #5bc0de;">
+                    <i class="fa fa-truck"></i> Entregas de Pedidos
+                    <?php if ($cantPendientesSidebar > 0) : ?>
+                        <span class="badge pull-right" style="background-color: #f0ad4e; font-weight: bold;"><?php echo $cantPendientesSidebar; ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+        <?php } ?>
 
     </ul>
 

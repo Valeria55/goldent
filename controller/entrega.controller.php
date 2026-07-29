@@ -27,8 +27,8 @@ class entregaController
         $userId = $_SESSION['user_id'];
         $nivel = $_SESSION['nivel'];
 
-        // Si es vendedor (nivel 3), por defecto ve sus pendientes asignados, pero los administradores/cajeros ven todos
-        $solo_asignados = ($nivel == 3) ? $userId : null;
+        // Si es vendedor (nivel 3) o entregador (nivel 11), por defecto ve sus pendientes asignados
+        $solo_asignados = ($nivel == 3 || $nivel == 11) ? $userId : null;
 
         $pendientes = $this->model->ListarPendientes($solo_asignados);
         $entregados = $this->model->ListarEntregados();

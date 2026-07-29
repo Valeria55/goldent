@@ -64,6 +64,26 @@ class usuario
 		}
 	}
 
+	public function ListarEntregadores() // Lista únicamente usuarios de entregas (nivel 11)
+	{
+		try
+		{
+			$stm = $this->pdo->prepare("SELECT u.*, s.sucursal 
+											FROM usuario u 
+											LEFT JOIN sucursales s 
+												ON u.sucursal = s.id
+											WHERE u.nivel = 11  
+											ORDER BY u.user ASC");
+			$stm->execute();
+
+			return $stm->fetchAll(PDO::FETCH_OBJ);
+		}
+		catch(Exception $e)
+		{
+			die($e->getMessage());
+		}
+	}
+
 	public function Obtener($id)
 	{
 		try 

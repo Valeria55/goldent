@@ -11,6 +11,9 @@ require_once 'model/database.php';
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 $controller = 'venta_tmp';
+if (isset($_SESSION['nivel']) && $_SESSION['nivel'] == 11) {
+    $controller = 'entrega';
+}
 // error_reporting(0);
 // 
 // Todo esta lógica hara el papel de un FrontController
@@ -26,6 +29,9 @@ else
 {
     // Obtenemos el controlador que queremos cargar
     $controller = strtolower($_REQUEST['c']);
+    if (isset($_SESSION['nivel']) && $_SESSION['nivel'] == 11 && $controller != 'entrega') {
+        $controller = 'entrega';
+    }
     $accion = isset($_REQUEST['a']) ? $_REQUEST['a'] : 'Index';
     
     // Instanciamos el controlador
