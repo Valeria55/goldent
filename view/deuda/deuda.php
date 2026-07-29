@@ -129,6 +129,10 @@
                     <h4 id="cliente-seleccionado-titulo">Selecciona un cliente</h4>
                 </div>
                 <div class="panel-body">
+                    <div id="div-obs-cliente-deuda" class="alert alert-warning" style="display: none; border-left: 5px solid #f0ad4e; font-size: 15px; margin-bottom: 15px;">
+                        <i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> <span id="txt-obs-cliente-deuda"></span>
+                    </div>
+
                     <div id="detalle-cliente" style="display: none;">
                         <!-- Resumen del cliente -->
                         <div class="row">
@@ -658,6 +662,22 @@
             $('#cliente-seleccionado-titulo').text('Deudas de: ' + nombreCliente +' ('+ idCliente+')');
             $('#mensaje-seleccionar').hide();
             $('#detalle-cliente').show();
+
+            // Buscar observacion del cliente
+            if (idCliente > 0) {
+                $.post('?c=cliente&a=Buscar', {id: idCliente}, function(data) {
+                    var c = typeof data === 'string' ? JSON.parse(data) : data;
+                    var obs = (c && c.observacion_cliente && $.trim(c.observacion_cliente) !== '') ? c.observacion_cliente : (c && c.observacion ? c.observacion : '');
+                    if (obs && $.trim(obs) !== '') {
+                        $('#txt-obs-cliente-deuda').text(obs);
+                        $('#div-obs-cliente-deuda').slideDown();
+                    } else {
+                        $('#div-obs-cliente-deuda').slideUp();
+                    }
+                });
+            } else {
+                $('#div-obs-cliente-deuda').slideUp();
+            }
 
             // Cargar deudas del cliente
             $.ajax({

@@ -29,6 +29,12 @@
             <?php endforeach; ?>
         </select>
     </div> 
+
+    <div class="form-group col-sm-12" id="div-obs-cliente-deuda-edit" style="display:none;">
+        <div class="alert alert-warning" style="margin-bottom: 0; border-left: 5px solid #f0ad4e;">
+            <i class="fa fa-exclamation-triangle"></i> <strong>Observación del Cliente:</strong> <span id="txt-obs-cliente-deuda-edit"></span>
+        </div>
+    </div>
     
     <div class="form-group col-sm-12">
         <label>Concepto</label>
@@ -56,4 +62,29 @@
     $( "#monto" ).keyup(function() {
         $( "#saldo" ).val($( "#monto" ).val());
     });  
+
+    $('#id_cliente').on('change', function() {
+        var id_cli = $(this).val();
+        if (id_cli > 0) {
+            $.post('?c=cliente&a=Buscar', {id: id_cli}, function(data) {
+                var c = typeof data === 'string' ? JSON.parse(data) : data;
+                var obs = (c && c.observacion_cliente && $.trim(c.observacion_cliente) !== '') ? c.observacion_cliente : (c && c.observacion ? c.observacion : '');
+                if (obs && $.trim(obs) !== '') {
+                    $('#txt-obs-cliente-deuda-edit').text(obs);
+                    $('#div-obs-cliente-deuda-edit').slideDown();
+                } else {
+                    $('#div-obs-cliente-deuda-edit').slideUp();
+                }
+            });
+        } else {
+            $('#div-obs-cliente-deuda-edit').slideUp();
+        }
+    });
+
+    $(document).ready(function() {
+        var id_ini = $('#id_cliente').val();
+        if (id_ini > 0) {
+            $('#id_cliente').trigger('change');
+        }
+    });
 </script>
