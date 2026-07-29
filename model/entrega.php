@@ -278,4 +278,50 @@ class entrega
             return 0;
         }
     }
+
+    public function ObtenerPorPresupuesto($id_presupuesto)
+    {
+        try {
+            $sql = "SELECT e.*, 
+                           c.nombre AS cliente_nombre, c.ruc AS cliente_ruc, c.direccion AS cliente_direccion, c.telefono AS cliente_telefono,
+                           u_asigno.user AS usuario_asigno_nombre,
+                           u_resp.user AS responsable_nombre,
+                           u_ent.user AS usuario_entrega_nombre
+                    FROM entregas e
+                    LEFT JOIN clientes c ON e.id_cliente = c.id
+                    LEFT JOIN usuario u_asigno ON e.usuario_asigno_id = u_asigno.id
+                    LEFT JOIN usuario u_resp ON e.responsable_id = u_resp.id
+                    LEFT JOIN usuario u_ent ON e.usuario_entrega_id = u_ent.id
+                    WHERE e.id_presupuesto = ? AND e.estado != 'Cancelado' ORDER BY e.id DESC LIMIT 1";
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute(array($id_presupuesto));
+            return $stm->fetch(PDO::FETCH_OBJ);
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function ObtenerPorVenta($id_venta)
+    {
+        try {
+            $sql = "SELECT e.*, 
+                           c.nombre AS cliente_nombre, c.ruc AS cliente_ruc, c.direccion AS cliente_direccion, c.telefono AS cliente_telefono,
+                           u_asigno.user AS usuario_asigno_nombre,
+                           u_resp.user AS responsable_nombre,
+                           u_ent.user AS usuario_entrega_nombre
+                    FROM entregas e
+                    LEFT JOIN clientes c ON e.id_cliente = c.id
+                    LEFT JOIN usuario u_asigno ON e.usuario_asigno_id = u_asigno.id
+                    LEFT JOIN usuario u_resp ON e.responsable_id = u_resp.id
+                    LEFT JOIN usuario u_ent ON e.usuario_entrega_id = u_ent.id
+                    WHERE e.id_venta = ? AND e.estado != 'Cancelado' ORDER BY e.id DESC LIMIT 1";
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute(array($id_venta));
+            return $stm->fetch(PDO::FETCH_OBJ);
+        } catch (Exception $e) {
+            return null;
+        }
+    }
 }

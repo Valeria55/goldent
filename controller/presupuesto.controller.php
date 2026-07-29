@@ -75,8 +75,12 @@ class presupuestoController
     }
     public function OrdenDelivery()
     {
-        $id_venta = $_GET['id'];
-        $items = $this->model->ListarDetalle($id_venta);
+        $id_presupuesto = $_GET['id'];
+        $items = $this->model->ListarDetalle($id_presupuesto);
+
+        require_once 'model/entrega.php';
+        $modelEntrega = new entrega();
+        $datosEntrega = $modelEntrega->ObtenerPorPresupuesto($id_presupuesto);
 
         require_once 'view/informes/orden_entrega_tcpdf.php';
     }

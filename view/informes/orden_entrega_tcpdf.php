@@ -23,12 +23,49 @@ $pdf->AddPage();
 $pdf->SetFont('helvetica', '', 11);
 
 // Función para crear el contenido de la orden
-function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL', $pagina_actual = 1, $total_paginas = 1, $total_items = 0)
+function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo = 'ORIGINAL', $pagina_actual = 1, $total_paginas = 1, $total_items = 0, $datosEntrega = null)
 {
+    $nombreCliente = 'Cliente Ocasional';
+    if (!empty($items[0]->nombre_cli)) {
+        $nombreCliente = $items[0]->nombre_cli;
+    } elseif (!empty($items[0]->nombre)) {
+        $nombreCliente = $items[0]->nombre;
+    } elseif (!empty($datosEntrega->cliente_nombre)) {
+        $nombreCliente = $datosEntrega->cliente_nombre;
+    }
+
+    $rucCliente = '';
+    if (!empty($items[0]->ruc)) {
+        $rucCliente = $items[0]->ruc;
+    } elseif (!empty($datosEntrega->cliente_ruc)) {
+        $rucCliente = $datosEntrega->cliente_ruc;
+    }
+
+    $direccionCliente = '';
+    if (!empty($items[0]->direccion)) {
+        $direccionCliente = $items[0]->direccion;
+    } elseif (!empty($datosEntrega->cliente_direccion)) {
+        $direccionCliente = $datosEntrega->cliente_direccion;
+    }
+
+    $observacion = '';
+    if (!empty($datosEntrega->observacion_presupuesto)) {
+        $observacion = $datosEntrega->observacion_presupuesto;
+    } elseif (!empty($items[0]->observacion_presupuesto)) {
+        $observacion = $items[0]->observacion_presupuesto;
+    }
+
+    $encargado = '';
+    if (!empty($datosEntrega->responsable_nombre)) {
+        $encargado = $datosEntrega->responsable_nombre;
+    }
+
+    $nroOrden = !empty($items[0]->id_presupuesto) ? $items[0]->id_presupuesto : (!empty($items[0]->id_venta) ? $items[0]->id_venta : '');
+
     $contenido = '<table border="0" cellpadding="3" style="width: 100%;">
     <tr>
         <td style="width: 30%; font-weight: bold; font-size: 10px;">GOLDENT S.A</td>
-        <td style="width: 40%; text-align: center; font-weight: bold; font-size: 10px;">ORDEN DE ENTREGA - ' . $items[0]->id_presupuesto . '</td>
+        <td style="width: 40%; text-align: center; font-weight: bold; font-size: 10px;">ORDEN DE ENTREGA - ' . $nroOrden . '</td>
         <td style="width: 30%; text-align: right; font-size: 8px;">Ciudad del Este ' . $fecha . '</td>
     </tr>
     </table>
@@ -45,19 +82,19 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
         <td style="width: 100%; font-size: 10px; padding: 1px;"></td>
     </tr>
     <tr>
-        <td style="width: 100%; padding: 1px;"><b>Razón Social:</b> ' . $items[0]->nombre . '</td>
+        <td style="width: 100%; padding: 1px;"><b>Razón Social:</b> ' . htmlspecialchars($nombreCliente) . '</td>
     </tr>
     <tr>
-        <td style="width: 100%; padding: 1px;"><b>R.U.C.:</b> ' . $items[0]->ruc . '</td>
+        <td style="width: 100%; padding: 1px;"><b>R.U.C.:</b> ' . htmlspecialchars($rucCliente) . '</td>
     </tr>
     <tr>
         <td style="width: 100%; padding: 1px;"><b>Punto de partida:</b> Calle Ernesto Baez y Los Rosales</td>
     </tr>
     <tr>
-        <td style="width: 100%; padding: 1px;"><b>Punto de llegada:</b> </td>
+        <td style="width: 100%; padding: 1px;"><b>Punto de llegada:</b> ' . htmlspecialchars($direccionCliente) . '</td>
     </tr>
     <tr>
-        <td style="width: 100%; padding: 1px;"><b>Obs.:</b> </td>
+        <td style="width: 100%; padding: 1px;"><b>Obs.:</b> ' . htmlspecialchars($observacion) . '</td>
     </tr>
     <tr>
         <td style="width: 100%; font-size: 10px; padding: 1px;"></td>
@@ -66,7 +103,7 @@ function crearContenidoOrden($fecha, $items, $total_general, $valor_letra, $tipo
         <td style="width: 100%; font-size: 10px; padding: 1px;"><b><u>DELIVERY</u></b></td>
     </tr>
     <tr>
-        <td style="width: 100%; padding: 1px;"><b>Encargado:</b> </td>
+        <td style="width: 100%; padding: 1px;"><b>Encargado:</b> ' . htmlspecialchars($encargado) . '</td>
     </tr>
     <tr>
         <td style="width: 100%; font-size: 10px; padding: 1px;"></td>
@@ -183,8 +220,9 @@ foreach ($chunks as $index => $chunk) {
         $pdf->AddPage();
     }
 
+    $datos_entrega_var = isset($datosEntrega) ? $datosEntrega : null;
     // ORIGINAL
-    $htmlOriginal = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'ORIGINAL', $pagina_actual, $total_paginas, $total_items_count);
+    $htmlOriginal = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'ORIGINAL', $pagina_actual, $total_paginas, $total_items_count, $datos_entrega_var);
     $pdf->writeHTML($htmlOriginal, true, false, true, false, '');
 
     // Verificamos si cabe en la misma hoja (<= 12 items) o si necesitamos salto de página
@@ -196,7 +234,7 @@ foreach ($chunks as $index => $chunk) {
     }
 
     // COPIA
-    $htmlCopia = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'COPIA', $pagina_actual, $total_paginas, $total_items_count);
+    $htmlCopia = crearContenidoOrden($fecha, $chunk, $total_general, $valor_letra, 'COPIA', $pagina_actual, $total_paginas, $total_items_count, $datos_entrega_var);
     $pdf->writeHTML($htmlCopia, true, false, true, false, '');
 }
 

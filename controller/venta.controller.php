@@ -351,6 +351,15 @@ class ventaController
         $id_venta = $_GET['id'];
         $items = $this->model->Listar($id_venta);
 
+        require_once 'model/entrega.php';
+        $modelEntrega = new entrega();
+        $datosEntrega = null;
+        if (!empty($items[0]->id_presupuesto) && $items[0]->id_presupuesto > 0) {
+            $datosEntrega = $modelEntrega->ObtenerPorPresupuesto($items[0]->id_presupuesto);
+        } else if (!empty($id_venta)) {
+            $datosEntrega = $modelEntrega->ObtenerPorVenta($id_venta);
+        }
+
         require_once 'view/informes/orden_entrega_tcpdf.php';
     }
 
