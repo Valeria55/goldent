@@ -605,14 +605,12 @@ class presupuestoController
             // Actualizar la cabecera en todas las filas del presupuesto
             $this->model->ActualizarCabecera($id_presupuesto, $id_cliente, $descuento_global, $id_adelanto_str, $responsable_entrega_id, $observacion_presupuesto, $aprobado, $estado);
 
-            // Registrar/Actualizar entrega
-            if ($responsable_entrega_id > 0) {
-                if (!isset($_SESSION)) session_start();
-                require_once 'model/entrega.php';
-                $modelEntrega = new entrega();
-                $user_asigno = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 1;
-                $modelEntrega->Registrar($id_presupuesto, $id_cliente, $user_asigno, $responsable_entrega_id, $observacion_presupuesto);
-            }
+            // Registrar/Actualizar entrega (si es > 0 asigna/actualiza, si es 0 cancela asignación previa)
+            if (!isset($_SESSION)) session_start();
+            require_once 'model/entrega.php';
+            $modelEntrega = new entrega();
+            $user_asigno = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 1;
+            $modelEntrega->Registrar($id_presupuesto, $id_cliente, $user_asigno, $responsable_entrega_id, $observacion_presupuesto);
 
             header("Location: index.php?c=presupuesto&success=Presupuesto+#" . $id_presupuesto . "+actualizado+exitosamente");
             exit();

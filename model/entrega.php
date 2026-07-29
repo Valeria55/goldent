@@ -80,6 +80,15 @@ class entrega
             $stmCheck->execute(array($id_presupuesto));
             $exist = $stmCheck->fetch(PDO::FETCH_OBJ);
 
+            if ($responsable_id <= 0) {
+                // Si el responsable se establece a Sin Asignar (0), cancelar la entrega pendiente previa si existía
+                if ($exist) {
+                    $stmCancel = $this->pdo->prepare("UPDATE entregas SET estado = 'Cancelado' WHERE id = ? AND estado = 'Pendiente'");
+                    $stmCancel->execute(array($exist->id));
+                }
+                return null;
+            }
+
             if ($exist) {
                 // Actualizar responsable u observaciones si cambió
                 $stmUpd = $this->pdo->prepare("UPDATE entregas SET responsable_id = ?, usuario_asigno_id = ?, id_cliente = ?, observacion_presupuesto = ? WHERE id = ?");
