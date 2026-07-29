@@ -2,11 +2,13 @@
     <div class="container-fluid">
 
 	    <div class="navbar-header">
-	        <button type="button" id="sidebarCollapse" class="navbar-btn">
-	            <span></span>
-	            <span></span>
-	            <span></span>
-	        </button>
+            <?php if (!isset($_SESSION['nivel']) || $_SESSION['nivel'] != 11) { ?>
+                <button type="button" id="sidebarCollapse" class="navbar-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            <?php } ?>
 	    </div>
 
 		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

@@ -1,3 +1,8 @@
+<?php
+if (isset($_SESSION['nivel']) && $_SESSION['nivel'] == 11) {
+    return;
+}
+?>
 <nav id="sidebar">
     <div class="sidebar-header" align="center">
 

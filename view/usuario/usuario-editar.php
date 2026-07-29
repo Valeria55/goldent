@@ -28,7 +28,7 @@
             <option value="2" <?php echo ($usuario->nivel==2)? "selected":""; ?>>Cajero</option>
             <option value="3" <?php echo ($usuario->nivel==3)? "selected":""; ?>>Vendedor</option>
             <option value="4" <?php echo ($usuario->nivel==4)? "selected":""; ?>>Especial / Gerente</option>
-            <option value="11" <?php echo ($usuario->nivel==11)? "selected":""; ?>>Entregador (Nivel 11)</option>
+            <option value="11" <?php echo ($usuario->nivel==11)? "selected":""; ?>>Entregador</option>
         </select> 
     </div>
 
