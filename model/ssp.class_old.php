@@ -18,8 +18,6 @@
 
 
 class SSP {
-
-	private static $connections = array();
 	/**
 	 * Create the data output array for the DataTables rows
 	 *
@@ -395,52 +393,22 @@ class SSP {
 	 */
 	static function sql_connect ( $sql_details )
 	{
-		$connectionKey = md5(
-			$sql_details['host'].'|'.
-			$sql_details['db'].'|'.
-			$sql_details['user']
-		);
-
-		if ( isset( self::$connections[$connectionKey] ) ) {
-			return self::$connections[$connectionKey];
-		}
-
 		try {
-			$db = new PDO(
-				"mysql:host={$sql_details['host']};dbname={$sql_details['db']};charset=utf8mb4",
+			$db = @new PDO(
+				"mysql:host={$sql_details['host']};dbname={$sql_details['db']}",
 				$sql_details['user'],
 				$sql_details['pass'],
-				array(
-					PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-					PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_BOTH,
-					PDO::ATTR_PERSISTENT         => true
-				)
+				array( PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION )
 			);
-
-			try {
-				$db->exec("SET SESSION max_statement_time = 30");
-			}
-			catch (PDOException $e) {
-				error_log(
-					'SSP max_statement_time error: '.$e->getMessage()
-				);
-			}
-
-			self::$connections[$connectionKey] = $db;
-
-			return $db;
 		}
 		catch (PDOException $e) {
-			error_log(
-				'SSP DATABASE CONNECTION ERROR: '.$e->getMessage()
-			);
-
 			self::fatal(
-				"No se pudo establecer conexión con la base de datos."
+				"An error occurred while connecting to the database. ".
+				"The error reported by the server was: ".$e->getMessage()
 			);
 		}
 
-		return null;
+		return $db;
 	}
 
 
