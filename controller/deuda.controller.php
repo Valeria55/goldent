@@ -280,7 +280,7 @@ class deudaController
         $deudas = $this->model->listarDeudasPorCliente($id_cliente);
         
         $total = 0;
-        $html = '<table class="table table-bordered table-striped">';
+        $html = '<div class="table-responsive"><table class="table table-bordered table-striped" style="width: 100%; margin-bottom: 0;">';
         $html .= '<thead>';
         $html .= '<tr style="background-color: #f8f9fa;">';
         $html .= '<th>Concepto</th>';
@@ -313,7 +313,9 @@ class deudaController
                     }
                 }
                 if (!empty($partes_ade)) {
-                    $adelantoBadge = '<br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 3px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: ' . implode(', ', $partes_ade) . '</span>';
+                    foreach ($partes_ade as $part_a) {
+                        $adelantoBadge .= '<br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 2px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: ' . $part_a . '</span>';
+                    }
                 }
             }
 
@@ -343,7 +345,7 @@ class deudaController
         $html .= '<td></td>';
         $html .= '</tr>';
         $html .= '</tfoot>';
-        $html .= '</table>';
+        $html .= '</table></div>';
         
         $response = [
             'total' => $total,

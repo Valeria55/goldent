@@ -66,9 +66,11 @@
                                     }
                                 }
                             }
-                            if (!empty($partes_tbl)) : ?>
-                                <br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 3px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: <?php echo implode(', ', $partes_tbl); ?></span>
-                            <?php endif;
+                            if (!empty($partes_tbl)) :
+                                foreach ($partes_tbl as $part_t) : ?>
+                                    <br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 2px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: <?php echo $part_t; ?></span>
+                                <?php endforeach;
+                            endif;
                         endif;
                         ?>
                     </td>
@@ -177,7 +179,7 @@
                         <hr>
 
                         <!-- Tabla de deudas del cliente -->
-                        <div id="deudas-cliente-container">
+                        <div id="deudas-cliente-container" class="table-responsive" style="overflow-x: auto;">
                             <!-- Deudas específicas del cliente -->
                         </div>
 
