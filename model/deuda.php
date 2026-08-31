@@ -29,7 +29,7 @@ class deuda
 		try {
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT *, d.id as id, c.id as id_cliente, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante
+			$stm = $this->pdo->prepare("SELECT *, d.id as id, c.id as id_cliente, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante, (SELECT v.id_adelanto FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as id_adelanto, (SELECT v.id_presupuesto FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as id_presupuesto
 				FROM deudas d 
 				LEFT JOIN clientes c ON d.id_cliente = c.id 
 				WHERE d.saldo > 0 
@@ -592,7 +592,7 @@ class deuda
 	{
 		try {
 			$stm = $this->pdo->prepare("
-				SELECT d.*, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante
+				SELECT d.*, (SELECT v.nro_comprobante FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as nro_comprobante, (SELECT v.id_adelanto FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as id_adelanto, (SELECT v.id_presupuesto FROM ventas v WHERE v.id_venta = d.id_venta LIMIT 1) as id_presupuesto
 				FROM deudas d
 				WHERE d.id_cliente = ? AND d.saldo > 0 
 				ORDER BY d.fecha ASC

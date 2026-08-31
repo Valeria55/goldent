@@ -62,6 +62,66 @@
     </tbody>
 </table> 
 
+<?php
+$primer_reg = !empty($query_venta) ? $query_venta[0] : null;
+$id_ade_str = null;
+if ($primer_reg) {
+    if (!empty($primer_reg->id_adelanto)) {
+        $id_ade_str = $primer_reg->id_adelanto;
+    } elseif (!empty($primer_reg->id_presupuesto) && $primer_reg->id_presupuesto > 0) {
+        $id_ade_str = $this->presupuesto->ObtenerIdAdelanto($primer_reg->id_presupuesto);
+    }
+}
+$adelantos_aplicados = array();
+$totalAdelantos = 0;
+if (!empty($id_ade_str)) {
+    require_once 'model/adelanto.php';
+    $modelAde = new adelanto();
+    $ids_a = array_map('trim', explode(',', $id_ade_str));
+    foreach ($ids_a as $id_a) {
+        if (!empty($id_a)) {
+            $ad_obj = $modelAde->Obtener($id_a);
+            if ($ad_obj) {
+                $adelantos_aplicados[] = $ad_obj;
+                $totalAdelantos += floatval($ad_obj->monto);
+            }
+        }
+    }
+}
+?>
+
+<?php if (!empty($adelantos_aplicados)) : ?>
+<h4 class="page-header" style="color: #17a2b8;"><i class="fa fa-hand-holding-usd"></i> Adelantos Aplicados</h4>
+<table class="table table-striped table-bordered display responsive nowrap" width="100%">
+    <thead>
+        <tr style="background-color: #17a2b8; color:#fff">
+            <th>N° Adelanto</th>
+            <th>Fecha</th>
+            <th>Forma de Pago</th>
+            <th>Descripción</th>
+            <th>Monto Aplicado (Gs.)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($adelantos_aplicados as $ad_item) : ?>
+            <tr>
+                <td>#<?php echo $ad_item->id; ?></td>
+                <td><?php echo !empty($ad_item->fecha) ? date("d/m/Y H:i", strtotime($ad_item->fecha)) : '-'; ?></td>
+                <td><?php echo htmlspecialchars($ad_item->forma_pago ?? '-'); ?></td>
+                <td><?php echo htmlspecialchars($ad_item->descripcion ?? '-'); ?></td>
+                <td style="font-weight: bold; color: #17a2b8;"><?php echo number_format($ad_item->monto, 0, ",", "."); ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+    <tfoot>
+        <tr style="background-color: #e9ecef; font-weight: bold;">
+            <td colspan="4" align="right">Total Adelantos Deducidos:</td>
+            <td style="color: #17a2b8;">Gs. <?php echo number_format($totalAdelantos, 0, ",", "."); ?></td>
+        </tr>
+    </tfoot>
+</table>
+<?php endif; ?>
+
 <h4 class="page-header">Pagos / Ingresos</h4>
 
 <?php

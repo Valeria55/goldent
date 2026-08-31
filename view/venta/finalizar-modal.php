@@ -85,13 +85,13 @@
 						<input type="number" name="cuotas" min="1" max="12" class="form-control" value="1" placeholder="Cantidad de cuotas">
 					</div>
 
-					<div class="col-sm-6" style="display: none;">
+					<div class="col-sm-6" id="div_entrega" style="display: none;">
 						<label>Entrega</label>
-						<input type="number" name="entrega" min="0" max="<?php echo $subtotal ?>" class="form-control" value="0" placeholder="Ingrese entrega">
+						<input type="number" name="entrega" id="entrega" min="0" max="<?php echo $subtotal ?>" class="form-control" value="0" placeholder="Ingrese entrega">
 					</div>
-					<div class="col-sm-6" style="display: none;">
-						<label>Forma de pago</label>
-						<select name="forma_pago" class="form-control">
+					<div class="col-sm-6" id="div_forma_pago" style="display: none;">
+						<label>Forma de pago de la entrega</label>
+						<select name="forma_pago" id="forma_pago" class="form-control">
 							<?php foreach ($this->metodo->Listar() as $m) : ?>
 								<option value="<?php echo $m->metodo ?>"><?php echo $m->metodo ?></option>
 							<?php endforeach; ?>
@@ -195,16 +195,16 @@
 		if (valor == "Credito") {
 			$("#creditos").hide();
 			$("#fin").show();
-			$("#entrega").show();
-			$("#forma_pago").show();
+			$("#div_entrega").show();
+			$("#div_forma_pago").show();
 			// Mostrar opción de Pagaré solo en Crédito
 			$("#div_pagare").show();
 
 		} else {
 			$("#creditos").show();
 			$("#fin").hide();
-			$("#entrega").hide();
-			$("#forma_pago").hide();
+			$("#div_entrega").hide();
+			$("#div_forma_pago").hide();
 			// Ocultar y resetear Pagaré
 			$("#div_pagare").hide();
 			$("#pagare").val("");

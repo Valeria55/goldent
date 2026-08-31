@@ -8,6 +8,8 @@ require_once 'model/egreso.php';
 require_once 'model/cliente.php';
 require_once 'model/cierre.php';
 require_once 'model/metodo.php';
+require_once 'model/adelanto.php';
+require_once 'model/presupuesto.php';
 
 class deudaController
 {
@@ -21,6 +23,8 @@ class deudaController
     private $egreso;
     private $cliente;
     private $metodo;
+    private $adelanto;
+    private $presupuesto;
 
 
     public function __CONSTRUCT()
@@ -34,6 +38,8 @@ class deudaController
         $this->egreso = new egreso();
         $this->cliente = new cliente();
         $this->metodo = new metodo();
+        $this->adelanto = new adelanto();
+        $this->presupuesto = new presupuesto();
     }
 
     public function Index()
@@ -291,8 +297,28 @@ class deudaController
         
         foreach ($deudas as $deuda) {
             $total += $deuda->saldo;
+            $adelantoBadge = '';
+            $id_ade_str = !empty($deuda->id_adelanto) ? $deuda->id_adelanto : (!empty($deuda->id_presupuesto) ? $this->presupuesto->ObtenerIdAdelanto($deuda->id_presupuesto) : null);
+            if (!empty($id_ade_str)) {
+                $ids = array_map('trim', explode(',', $id_ade_str));
+                $partes_ade = array();
+                foreach ($ids as $id_a) {
+                    if (!empty($id_a)) {
+                        $ade_obj = $this->adelanto->Obtener($id_a);
+                        if ($ade_obj) {
+                            $txt = 'Gs. ' . number_format($ade_obj->monto, 0, ',', '.');
+                            if (!empty($ade_obj->fecha)) $txt .= ' (' . date('d/m/Y', strtotime($ade_obj->fecha)) . ')';
+                            $partes_ade[] = $txt;
+                        }
+                    }
+                }
+                if (!empty($partes_ade)) {
+                    $adelantoBadge = '<br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 3px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: ' . implode(', ', $partes_ade) . '</span>';
+                }
+            }
+
             $html .= '<tr>';
-            $html .= '<td>' . htmlspecialchars($deuda->concepto) . '</td>';
+            $html .= '<td>' . htmlspecialchars($deuda->concepto) . $adelantoBadge . '</td>';
             $html .= '<td>' . ($deuda->nro_comprobante ? htmlspecialchars($deuda->nro_comprobante) : '-') . '</td>';
             $html .= '<td>' . date("d/m/Y", strtotime($deuda->fecha)) . '</td>';
             $html .= '<td>' . (date("Y", strtotime($deuda->vencimiento)) > 2000 ? date("d/m/Y", strtotime($deuda->vencimiento)) : '') . '</td>';

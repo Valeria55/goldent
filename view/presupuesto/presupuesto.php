@@ -221,8 +221,23 @@ if (!isset($_SESSION)) session_start();
                     "data": "fecha_presupuesto"
                 },
                 {
-                    "data": "total",
-                    render: $.fn.dataTable.render.number(',', '.', 0)
+                    "data": null,
+                    render: function(data, type, row) {
+                        var totalFormatted = $.fn.dataTable.render.number(',', '.', 0).display(row.total);
+                        if (row.adelantos_info && row.adelantos_info.length > 0) {
+                            var adelantoHtml = '<br><span class="label label-info" style="font-size: 10px; display: inline-block; margin-top: 3px;" title="Adelantos vinculados">';
+                            adelantoHtml += '<i class="fas fa-hand-holding-usd"></i> Adelanto: ';
+                            var partes = [];
+                            row.adelantos_info.forEach(function(ade) {
+                                var txt = 'Gs. ' + parseFloat(ade.monto).toLocaleString('es-PY', {maximumFractionDigits: 0});
+                                if (ade.fecha) txt += ' (' + ade.fecha + ')';
+                                partes.push(txt);
+                            });
+                            adelantoHtml += partes.join(', ') + '</span>';
+                            return totalFormatted + adelantoHtml;
+                        }
+                        return totalFormatted;
+                    }
                 },
                 // {
                 //     "data": "estado",

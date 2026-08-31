@@ -143,21 +143,51 @@ class presupuestoController
         require_once 'view/footer.php';
     }
 
+    private function enriquecerPresupuestosConAdelantos($presupuestos)
+    {
+        if (empty($presupuestos)) return $presupuestos;
+        foreach ($presupuestos as &$p) {
+            $p->adelantos_info = array();
+            $p->adelanto_monto_total = 0;
+            if (!empty($p->id_adelanto)) {
+                $ids = array_map('trim', explode(',', $p->id_adelanto));
+                foreach ($ids as $id_ade) {
+                    if (!empty($id_ade)) {
+                        $ade = $this->adelanto->Obtener($id_ade);
+                        if ($ade) {
+                            $p->adelanto_monto_total += floatval($ade->monto);
+                            $p->adelantos_info[] = array(
+                                'id' => $ade->id,
+                                'monto' => floatval($ade->monto),
+                                'fecha' => !empty($ade->fecha) ? date('d/m/Y', strtotime($ade->fecha)) : '',
+                                'descripcion' => $ade->descripcion ?? ''
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return $presupuestos;
+    }
+
     public function ListarAjax()
     {
         $presupuesto = $this->model->Listar(0);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
 
     public function ListarAjaxAnulado()
     {
         $presupuesto = $this->model->ListarAnulado(0);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
 
     public function ListarAjaxPendientes()
     {
         $presupuesto = $this->model->ListarPendientes(0);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
 
@@ -168,6 +198,7 @@ class presupuestoController
         $hasta = ($_REQUEST["hasta"]);
 
         $presupuesto = $this->model->ListarFiltros($desde, $hasta);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
     public function ListarFiltrosAnulado()
@@ -177,6 +208,7 @@ class presupuestoController
         $hasta = ($_REQUEST["hasta"]);
 
         $presupuesto = $this->model->ListarFiltrosAnulado($desde, $hasta);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
 
@@ -187,6 +219,7 @@ class presupuestoController
         $hasta = isset($_REQUEST["hasta"]) ? $_REQUEST["hasta"] : '';
         
         $presupuesto = $this->model->ListarPorEstado($estado, $desde, $hasta);
+        $presupuesto = $this->enriquecerPresupuestosConAdelantos($presupuesto);
         echo json_encode($presupuesto, JSON_UNESCAPED_UNICODE);
     }
 

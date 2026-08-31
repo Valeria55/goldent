@@ -31,6 +31,7 @@ class venta
 	public $cot_usd;
 	public $cot_real;
 	public $fecha_factura;
+	public $id_adelanto;
 
 	public function __CONSTRUCT()
 	{
@@ -38,6 +39,10 @@ class venta
 			$this->pdo = Database::StartUp();
 			try {
 				$this->pdo->exec("ALTER TABLE ventas ADD COLUMN fecha_factura DATETIME DEFAULT NULL");
+			} catch (Exception $dbEx) {
+			}
+			try {
+				$this->pdo->exec("ALTER TABLE ventas ADD COLUMN id_adelanto VARCHAR(255) NULL");
 			} catch (Exception $dbEx) {
 			}
 		} catch (Exception $e) {
@@ -63,6 +68,8 @@ class venta
 				v.metodo, 
 				v.anulado, 
 				v.pagare,
+				v.id_presupuesto,
+				v.id_adelanto,
 				contado, 
 				p.producto, 
 				SUM(subtotal) as subtotal, 
@@ -157,6 +164,8 @@ class venta
 				v.metodo, 
 				v.anulado, 
 				v.pagare,
+				v.id_presupuesto,
+				v.id_adelanto,
 				contado, 
 				p.producto, 
 				SUM(subtotal) as subtotal, 
@@ -807,7 +816,7 @@ class venta
 			$stm = $this->pdo->prepare("SELECT v.condicion_factura,
 				IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0) AS costo,
 				(SUM(v.total) - IFNULL((SELECT SUM(a.total) FROM devoluciones a WHERE a.venta = v.id_venta), 0)) AS ganancia,
-				v.id_cliente, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, contado,
+				v.id_cliente, v.id, v.id_venta AS id_venta, v.comprobante, v.metodo, v.anulado, v.pagare, v.id_presupuesto, v.id_adelanto, contado,
 				p.producto, SUM(subtotal) as subtotal, descuento, SUM(total) as total, AVG(margen_ganancia) as margen_ganancia,
 				fecha_venta, v.nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto,
 				(SELECT user FROM usuario WHERE id = v.id_vendedor) as vendedor,
@@ -1626,8 +1635,8 @@ class venta
 	public function Registrar($data)
 	{
 		try {
-			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente, pagare, condicion_factura) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			$sql = "INSERT INTO ventas (id_venta, id_cliente, id_vendedor, id_presupuesto, vendedor_salon, id_producto, precio_costo, precio_venta, subtotal, descuento, iva, total, comprobante, nro_comprobante, id_timbrado, autoimpresor, cantidad, margen_ganancia, fecha_venta, metodo, contado, banco, id_devolucion, id_gift, estado, cot_usd, cot_rs, moneda, paciente, pagare, condicion_factura, id_adelanto) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 			$this->pdo->prepare($sql)
 				->execute(
@@ -1662,7 +1671,8 @@ class venta
 						$data->moneda,
 						$data->paciente,
 						$data->pagare,
-						$data->condicion_factura
+						$data->condicion_factura,
+						$data->id_adelanto ?? null
 					)
 				);
 		} catch (Exception $e) {

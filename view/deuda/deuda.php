@@ -49,7 +49,29 @@
                     <!-- ... resto de las columnas de la tabla para Deudores ... -->
                     <td><a class="btn btn-default" href="#rangoModal" class="btn btn-success" data-toggle="modal" data-target="#rangoModal" data-id="<?php echo $r->id_cliente; ?>"><?php echo $r->nombre; ?></a>
                     </td>
-                    <td><?php echo $r->concepto; ?></td>
+                    <td>
+                        <?php echo htmlspecialchars($r->concepto); ?>
+                        <?php
+                        $id_ade_str_tbl = !empty($r->id_adelanto) ? $r->id_adelanto : (!empty($r->id_presupuesto) ? $this->presupuesto->ObtenerIdAdelanto($r->id_presupuesto) : null);
+                        if (!empty($id_ade_str_tbl)) :
+                            $ids_tbl = array_map('trim', explode(',', $id_ade_str_tbl));
+                            $partes_tbl = array();
+                            foreach ($ids_tbl as $id_a_tbl) {
+                                if (!empty($id_a_tbl)) {
+                                    $ade_t = $this->adelanto->Obtener($id_a_tbl);
+                                    if ($ade_t) {
+                                        $txt_t = 'Gs. ' . number_format($ade_t->monto, 0, ',', '.');
+                                        if (!empty($ade_t->fecha)) $txt_t .= ' (' . date('d/m/Y', strtotime($ade_t->fecha)) . ')';
+                                        $partes_tbl[] = $txt_t;
+                                    }
+                                }
+                            }
+                            if (!empty($partes_tbl)) : ?>
+                                <br><span class="label label-info" style="font-size: 11px; display: inline-block; margin-top: 3px;"><i class="fa fa-hand-holding-usd"></i> Adelanto: <?php echo implode(', ', $partes_tbl); ?></span>
+                            <?php endif;
+                        endif;
+                        ?>
+                    </td>
                     <td><?php echo $r->nro_comprobante ? $r->nro_comprobante : '-'; ?></td>
                     <td style="padding-right:2px" align="right"><?php echo number_format($r->monto, 0, ",", ","); ?></td>
                     <td style="padding-right:2px" align="right"><?php echo number_format($r->saldo, 0, ",", ","); ?></td>

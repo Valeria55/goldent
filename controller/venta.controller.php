@@ -157,12 +157,46 @@ class ventaController
         require_once 'view/footer.php';
     }
 
+    private function enriquecerVentasConAdelantos($ventas)
+    {
+        if (empty($ventas)) return $ventas;
+        foreach ($ventas as &$v) {
+            $id_ade_str = null;
+            if (!empty($v->id_adelanto)) {
+                $id_ade_str = $v->id_adelanto;
+            } elseif (!empty($v->id_presupuesto) && $v->id_presupuesto > 0) {
+                $id_ade_str = $this->presupuesto->ObtenerIdAdelanto($v->id_presupuesto);
+            }
+            $v->adelantos_info = array();
+            $v->adelanto_monto_total = 0;
+            if (!empty($id_ade_str)) {
+                $ids = array_map('trim', explode(',', $id_ade_str));
+                foreach ($ids as $id_ade) {
+                    if (!empty($id_ade)) {
+                        $ade = $this->adelanto->Obtener($id_ade);
+                        if ($ade) {
+                            $v->adelanto_monto_total += floatval($ade->monto);
+                            $v->adelantos_info[] = array(
+                                'id' => $ade->id,
+                                'monto' => floatval($ade->monto),
+                                'fecha' => !empty($ade->fecha) ? date('d/m/Y', strtotime($ade->fecha)) : '',
+                                'descripcion' => $ade->descripcion ?? ''
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return $ventas;
+    }
+
     //LISTADO DE VENTAS AL CONTADO, A APROBAR, Y APROBADO SIN FILTRO 
     public function ListarAjax()
     {
         //$venta = $this->model->Listar(0);
         //metodo para listar por 30 días
         $venta = $this->model->ListarUltimos30Dias(0);
+        $venta = $this->enriquecerVentasConAdelantos($venta);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
     public function ListarAjaxAprobar()
@@ -203,6 +237,7 @@ class ventaController
         }
 
         $venta = $this->model->ListarFiltros($desde, $hasta, $id_cliente, $paciente, $sin_facturar, $nro_comprobante);
+        $venta = $this->enriquecerVentasConAdelantos($venta);
         echo json_encode($venta, JSON_UNESCAPED_UNICODE);
     }
 
@@ -515,6 +550,34 @@ class ventaController
         $cot_dolar = $cierre_actual ? $cierre_actual->cot_dolar : 0;
         $cot_real = $cierre_actual ? $cierre_actual->cot_real : 0;
 
+        // Calcular adelantos totales y recopilar sus IDs de todos los items en venta_tmp
+        $adelanto_total = 0;
+        $ids_adelanto_aplicados = array();
+        $items_tmp_iniciales = $this->venta_tmp->Listar();
+        $presupuesto_ids = array();
+        foreach ($items_tmp_iniciales as $item_tmp) {
+            if (!empty($item_tmp->id_presupuesto) && $item_tmp->id_presupuesto > 0) {
+                $presupuesto_ids[$item_tmp->id_presupuesto] = $item_tmp->id_presupuesto;
+            }
+        }
+        foreach ($presupuesto_ids as $id_presu) {
+            $id_ade_str = $this->presupuesto->ObtenerIdAdelanto($id_presu);
+            if (!empty($id_ade_str)) {
+                $ids_ade = explode(',', $id_ade_str);
+                foreach ($ids_ade as $id_ade) {
+                    $id_ade = trim($id_ade);
+                    if (!empty($id_ade) && !in_array($id_ade, $ids_adelanto_aplicados)) {
+                        $ids_adelanto_aplicados[] = $id_ade;
+                        $ade = $this->adelanto->Obtener($id_ade);
+                        if ($ade) {
+                            $adelanto_total += floatval($ade->monto);
+                        }
+                    }
+                }
+            }
+        }
+        $id_adelanto_guardar = !empty($ids_adelanto_aplicados) ? implode(',', $ids_adelanto_aplicados) : null;
+
         foreach ($this->venta_tmp->Listar() as $v) {
 
             $venta = new venta();
@@ -526,6 +589,7 @@ class ventaController
             $venta->paciente = $v->paciente ?? '';
             $venta->id_vendedor = $v->id_vendedor;
             $venta->id_presupuesto = $v->id_presupuesto;
+            $venta->id_adelanto = $id_adelanto_guardar;
             $venta->vendedor_salon = 0;
             $venta->id_producto = $v->id_producto;
             $venta->precio_costo = $v->precio_costo;
@@ -593,26 +657,6 @@ class ventaController
             $sumaTotal += $venta->total;
         }
         $error = 0;
-        $adelanto_total = 0;
-        $items_tmp = $this->venta_tmp->Listar();
-        if (count($items_tmp) > 0) {
-            $primer_item = $items_tmp[0];
-            if ($primer_item->id_presupuesto > 0) {
-                $presu = $this->presupuesto->ObtenerId_presupuesto($primer_item->id_presupuesto);
-                if ($presu && !empty($presu->id_adelanto)) {
-                    $ids_ade = explode(',', $presu->id_adelanto);
-                    foreach ($ids_ade as $id_ade) {
-                        $id_ade = trim($id_ade);
-                        if (!empty($id_ade)) {
-                            $ade = $this->adelanto->Obtener($id_ade);
-                            if ($ade) {
-                                $adelanto_total += floatval($ade->monto);
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         if ($venta->contado == 'Credito') {
 

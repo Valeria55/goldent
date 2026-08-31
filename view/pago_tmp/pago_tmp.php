@@ -27,16 +27,27 @@ $saldo = $monto_venta->monto - $pagototal;
 
 // Si viene de un presupuesto, descontar el o los adelantos
 $adelanto_monto = 0;
-if ($monto_venta->id_presupuesto > 0) {
-    $presu = $this->presupuesto->ObtenerId_presupuesto($monto_venta->id_presupuesto);
-    if ($presu && !empty($presu->id_adelanto)) {
-        $ids_ade = explode(',', $presu->id_adelanto);
+$adelantos_detalles = array();
+$items_venta_tmp = $this->venta_tmp->Listar();
+$presu_ids_tmp = array();
+foreach ($items_venta_tmp as $it_tmp) {
+    if (!empty($it_tmp->id_presupuesto) && $it_tmp->id_presupuesto > 0) {
+        $presu_ids_tmp[$it_tmp->id_presupuesto] = $it_tmp->id_presupuesto;
+    }
+}
+$procesados_ade_tmp = array();
+foreach ($presu_ids_tmp as $id_presu) {
+    $id_ade_str = $this->presupuesto->ObtenerIdAdelanto($id_presu);
+    if (!empty($id_ade_str)) {
+        $ids_ade = explode(',', $id_ade_str);
         foreach ($ids_ade as $id_ade) {
             $id_ade = trim($id_ade);
-            if (!empty($id_ade)) {
+            if (!empty($id_ade) && !in_array($id_ade, $procesados_ade_tmp)) {
+                $procesados_ade_tmp[] = $id_ade;
                 $ade = $this->adelanto->Obtener($id_ade);
                 if ($ade) {
                     $adelanto_monto += floatval($ade->monto);
+                    $adelantos_detalles[] = $ade;
                 }
             }
         }
@@ -80,7 +91,12 @@ if ($saldo < 0.5) {
 
 <?php if ($adelanto_monto > 0) : ?>
     <div class="alert alert-info" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-        <i class="fa fa-info-circle"></i> <strong>Adelanto aplicado:</strong> GS <?php echo number_format($adelanto_monto, 0, ".", "."); ?> (Deducido del saldo total)
+        <i class="fa fa-info-circle"></i> <strong>Adelanto(s) aplicado(s):</strong> Total GS <?php echo number_format($adelanto_monto, 0, ".", "."); ?> (Deducido del saldo total)
+        <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px;">
+            <?php foreach ($adelantos_detalles as $det_ade) : ?>
+                <li>Adelanto #<?php echo $det_ade->id; ?>: GS <?php echo number_format($det_ade->monto, 0, ".", "."); ?><?php echo !empty($det_ade->fecha) ? ' (' . date('d/m/Y', strtotime($det_ade->fecha)) . ')' : ''; ?><?php echo !empty($det_ade->descripcion) ? ' - ' . htmlspecialchars($det_ade->descripcion) : ''; ?></li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
 
