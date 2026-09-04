@@ -35,13 +35,48 @@ class devolucion
 		}
 	}
 
-	public function Listar($id_venta)
+	public function Listar($id_venta = 0, $desde = null, $hasta = null, $id_vendedor = null, $id_user = null)
 	{
 		try {
 
-			if ($id_venta == 0) {
+			if ($id_venta != 0) {
 
-				$stm = $this->pdo->prepare("SELECT 
+				$stm = $this->pdo->prepare("SELECT v.id, u.user, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto FROM devoluciones v 
+				LEFT JOIN productos p ON v.id_producto = p.id 
+				LEFT JOIN clientes c ON v.id_cliente = c.id 
+				LEFT JOIN usuario u ON u.id = v.id_user
+				WHERE v.id_venta = ?");
+				$stm->execute(array($id_venta));
+			} else {
+				$where = array();
+				$params = array();
+
+				if (!empty($desde)) {
+					$where[] = "v.fecha_venta >= ?";
+					$params[] = $desde . " 00:00:00";
+				}
+
+				if (!empty($hasta)) {
+					$where[] = "v.fecha_venta <= ?";
+					$params[] = $hasta . " 23:59:59";
+				}
+
+				if (!empty($id_vendedor)) {
+					$where[] = "v.id_vendedor = ?";
+					$params[] = $id_vendedor;
+				}
+
+				if (!empty($id_user)) {
+					$where[] = "v.id_user = ?";
+					$params[] = $id_user;
+				}
+
+				$whereSql = "";
+				if (count($where) > 0) {
+					$whereSql = " WHERE " . implode(" AND ", $where);
+				}
+
+				$sql = "SELECT 
 				v.venta, 
 				u.user,
 				v.id, 
@@ -56,15 +91,11 @@ class devolucion
 				FROM devoluciones v 
 				LEFT JOIN clientes c ON v.id_cliente = c.id 
 				LEFT JOIN usuario u ON u.id = v.id_user
-				GROUP BY v.id_venta ORDER BY v.id_venta DESC");
-				$stm->execute();
-			} else {
-				$stm = $this->pdo->prepare("SELECT v.id, u.user, p.producto,v.comprobante, v.metodo, v.anulado, contado, p.codigo,p.iva, v.cantidad, v.precio_venta, subtotal, descuento, total, margen_ganancia, fecha_venta, nro_comprobante, c.nombre as nombre_cli, c.ruc, c.direccion, c.telefono, v.id_producto FROM devoluciones v 
-				LEFT JOIN productos p ON v.id_producto = p.id 
-				LEFT JOIN clientes c ON v.id_cliente = c.id 
-				LEFT JOIN usuario u ON u.id = v.id_user
-				WHERE v.id_venta = ?");
-				$stm->execute(array($id_venta));
+				$whereSql
+				GROUP BY v.id_venta ORDER BY v.id_venta DESC";
+
+				$stm = $this->pdo->prepare($sql);
+				$stm->execute($params);
 			}
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);

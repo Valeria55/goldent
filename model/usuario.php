@@ -30,7 +30,6 @@ class usuario
 			$stm = $this->pdo->prepare("SELECT *, u.id, s.sucursal 
 			FROM usuario u 
 			LEFT JOIN sucursales s ON u.sucursal = s.id 
-			WHERE u.grupo <>'NO'
 			ORDER BY u.id DESC");
 			$stm->execute();
 
