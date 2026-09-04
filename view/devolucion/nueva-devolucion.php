@@ -1,6 +1,17 @@
 <?php
 $fecha = date("Y-m-d");
 ?>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container .select2-selection--single {
+        height: 34px !important;
+        padding: 3px 6px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 32px !important;
+    }
+</style>
+
 <h1 class="page-header"> Nuevo ajuste </h1>
 <div class="container">
     <div class="row">
@@ -8,17 +19,14 @@ $fecha = date("Y-m-d");
             <input type="hidden" id="id_venta" name="id_venta" value="<?php echo $id_venta ?>">
             <input type="hidden" name="c" value="devolucion_tmp">
             <input type="hidden" name="a" value="guardar">
-            <div class="col-sm-3">
-                <label>Producto</label>
-                <select name="id_producto" id="producto" class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control" autofocus>
-                    <option value="" disabled selected>--Seleccionar producto--</option>
-                    <?php foreach ($this->producto->Listar() as $producto): ?>
-                        <option style="font-size: 18px" data-subtext="<?php echo $producto->codigo; ?>" value="<?php echo $producto->id; ?>"><?php echo $producto->producto . ' ( ' . $producto->stock . ' ) - ' . number_format($producto->precio_minorista, 0, ".", "."); ?> </option>
-                    <?php endforeach; ?>
+            <div class="col-sm-4">
+                <label>Producto (Buscar por código o nombre)</label>
+                <select name="id_producto" id="producto" class="form-control select2" style="width: 100%;" autofocus required>
+                    <option value="">-- Buscar producto por código o nombre --</option>
                 </select>
                 <input type="submit" name="" style="display:none;">
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <label>Motivo</label>
                 <select name="descuento" id="motivo" class="form-control">
                     <option value="Ajuste">Ajuste</option>
@@ -62,7 +70,7 @@ $fecha = date("Y-m-d");
                 $Item++;
                 ?>
                 <tr>
-<td><?php echo $r->codigo; ?></td>
+                    <td><?php echo $r->codigo; ?></td>
                     <td><?php echo $r->producto; ?></td>
                     <td><?php echo number_format($r->precio_venta, 0, ",", "."); ?></td>
                     <td><?php echo $r->cantidad; ?></td>
@@ -128,11 +136,11 @@ $fecha = date("Y-m-d");
                             <div class="form-group">
                                 <label for="id_user">Seleccionar Funcionario</label>
                                 <select class="form-control selectpicker" data-show-subtext="true" data-live-search="true" data-style="form-control"
-                                    title="-- Seleccione una venta --" autofocus required id="id_user" name="id_user">
+                                    title="-- Seleccione un funcionario --" autofocus required id="id_user" name="id_user">
                                     <option value="" disabled selected>--Seleccionar funcionario--</option>
-                                    <?php foreach ($this->usuario->Listar() as $u): ?>
+                                    <?php foreach ($this->usuario->ListarUsuarios() as $u): ?>
                                         <option value="<?php echo $u->id; ?>">
-                                            <?php echo $u->user.' ('.$u->grupo.')'; ?>
+                                            <?php echo htmlspecialchars($u->user, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -156,33 +164,58 @@ $fecha = date("Y-m-d");
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script type="text/javascript">
-    $('#producto').on('change', function() {
-        var id_producto = $(this).val();
-        var id_venta = $("#id_venta").val();
-        var url = "?c=producto&a=Buscar&id=" + id_producto;
-        $.ajax({
-            url: url,
-            method: "POST",
-            data: id_venta,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(respuesta) {
-                var producto = JSON.parse(respuesta);
-                $("#precio_costo").val(producto.precio_minorista);
-                $("#precio_costo").html(producto.precio_minorista);
-                $("#cantidad").focus();
+    $(document).ready(function() {
+        $('#producto').select2({
+            placeholder: '-- Buscar producto por código o nombre --',
+            allowClear: true,
+            minimumInputLength: 1,
+            ajax: {
+                url: '?c=producto&a=BuscarAjax',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
             }
-        })
+        });
+
+        $('#producto').on('select2:select', function(e) {
+            var data = e.params.data;
+            if (data && data.precio_minorista !== undefined) {
+                $("#precio_costo").val(data.precio_minorista);
+                $("#cantidad").focus();
+            } else {
+                var id_producto = $(this).val();
+                if (id_producto) {
+                    $.ajax({
+                        url: "?c=producto&a=Buscar&id=" + id_producto,
+                        method: "POST",
+                        success: function(respuesta) {
+                            var producto = JSON.parse(respuesta);
+                            $("#precio_costo").val(producto.precio_minorista);
+                            $("#cantidad").focus();
+                        }
+                    });
+                }
+            }
+        });
     });
 
     // Validación del modal
     $("#formAjuste").on("submit", function(e) {
         var obs = $("#observacion").val().trim();
-        var venta = $("#venta").val();
         if (obs === "") {
-            alert("La observación es obligatoria y debe seleccionar una venta.");
+            alert("La observación es obligatoria.");
             e.preventDefault();
         }
     });

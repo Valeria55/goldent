@@ -30,7 +30,7 @@ class devolucion_tmp
 			$userId = $_SESSION['user_id'];
 			$result = array();
 
-			$stm = $this->pdo->prepare("SELECT v.id, v.id_producto, v.id_vendedor, v.descuento, c.precio_costo, v.precio_venta, c.producto, c.precio_costo, v.cantidad, v.id_venta FROM devoluciones_tmp v LEFT JOIN productos c ON v.id_producto = c.id WHERE id_vendedor = ? ORDER BY v.id DESC");
+			$stm = $this->pdo->prepare("SELECT v.id, v.id_producto, v.id_vendedor, v.descuento, c.precio_costo, v.precio_venta, c.producto, c.precio_costo, v.cantidad, v.id_venta, c.codigo FROM devoluciones_tmp v LEFT JOIN productos c ON v.id_producto = c.id WHERE id_vendedor = ? ORDER BY v.id DESC");
 			$stm->execute(array($userId));
 
 			return $stm->fetchAll(PDO::FETCH_OBJ);

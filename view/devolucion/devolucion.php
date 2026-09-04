@@ -82,7 +82,13 @@ $usuarios = $this->usuario->ListarUsuarios();
     foreach($this->model->Listar($id_venta, $desde, $hasta, $id_vendedor, $id_user) as $r): ?>
         <tr class="click" <?php if($r->anulado){echo "style='color:gray'";} ?>>
             <td><?php echo $r->id_venta; ?></td>
-            <td><a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-id="<?php echo $r->venta;?>"><?php echo $r->venta; ?></a></td>
+            <td>
+                <?php if (!empty($r->venta) && $r->venta != 0): ?>
+                    <a href='#detallesModal' class='btn btn-info' data-toggle='modal' data-target='#detallesModal' data-id="<?php echo $r->venta;?>"><?php echo $r->venta; ?></a>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
             <td><?php echo $r->vendedor; ?></td>
             <td><?php echo isset($r->user) && $r->user ? $r->user : '-'; ?></td>
             <td><?php echo $r->comprobante; ?></td>

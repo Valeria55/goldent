@@ -52,6 +52,14 @@ class productoController
         $producto = $this->model->ListarAjax();
         echo json_encode($producto, JSON_UNESCAPED_UNICODE);
     }
+    public function BuscarAjax()
+    {
+        $q = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
+        $productos = $this->model->BuscarAjax($q);
+        header('Content-Type: application/json');
+        echo json_encode($productos, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     public function ListarServicios()
     {
         $producto = $this->model->ListarServicios();

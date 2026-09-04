@@ -313,6 +313,39 @@ class producto
 		}
 	}
 
+	public function BuscarAjax($q)
+	{
+		try {
+			$q = '%' . trim($q) . '%';
+			$stm = $this->pdo->prepare("SELECT id, codigo, producto, stock, precio_minorista, precio_costo 
+				FROM productos 
+				WHERE (producto LIKE ? OR codigo LIKE ?) AND (anulado IS NULL OR anulado = 0) 
+				ORDER BY producto ASC 
+				LIMIT 30");
+
+			$stm->execute(array($q, $q));
+			$rows = $stm->fetchAll(PDO::FETCH_OBJ);
+
+			$results = array();
+			foreach ($rows as $r) {
+				$precioFmt = number_format($r->precio_minorista, 0, ".", ".");
+				$results[] = array(
+					'id' => $r->id,
+					'text' => $r->codigo . ' - ' . $r->producto . ' (' . $r->stock . ') - ' . $precioFmt,
+					'codigo' => $r->codigo,
+					'producto' => $r->producto,
+					'precio_minorista' => $r->precio_minorista,
+					'precio_costo' => $r->precio_costo,
+					'stock' => $r->stock
+				);
+			}
+
+			return $results;
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+	}
+
 
 	public function Obtener($id)
 	{
